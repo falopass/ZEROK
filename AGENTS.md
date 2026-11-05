@@ -1,8 +1,15 @@
 # AGENTS.md — ZÉROK Refrigeración & Climatización Profesional
 
 Proyecto del cliente **ZÉROK** (servicio técnico a domicilio, Osorno). Todo el trabajo de este cliente
-se hace en esta carpeta (`D:\Códigos\clientes\ZEROK`), nunca en otro repo. El plan completo está en
-`PLAN.md`.
+se hace en esta carpeta (`D:\Códigos\clientes\ZEROK`), nunca en otro repo. Remoto:
+`https://github.com/falopass/ZEROK` (rama `main`). Plan completo en `PLAN.md`.
+**Antes de tocar cualquier página pública, leer `DISENO.md`** (paleta, tipografía, motion, componentes,
+composición y copy). El panel `/admin/` se diseña con `interface-design` y solo comparte tokens.
+
+## Decisiones cerradas (05-11-2026)
+- Dominio: **zerok.cl** (disponibilidad por verificar en NIC Chile).
+- Trato de **tú** en todo el sitio. Sin rayas largas (— ni –) en texto visible.
+- Precios y productos se cargan después desde el panel; hasta entonces la página Precios queda oculta.
 
 ## Plan contratado
 $29.990/mes + $29.990 de activación, sin permanencia: hosting y dominio, 5 páginas, blog integrado,
@@ -33,5 +40,5 @@ Pago en línea, carrito y agenda de reservas quedan fuera del plan.
 - El WhatsApp del cliente no lo escribe ningún script.
 
 ## Estado
-- 05-11-2026: plan creado (`PLAN.md`). Sin código aún. Pendiente: material del cliente (§9 del plan),
-  dominio y repo remoto.
+- 05-11-2026: plan (`PLAN.md`) y sistema visual (`DISENO.md`) definidos. Sin código aún.
+  Pendiente: material del cliente (§9 del plan) y registro del dominio.

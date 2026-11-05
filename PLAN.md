@@ -4,7 +4,11 @@ Cliente: **ZÉROK Refrigeración & Climatización Profesional** (Osorno, Los Lag
 Plan contratado: **$29.990/mes** + $29.990 de activación, sin permanencia. Incluye hosting y dominio,
 5 páginas, blog integrado, diseño editorial a medida, SEO local (Google Business Profile),
 responsive mobile-first. Plazo comprometido: **10 días hábiles**.
-Fecha del plan: 05-11-2026.
+Fecha del plan: 05-11-2026. Repo: https://github.com/falopass/ZEROK.
+
+**Decisiones cerradas (05-11-2026):** dominio **zerok.cl** · trato de **tú** · precios se cargan
+después (la página Precios queda oculta del menú y con `noindex` hasta tener ítems).
+**Sistema visual completo (paleta, tipografía, motion, componentes, composición): `DISENO.md`.**
 
 > Regla de contenido: solo se publica lo que el cliente entregó o confirma. Lo que falta se **oculta**,
 > no se rellena con placeholders, cifras, reseñas ni fotos de stock presentadas como propias.
@@ -61,9 +65,11 @@ Si al lanzamiento no hay precios cargados, «Precios» se oculta del menú y la 
    - H1: *ZÉROK Refrigeración & Climatización Profesional* (texto del cliente).
    - Bajada: *Servicio técnico especializado en refrigeración, climatización y línea blanca a domicilio
      en Osorno y la Región de Los Lagos.*
-   - CTA primario: **Agendar visita por WhatsApp** · CTA secundario: **Llamar +56 9 7789 6895**.
-   - Fila de datos: `Lun a Sáb 07:30–21:00` · `A domicilio` · `Osorno y Los Lagos`.
-   - Imagen: foto real de un trabajo (de Instagram o enviada). Sin foto aún → hero tipográfico, no stock.
+   - CTA primario: **Agendar visita** (WhatsApp) · CTA secundario: **Llamar**.
+   - Imagen: foto real de un trabajo (de Instagram o enviada). Sin foto aún: imagen de atmósfera
+     generada o hero tipográfico (ver `DISENO.md` §6.2), nunca stock presentado como trabajo.
+   - Banda de datos **debajo** del hero (no dentro): «Lunes a sábado, 07:30 a 21:00» / «Vamos a tu
+     casa o negocio» / «Osorno y sectores de Los Lagos».
 3. **«¿Qué está fallando?»** — selector de equipo + síntoma (el bloque firma del sitio, ver §4.3).
    Arma un mensaje de WhatsApp listo: *«Hola ZÉROK, tengo un refrigerador que no enfría, en [sector].
    ¿Pueden agendar una visita?»*
@@ -136,56 +142,15 @@ enfriamiento, ruidos extraños. Cualquier otra falla, marca o equipo se agrega s
 
 ## 4. Dirección de diseño
 
-### 4.1 Concepto: «ficha técnica en frío»
-El nombre (ZÉROK, cero kelvin) da pie a un lenguaje **técnico y preciso, no de catálogo de
-electrodomésticos**. Composición editorial con datos a la vista (horarios, sectores, temperaturas,
-pasos) como si fueran la ficha de un equipo. Confianza por claridad, no por adornos.
-
-Evitar: copos de nieve, termómetros caricatura, degradados celeste genéricos, técnicos de stock
-sonriendo, íconos 3D, «¡Somos los mejores!».
-
-### 4.2 Sistema visual (propuesta; se ajusta con el logo real)
-
-- **Paleta**
-  - Tinta noche `#0D1B24` (fondos oscuros, texto principal sobre claro)
-  - Hielo `#EEF4F6` (fondo claro principal)
-  - Acero `#5B7280` (texto secundario; verificar AA sobre hielo)
-  - Señal ámbar `#F2A516` (CTA y estado «abierto»: calor contra frío, se ve en un día gris de Osorno)
-  - Verde WhatsApp solo en el ícono, no como color de marca.
-  - Si el logo del cliente trae colores propios, el logo manda y la paleta se recalibra.
-- **Tipografía** (autoalojada en `.woff2`, subset latín con tildes)
-  - Titulares: **Archivo** variable (ejes de ancho y peso; titulares en ancho expandido).
-  - Texto: **Archivo** normal (una sola familia para cuerpo y titulares = menos peso).
-  - Datos y etiquetas: **IBM Plex Mono** (horarios, chip de estado, números de pasos, precios).
-- **Retícula**: 4 columnas en móvil, 12 en escritorio; márgenes amplios; líneas finas de 1 px como en
-  un plano técnico.
-- **Fotos**: reales, recortadas en formatos fijos (4:5 en tarjetas, 16:9 en hero escritorio), velo
-  oscuro bajo texto para contraste AA.
-- **Motion**: mínimo y útil. Revelado sutil al hacer scroll, transición del selector de síntomas.
-  Todo desactivado con `prefers-reduced-motion`.
-
-### 4.3 Elemento firma: selector «¿Qué está fallando?»
-1. Elige equipo (íconos de línea): Refrigerador · Vitrina/conservador · Aire acondicionado ·
-   A/A de auto · Lavadora/secadora · Calefón/calefacción · Equipo de panadería/cecinas.
-2. Elige síntoma (depende del equipo): no enfría · fuga de gas · ruido extraño · no enciende ·
-   gotea agua · otro.
-3. Campo opcional «sector/comuna».
-4. Botón: **Enviar por WhatsApp** → `https://wa.me/56977896895?text=<mensaje codificado>`.
-
-Es JavaScript del lado del cliente, sin backend. Funciona sin JS como enlace directo a WhatsApp.
-
-### 4.4 Accesibilidad y móvil
-- Contraste AA en todo texto, también sobre fotos.
-- Áreas táctiles ≥ 44×44 px; foco visible; navegación por teclado completa en el selector y el menú.
-- Sin desborde horizontal en 360 px.
-- `lang="es-CL"`, textos alternativos reales en cada foto.
-
-### 4.5 Presupuesto de rendimiento (móvil 4G, p75)
-- LCP < 2,5 s · CLS < 0,1 · INP < 200 ms.
-- HTML+CSS+JS de la home < 100 KB comprimidos; fuentes < 90 KB en total; hero ≤ 150 KB `.webp`;
-  fotos de galería ≤ 200 KB, carga diferida.
-
----
+Definida en **`DISENO.md`** (fuente única; este resumen no la reemplaza):
+- Concepto «ficha técnica en frío»: neutrales gris hielo con tinte azul + **un solo acento ámbar**
+  `#E09A1F` para todo lo que se toca. Tema automático claro/oscuro.
+- Archivo variable (titulares anchos y cuerpo) + IBM Plex Mono (datos). Radio único de 6 px.
+- Diales: variación 6, motion 4, densidad 4. Motion solo con propósito (entrada del hero, estados del
+  selector, barra de contacto móvil), todo apagado con `prefers-reduced-motion`.
+- Elemento firma: selector «¿Qué está fallando?» que arma el mensaje de WhatsApp (DISENO §9.1 y §10.1).
+- Íconos Tabler outline 1,5; fotos reales; nada de stock presentado como trabajo.
+- Accesibilidad AA, áreas táctiles de 44 px, presupuesto de rendimiento en DISENO §11.
 
 ## 5. Arquitectura técnica (patrón del estudio)
 
@@ -249,7 +214,7 @@ ZEROK/
 ```
 
 ### Despliegue
-- Repo git propio en esta carpeta; repo privado en GitHub (nombre propuesto: `zerok-sitio`).
+- Repo git en esta carpeta, remoto `https://github.com/falopass/ZEROK` (rama `main`).
 - Deploy con GitHub Actions + `wrangler deploy` en cada push a la rama principal (patrón Arco).
 - Primero en `zerok.<cuenta>.workers.dev` para revisión del cliente; luego dominio propio.
 - Tras cada deploy se comprueba que la URL responde (HTTP 200). Sin suites de test, por pedido.
@@ -259,14 +224,13 @@ ZEROK/
 ## 6. Contenido y copy
 
 ### Ajustes al texto entregado
-- **Un solo trato.** El párrafo mezcla «tu hogar» con «Agende su visita». Propuesta: **tú** en todo el
-  sitio (cercano, directo, como escribe la gente por WhatsApp). Alternativa: usted en todo. Decide Diego/cliente.
+- **Trato de tú** en todo el sitio (decidido el 05-11-2026). Textos base en `DISENO.md` §10.1.
 - Párrafo corregido (tú):
   > En ZÉROK Refrigeración & Climatización Profesional nos especializamos en la reparación, revisión y
   > mantención a domicilio de refrigeradores, vitrinas comerciales y equipos de aire acondicionado en
   > Osorno. Solucionamos fallas como fugas de gas, cambio de motores, problemas de enfriamiento y ruidos
   > extraños. Servicio técnico rápido, transparente y confiable, directo en tu casa o negocio.
-- «¡Agende su visita técnica hoy mismo!» pasa a ser el botón: **Agenda tu visita por WhatsApp**.
+- «¡Agende su visita técnica hoy mismo!» pasa a ser el botón: **Agendar visita**.
 - «Garantizamos…» se cambia por una afirmación sin promesa formal, salvo que el cliente defina una
   garantía concreta (plazo y alcance), que entonces se publica tal cual.
 - «Fallas críticas» → «fallas», para no sonar a alarma.
@@ -367,16 +331,14 @@ Se envía por WhatsApp (lo hace Diego; ningún script escribe al cliente).
 12. ¿Años de experiencia o historia del negocio? (opcional, solo dato real).
 13. ¿Ya existe un **perfil de Google** del negocio? (para reclamarlo en vez de crear uno nuevo).
 
-**Decisiones**
-14. Dominio preferido (ver §10).
-15. Trato de tú o de usted.
+Dominio (zerok.cl) y trato (tú) ya están decididos.
 
 ---
 
 ## 10. Dominio y hosting
 
-- Propuesta: **`zerok.cl`**. Alternativa: **`zerokosorno.cl`**. Disponibilidad **no verificada**:
-  revisar en NIC Chile el día 1 antes de ofrecerlo al cliente.
+- Elegido por el cliente: **`zerok.cl`**. Disponibilidad **no verificada**: revisar en NIC Chile el
+  día 1 y registrarlo. Si estuviera tomado, se vuelve a consultar al cliente.
 - Hosting en Cloudflare (incluido en el plan). DNS del dominio en Cloudflare.
 - Correo con el dominio: no incluido; si lo pide, se cotiza aparte o se usa reenvío.
 
