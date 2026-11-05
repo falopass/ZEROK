@@ -40,5 +40,5 @@ Pago en línea, carrito y agenda de reservas quedan fuera del plan.
 - El WhatsApp del cliente no lo escribe ningún script.
 
 ## Estado
-- 05-11-2026: plan (`PLAN.md`) y sistema visual (`DISENO.md`) definidos. Sin código aún.
+- 05-11-2026: plan (`PLAN.md`) y sistema visual (`DISENO.md`, rev. 2: sitio vivo y fotográfico, sin íconos decorativos) definidos. Sin código aún.
   Pendiente: material del cliente (§9 del plan) y registro del dominio.

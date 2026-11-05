@@ -4,45 +4,53 @@ Leer antes de tocar cualquier página pública. El panel `/admin/` es interfaz d
 `interface-design`, reutiliza solo los tokens de color y tipografía de este documento y no hereda
 composición, hero ni motion de la web pública.
 
-Fecha: 05-11-2026. Decisiones cerradas con Diego: dominio **zerok.cl**, trato de **tú**, precios se
+Fecha: 05-11-2026 (revisión 2: sitio vivo, fotográfico, sin íconos decorativos). Decisiones cerradas con Diego: dominio **zerok.cl**, trato de **tú**, precios se
 cargan después (la página Precios queda oculta hasta tener ítems).
 
 ---
 
 ## 1. Lectura del diseño
 
-**Lectura:** landing de servicio técnico local para dueños de casa y negocios de Osorno con una falla
-encima, con lenguaje técnico preciso y cercano («ficha técnica en frío»), construida con CSS nativo,
-tokens en variables y motion CSS liviano.
+**Lectura:** landing de servicio técnico local para dueños de casa y negocios de Osorno, con un
+lenguaje **vivo, fotográfico y de oficio**: se siente el frío, se ve la falla y se ve la mano que la
+arregla. CSS nativo + GSAP para la coreografía de scroll, sin framework.
 
 Quien llega tiene un refrigerador que no enfría o una vitrina con mercadería en riesgo. Lee en el
-celular, apurado, a veces con frío. El diseño tiene que transmitir **oficio y respuesta rápida** y
-llevar a WhatsApp sin fricción. Nada de estética de «startup», nada de catálogo de electrodomésticos.
+celular, apurado. El sitio tiene que **dar ganas de escribir**: mostrar el trabajo de verdad, responder
+a lo que la persona toca y llevarla a WhatsApp con el mensaje ya armado.
+
+**Pedido explícito de Diego (05-11-2026):** nada de página muerta ni genérica, nada de íconos SVG de
+relleno. Vivo, con animaciones, realista y bien hecho.
 
 ### Diales
 | Dial | Valor | Por qué |
 |------|-------|---------|
-| `DESIGN_VARIANCE` | **6** | Composición asimétrica en escritorio para tener carácter; columna única estricta en móvil. Es un servicio de confianza: no se arriesga la legibilidad. |
-| `MOTION_INTENSITY` | **4** | Motion que informa (entrada del hero, cambios de estado del selector, aparición de la barra de contacto). Sin parallax, sin scroll-hijack, sin loops. |
-| `VISUAL_DENSITY` | **4** | Datos útiles a la vista (horario, cobertura, servicios) con aire suficiente para leer de pie. |
+| `DESIGN_VARIANCE` | **7** | Hero a sangre, bloques que se apilan al hacer scroll, cambios de escala entre secciones. Columna única estricta en móvil. |
+| `MOTION_INTENSITY` | **7** | La página reacciona: lente térmica en el hero, servicios que se apilan con el scroll, selector que escribe el mensaje en vivo, recorrido del técnico que se dibuja. Todo con motivo y con alternativa para movimiento reducido. |
+| `VISUAL_DENSITY` | **4** | Fotos grandes y datos útiles a la vista, con aire para leer de pie. |
 
 ### Stack (cultura del estudio sobre el default de la skill)
-HTML, CSS y JS vanilla en `sitio/`, sobre Cloudflare Workers (igual que Rancho Itahue y Arco). Sin
-React, Tailwind ni librerías de animación: el sitio es chico, se mantiene por una persona y así no hay
-paso de build. Motion con transiciones CSS + `IntersectionObserver`.
+HTML, CSS y JS vanilla en `sitio/` sobre Cloudflare Workers (igual que Rancho Itahue y Arco), sin paso
+de build. Para la coreografía de scroll: **GSAP + ScrollTrigger** autoalojados en `sitio/js/vendor/`,
+versión fijada con más de 7 días publicada (confirmar al instalar que la licencia vigente permite uso
+comercial sin costo; desde 2025 GSAP se distribuye gratis con todos sus plugins). Lo simple (hover,
+revelados, estados) va en CSS + `IntersectionObserver`. Sin smooth-scroll que secuestre la rueda.
 
 ---
 
-## 2. Concepto: «ficha técnica en frío»
+## 2. Concepto: «del calor de la falla al frío que vuelve»
 
-- **Frío** en la base: neutrales grises con tinte azul hielo. El frío *es* la familia neutra, no un acento.
-- **Calor** en la acción: un único acento ámbar para todo lo que se toca (CTA, estado «abierto»,
-  selección activa). Calor contra frío: también se lee bien en un día gris de Osorno.
-- **Ficha técnica**: datos alineados, cifras en mono, líneas finas de 1 px que **organizan contenido
-  real** (nunca grillas decorativas).
+Toda falla de refrigeración es calor donde no debería haberlo. El sitio cuenta eso visualmente:
 
-**Prohibido en este sitio:** copos de nieve, termómetros caricatura, degradados celeste, glows,
-técnicos de stock sonriendo, íconos 3D, morado, fotos de banco presentadas como trabajos propios.
+- **El calor es la falla**: tonos térmicos (naranjo, ámbar) aparecen donde está el problema.
+- **El frío es la solución**: la base del sitio es gris hielo con tinte azul, limpia y precisa.
+- **El ámbar es la acción**: el único color de interfaz para lo que se toca (CTA, selección, estado).
+- **La mano es la prueba**: fotos de manos, herramientas, manómetros y equipos reales abiertos. Oficio,
+  no pose.
+
+**Prohibido:** íconos decorativos (ni uno), ilustraciones SVG, copos de nieve, termómetros caricatura,
+degradados celeste, glows, morado en la interfaz, técnicos de stock sonriendo a cámara, «mockups»
+de pantallas armados con divs, fotos generadas presentadas como trabajos del cliente.
 
 ---
 
@@ -150,66 +158,135 @@ No se dibuja un logo inventado.
 
 ---
 
-## 6. Íconos e imágenes
+## 6. Imagen: fotografía primero, cero íconos decorativos
 
-### 6.1 Íconos
-**Tabler Icons** (MIT), variante outline, `stroke-width: 1.5`, una sola familia en todo el sitio. Se
-copian como SVG a un sprite (`sitio/img/iconos.svg`) y se usan con `<use>`. No se dibujan íconos a mano.
+El sitio vive de imágenes reales. Los equipos (refrigerador, split, lavadora, calefón, vitrina,
+máquina de panadería, auto) se muestran **con fotografía**, nunca con íconos.
 
-Glifos previstos (confirmar el nombre exacto en tabler.io al implementar; si falta uno, se elige el
-más cercano de la misma familia): refrigerador, aire acondicionado, lavadora, auto, llama
-(calefón/calefacción), tienda (comercial), herramienta, teléfono, WhatsApp, Instagram, reloj,
-ubicación, gota (filtración), volumen (ruido), copo/termómetro solo si no hay alternativa.
+### 6.1 Íconos: solo utilitarios
+**Tabler Icons** outline 1,5, en un sprite (`sitio/img/iconos.svg`), solo para funciones: teléfono,
+WhatsApp, Instagram, reloj, ubicación, flecha, cerrar, menú. Ningún ícono ilustra un servicio, un
+paso ni un beneficio. Se copian del paquete oficial; no se dibujan a mano.
 
-### 6.2 Fotos
-- **Solo fotos reales** del cliente en «Trabajos», servicios y hero.
-- Tratamiento uniforme: recorte fijo (hero 4:5 en móvil y 5:6 en escritorio; servicios 4:3; galería
-  libre en mosaico), leve ajuste de contraste, sin filtros de color, sin etiquetas encima de la foto.
-  Pie de foto, si hace falta, debajo y funcional («Mantención de split en Rahue»).
-- Formato `.webp`, `width`/`height` declarados (sin CLS), `loading="lazy"` salvo la del hero
-  (`fetchpriority="high"` + preload).
-- **Mientras no lleguen fotos:** el hero puede usar una imagen de atmósfera **generada** (detalle macro
-  de aletas de un condensador o serpentín con condensación, sin personas ni marcas), declarada en el
-  código como `<!-- imagen de atmósfera generada, no es un trabajo -->`. Nunca se usa en «Trabajos» ni
-  en servicios. Si no hay herramienta de generación disponible, el hero queda tipográfico con un slot
-  marcado `<!-- TODO: foto real de trabajo, 1200x1500 -->`.
+### 6.2 Fuentes de imagen, en orden
+1. **Fotos y videos reales del cliente** (Instagram + lo que mande por WhatsApp). Son los únicos que
+   pueden aparecer en «Trabajos recientes» y como prueba de trabajo.
+2. **Imágenes fotorrealistas generadas** para lo que falte al lanzar, con reglas estrictas:
+   - **Solo manos y detalles, sin rostros** (no se insinúa que es el equipo de ZÉROK).
+   - Sin marcas, logos ni textos legibles en los equipos.
+   - Contexto del sur de Chile: casas con madera, luz gris de lluvia en la ventana, una panadería o
+     carnicería de barrio con vitrinas, un taller con piso de cemento.
+   - Luz natural, color sobrio, grano fino; nada de render 3D brillante ni estética de banco de imágenes.
+   - Nunca en «Trabajos recientes». Se reemplazan por fotos reales a medida que lleguen.
+   - Se generan fuera de esta sesión (aquí no hay herramienta de imagen): delegando a Codex, como se
+     hizo con el logo de C&G, o con el generador que Diego prefiera. Los prompts van en
+     `material/prompts.md`.
+3. **Si no hay ninguna de las dos**, el bloque queda con un slot marcado
+   (`<!-- TODO: foto real, 1200x1500 -->`) y esa sección no se publica.
+
+### 6.3 Imágenes necesarias para el lanzamiento
+| Uso | Contenido | Formato |
+|-----|-----------|---------|
+| Hero (capa normal) | Manos abriendo el panel trasero de un refrigerador doméstico en una cocina del sur; compresor y cañerías a la vista | 4:5 móvil / 16:9 escritorio |
+| Hero (capa térmica) | La **misma** foto procesada como imagen térmica (paleta «iron»), con el punto caliente en el compresor | Mismo encuadre exacto |
+| Selector (7) | Cada equipo recortado sobre fondo neutro, foto de producto sin marca: refrigerador, vitrina/conservador, split, auto (rejilla de ventilación del tablero), lavadora/secadora, calefón, máquina de panadería/cecinas | 1:1, WebP con transparencia |
+| Servicios (7) | Una foto de trabajo por servicio (manos + equipo abierto), mismo tratamiento de color | 4:3 |
+| Recorrido (4) | Celular con chat en la mano / caja de herramientas en la puerta / manómetros conectados / equipo funcionando con escarcha limpia | 3:4 |
+| Casa / Negocio (2) | Cocina de casa / vitrinas de una panadería de barrio | 16:10 |
+| Textura de escarcha | Macro real de escarcha para la máscara del wordmark | 2000 px, escala de grises |
+| Cierre | Rejilla de un split con aire frío visible, o video corto | 16:9 |
+
+### 6.4 Video
+- Pedir al cliente **3 a 5 clips verticales de 10 a 15 s** grabados con el celular durante trabajos
+  reales (manos, equipo abierto, manómetro, prueba final). Es el material más vivo y más creíble.
+- Uso: fondo del bloque de cierre, «Trabajos recientes» y, si la calidad da, una capa del hero.
+- Técnica: MP4 H.264 + WebM, sin audio, ≤ 1,5 MB, `muted playsinline loop`, con `poster`. No se carga
+  con `Save-Data`, con movimiento reducido ni en conexión lenta (`navigator.connection`): queda el poster.
+
+### 6.5 Tratamiento común
+Mismo ajuste de color en todas las fotos (blancos levemente fríos, negros profundos, saturación
+contenida) para que reales y generadas se vean como una sola serie. `.webp`, medidas declaradas,
+`loading="lazy"` salvo el hero (`fetchpriority="high"` + preload). Sin etiquetas encima de las fotos.
 
 ---
 
-## 7. Motion
+## 7. Motion: la página responde
 
-Todo motion responde a una pregunta: ¿qué comunica? Si no hay respuesta, no va.
+Regla: cada animación comunica algo (jerarquía, historia, respuesta o cambio de estado). Lo que solo
+«se ve bonito» no entra.
 
 ### 7.1 Tokens
 ```css
---dur-1: 150ms;  /* hover, press */
---dur-2: 240ms;  /* cambios de estado, menú */
---dur-3: 600ms;  /* entradas */
+--dur-1: 150ms;   /* hover, press */
+--dur-2: 280ms;   /* cambios de estado */
+--dur-3: 700ms;   /* entradas */
+--dur-4: 1200ms;  /* momento de marca (escarcha) */
 --ease-salida: cubic-bezier(.16, 1, .3, 1);
 --ease-estado: cubic-bezier(.2, 0, 0, 1);
+--resorte: linear(0, .5 7%, .9 15%, 1.06 24%, 1.02 34%, 1); /* rebote corto */
 ```
-Solo se animan `transform` y `opacity`.
+Solo se animan `transform`, `opacity`, `clip-path` y variables de máscara. Nunca `top/left/width/height`.
 
-### 7.2 Catálogo
-| Elemento | Qué hace | Qué comunica |
-|----------|----------|--------------|
-| Entrada del hero | «ZÉROK» sube 16 px y aparece (600 ms); rubro, bajada y CTA siguen con 80 ms de desfase | Jerarquía: primero la marca, después la acción |
-| Selector: elegir equipo | Los síntomas del equipo entran en cascada (240 ms, 40 ms de desfase); el elegido queda con fondo ámbar | Cambio de estado: «ahora elige el síntoma» |
-| Selector: vista previa | El mensaje de WhatsApp se actualiza con un fundido de 150 ms | Retroalimentación: lo que eliges se escribe en el mensaje |
-| Barra de contacto móvil | Sube desde abajo (240 ms) cuando el CTA del hero sale de pantalla; baja cuando vuelve | Evita dos CTA iguales visibles a la vez |
-| Header | Al hacer scroll gana fondo sólido y sombra teñida (150 ms) | Separación del contenido |
-| Revelado de secciones | Bloques clave (servicios, cómo trabajamos, cobertura) aparecen con 24 px de subida, una vez | Ritmo de lectura |
-| Botones | Hover: cambio de color 150 ms. `:active`: `translateY(1px)` | Respuesta física al toque |
-| Menú móvil | Panel entra desde la derecha 240 ms; foco atrapado; `Esc` cierra | Cambio de estado |
-| Preguntas frecuentes | `<details>` nativo; el ícono gira 45° | Abierto/cerrado |
-| Filtro de precios (cuando exista) | Ítems filtrados con fundido de 150 ms | Cambio de estado |
+### 7.2 Los cinco momentos firma
 
-### 7.3 Prohibido
-Parallax, scroll-hijack, marquees, loops infinitos, pulso en el chip de estado, escritura tipo
-máquina, cursores personalizados, `window.addEventListener('scroll')`. Los cambios por scroll se
-detectan con `IntersectionObserver`.
+**1. Hero: lente térmica.** Foto a sangre de un refrigerador abierto. Encima, la misma foto en
+versión térmica, visible solo dentro de un círculo de ~220 px que sigue al puntero con inercia suave
+(escritorio, `pointer: fine`). En móvil la lente recorre sola la foto una vez al cargar y se detiene
+sobre el compresor caliente; al deslizar el dedo sobre la foto, la lente lo sigue.
+*Qué comunica:* «vemos lo que tú no ves; encontramos la falla».
+*Implementación:* dos `<img>` apiladas; la de arriba con `mask-image: radial-gradient(...)` ubicada
+por variables CSS `--lx/--ly` que se actualizan en `pointermove` dentro de `requestAnimationFrame`.
+Con movimiento reducido: lente fija sobre el compresor.
+*Pendiente:* preguntar al cliente si usa cámara térmica. Si la usa, se nombra en el copy; si no, es
+solo lenguaje visual y el texto no la menciona.
 
-### 7.4 Movimiento reducido
+**2. Wordmark con escarcha.** Al cargar, «ZÉROK» se cubre de escarcha de abajo hacia arriba (máscara
+con la textura real, 1200 ms, una sola vez) y queda nítido. *Qué comunica:* el nombre es frío.
+Con movimiento reducido: aparece directo.
+
+**3. Selector que escribe el mensaje.** Riel horizontal con las fotos de los 7 equipos (scroll-snap
+en móvil). Al tocar uno, la foto crece y se fija arriba (transición FLIP de 280 ms) y los síntomas
+entran con resorte en cascada (40 ms entre cada uno). Al elegir síntoma, la vista previa muestra
+primero «escribiendo…» (600 ms) y luego la burbuja con el mensaje exacto que se enviará; cada cambio
+la reescribe con un fundido. *Qué comunica:* respuesta inmediata; lo que eliges es lo que se manda.
+La vista previa usa el estilo de ZÉROK, no copia la interfaz de WhatsApp.
+
+**4. Servicios que se apilan.** En escritorio, los 7 servicios son láminas de pantalla completa que
+se fijan arriba al hacer scroll (`ScrollTrigger`, `start: "top top"`, `pin: true`); la lámina anterior
+se reduce a 0,92 y se oscurece mientras entra la siguiente. Cada lámina: foto grande, nombre del
+servicio, «Lo que falla», «Lo que hacemos» y Agendar visita con el servicio escrito en el mensaje.
+En móvil se apilan con `position: sticky` y 12 px de desfase por lámina, sin escala (más liviano).
+*Qué comunica:* recorrer el oficio completo, uno a uno, en vez de una lista plana.
+
+**5. Recorrido del técnico.** «Cómo trabajamos» tiene una línea que se dibuja con el scroll
+(`stroke-dashoffset` con `scrub`) y une los 4 momentos (Escribes, Agendamos, Diagnosticamos,
+Reparamos). Cuando la línea llega a cada uno, su foto se descubre con `clip-path` de abajo hacia
+arriba. *Qué comunica:* el proceso es corto y ordenado.
+
+### 7.3 Motion de apoyo
+| Elemento | Comportamiento | Qué comunica |
+|----------|----------------|--------------|
+| Chip de horario | «Abierto · cierra en 2 h 14 min», recalculado cada minuto; el dígito que cambia se desliza | Estado real |
+| Casa / Negocio | Control segmentado; la foto cambia con un barrido `clip-path` y el texto con fundido | Cambio de estado |
+| Mapa de cobertura | Al entrar en pantalla, los sectores confirmados aparecen como marcadores en secuencia (60 ms) sobre un mapa real de Osorno | Alcance |
+| Entrada del hero | Rubro, bajada y CTA suben 16 px después de la escarcha, con 80 ms de desfase | Jerarquía |
+| Revelados | Titulares de sección suben 24 px y aparecen, una vez | Ritmo de lectura |
+| Fotos | Al entrar, des-zoom leve de 1,06 a 1 (700 ms) | Profundidad |
+| CTA primario | En escritorio, atracción magnética leve (máx. 6 px); `:active` baja 1 px | Respuesta física |
+| Barra de contacto móvil | Sube cuando el CTA del hero sale de pantalla y baja cuando vuelve | Evita CTA duplicados a la vista |
+| Header | Se compacta de 72 a 60 px y gana fondo sólido al bajar | Separación |
+| Cambio de página | View Transitions entre las 5 páginas (`@view-transition { navigation: auto; }`): el header se queda y el contenido se funde | Continuidad |
+| Preguntas frecuentes | `<details>`; la respuesta se despliega y el «+» gira a «×» | Abierto/cerrado |
+
+### 7.4 Prohibido
+Parallax de fondo, secuestro del scroll horizontal, marquees, loops decorativos infinitos, pulsos,
+cursores personalizados, contadores inventados, `window.addEventListener('scroll')` (se usa
+ScrollTrigger o `IntersectionObserver`), cualquier motion que impida leer o tocar el CTA.
+
+### 7.5 Movimiento reducido y sin JS
+- Con `prefers-reduced-motion: reduce` no se cargan GSAP ni los efectos: lente fija, escarcha resuelta,
+  servicios como lista normal con fotos, línea del recorrido ya dibujada, sin magnetismo y video
+  reemplazado por su poster.
 ```css
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -219,9 +296,10 @@ detectan con `IntersectionObserver`.
   }
 }
 ```
-Además, el JS no agrega clases de revelado si `matchMedia('(prefers-reduced-motion: reduce)')` es
-verdadero: el contenido aparece directo. Sin JS, todo el contenido es visible desde el inicio (las
-clases de estado oculto las pone el script, no el HTML).
+- Sin JS: todo el contenido visible desde el inicio (los estados ocultos los pone el script) y el
+  selector se reemplaza por enlaces directos a WhatsApp por equipo.
+- Los `ScrollTrigger` se recalculan al cambiar de orientación; ninguna animación deja contenido a medio
+  aparecer si el usuario salta con el teclado o con un ancla.
 
 ---
 
@@ -239,8 +317,8 @@ Etiquetas siempre en una línea. Foco visible: `outline: 2px solid var(--acento)
 (en claro, `outline` en `--texto` para que se vea sobre fondo hielo).
 
 ### 8.2 Chip de estado del horario
-Mono, en el header: **«Abierto ahora»** con un punto ámbar, o **«Cerrado, abre 07:30»** en
-`--texto-2` sin punto. Es el único punto de color del sitio (estado real). Se calcula con
+Mono, en el header: **«Abierto · cierra en 2 h 14 min»** con un punto ámbar, o **«Cerrado, abre
+07:30»** en `--texto-2` sin punto. Se recalcula cada minuto. Es el único punto de color del sitio (estado real). Se calcula con
 `Intl.DateTimeFormat` en `America/Santiago`. Sin JS no se muestra. Horario pendiente de confirmar
 (21:00 o 21:30).
 
@@ -265,29 +343,32 @@ sin títulos partidos (titular a la izquierda + párrafo flotando a la derecha);
 
 ### 9.1 Inicio
 
-| # | Bloque | Familia de layout | Móvil |
-|---|--------|-------------------|-------|
-| 1 | **Header** 64 px | Wordmark, chip de estado, navegación en una línea, «Agendar visita» | Wordmark + chip + menú hamburguesa |
-| 2 | **Hero** | Split asimétrico: texto en 7 columnas a la izquierda; foto en 5 columnas que sangra al borde derecho. Máx. 4 elementos de texto: H1 (2 niveles), bajada, 2 CTA | Columna única: H1, bajada y CTA caben en 390×844 sin scroll; la foto va debajo |
-| 3 | **Banda de datos** | Franja de 3 columnas en `--superficie-2`, mono: «Lunes a sábado, 07:30 a 21:00» / «Vamos a tu casa o negocio» / «Osorno y sectores de Los Lagos» | 3 filas apiladas |
-| 4 | **¿Qué está fallando?** | Panel interactivo en `--superficie`: pasos a la izquierda, vista previa del mensaje a la derecha | Apilado: equipo, síntoma, sector, vista previa, botón |
-| 5 | **Servicios** | Bento de **exactamente 7 celdas**: 2 grandes con foto (Refrigeradores y vitrinas / Aire acondicionado) y 5 chicas; al menos 1 chica tintada en `--superficie-2` | Columna única; las grandes con foto 4:3 |
-| 6 | **En tu casa / En tu negocio** | Dos paneles de igual alto lado a lado; el de negocio tintado en `--superficie-2` | Apilados |
-| 7 | **Presentación** | Manifiesto editorial: párrafo grande (`--t-h3`, 60ch), sin imagen | Igual |
-| 8 | **Cómo trabajamos** | Línea horizontal de 4 verbos conectados por una línea de 1 px: Escribes, Agendamos, Diagnosticamos, Reparamos | Línea de tiempo vertical |
-| 9 | **Precios destacados** *(oculto hasta tener ítems)* | Fila con scroll-snap horizontal | Igual, con deslizamiento |
-| 10 | **Trabajos recientes** *(oculto hasta tener fotos)* | Mosaico (masonry) de fotos reales | 2 columnas |
-| 11 | **Cobertura y horario** | Lista de sectores + horario en mono a la izquierda; mapa de Osorno a la derecha, cargado al tocar (fachada estática, sin iframe en la carga inicial) | Lista, horario, botón «Ver mapa» |
-| 12 | **Del blog** *(oculto sin entradas)* | Filas editoriales: fecha en mono + título + extracto | Igual |
-| 13 | **Preguntas frecuentes** *(solo respuestas confirmadas)* | Acordeón `<details>` en una columna de 65ch | Igual |
-| 14 | **Cierre** (inversión única a `--cierre`) | CTA final grande + footer con datos de contacto, horario, Instagram y enlaces | Apilado |
+| # | Bloque | Composición | Móvil |
+|---|--------|-------------|-------|
+| 1 | **Header** 72 px (60 al bajar) | Wordmark, chip de horario, navegación en una línea, «Agendar visita» | Wordmark + chip + menú |
+| 2 | **Hero con lente térmica** | Foto a sangre; texto a la izquierda sobre un velo frío que asegura AA. Máx. 4 elementos: H1 (2 niveles), bajada, 2 CTA | Foto arriba (55 % del alto), texto y CTA debajo; todo dentro de 390×844 |
+| 3 | **Banda de datos** | Franja en `--superficie-2`, mono: «Lunes a sábado, 07:30 a 21:00» / «Vamos a tu casa o negocio» / «Osorno y sectores de Los Lagos» | 3 filas |
+| 4 | **¿Qué está fallando?** | Riel de fotos de equipos + síntomas + vista previa del mensaje | Riel deslizable, luego síntomas, sector, burbuja y botón |
+| 5 | **Servicios apilados** | 7 láminas de pantalla completa fijadas con el scroll | Láminas `sticky` sin escala |
+| 6 | **Casa / Negocio** | Control segmentado + foto 16:10 con barrido | Igual, foto arriba |
+| 7 | **Presentación** | Párrafo grande en columna de 60ch, sin imagen: descanso visual después del movimiento | Igual |
+| 8 | **Recorrido del técnico** | Línea dibujada con el scroll que une 4 fotos | Línea vertical a la izquierda |
+| 9 | **Precios destacados** *(oculto hasta tener ítems)* | Fila con scroll-snap | Igual |
+| 10 | **Trabajos recientes** *(solo fotos y videos reales; oculto sin material)* | Mosaico; los videos corren solo mientras están a la vista | 2 columnas |
+| 11 | **Cobertura y horario** | Mapa real de Osorno (imagen estática de OpenStreetMap con atribución) con marcadores animados + horario en mono | Mapa arriba, lista debajo |
+| 12 | **Del blog** *(oculto sin entradas)* | Filas editoriales con foto pequeña | Igual |
+| 13 | **Preguntas frecuentes** *(solo respuestas confirmadas)* | Acordeón en 65ch | Igual |
+| 14 | **Cierre** (inversión única a `--cierre`) | Video real o foto a sangre del aire frío de un split, CTA grande, footer | Apilado |
 
 Eyebrow: solo uno en toda la home, sobre «¿Qué está fallando?» («Diagnóstico por WhatsApp»).
+Ritmo: impacto (hero) → dato (banda) → interacción (selector) → inmersión (servicios) → elección
+(casa/negocio) → calma (presentación) → historia (recorrido) → prueba (trabajos) → lugar (mapa) → cierre.
 
 ### 9.2 Servicios
-Índice de anclas fijo bajo el header (chips con scroll horizontal en móvil). Luego un bloque por
-servicio con la misma ficha (es una página de consulta: aquí la repetición ayuda a comparar):
-título H2, «Qué hacemos», «Fallas que atendemos» (lista corta en 2 columnas), foto si existe y botón
+Índice de anclas fijo bajo el header (chips con scroll horizontal en móvil; el chip de la sección a
+la vista se marca en ámbar). Luego un bloque por servicio con la misma ficha (es una página de
+consulta: la repetición ayuda a comparar) y su foto grande, que se descubre con `clip-path` al entrar:
+título H2, «Qué hacemos», «Fallas que atendemos» (lista corta en 2 columnas) y botón
 **Agendar visita** con el servicio escrito en el mensaje.
 
 ### 9.3 Precios y productos (cuando haya ítems)
@@ -336,9 +417,13 @@ Síntomas del selector: «no enfría», «tiene una fuga de gas», «hace un rui
 ## 11. Calidad mínima (se revisa leyendo el código, sin suites de test)
 
 - Ninguna raya larga en texto visible; una etiqueta por intención de CTA; CTA en una línea.
-- Hero completo dentro de 390×844 sin scroll; header de 64 px en una línea en escritorio.
-- Contraste según §3.2; foco visible en todo control; navegación por teclado en menú y selector.
-- `prefers-reduced-motion` respetado; sin JS el sitio se lee completo y WhatsApp funciona por enlace.
-- Imágenes con medidas declaradas; hero precargado; fuentes con `swap`.
-- Presupuesto: home < 100 KB de HTML+CSS+JS comprimido, fuentes < 90 KB, hero ≤ 150 KB.
-  La medición real (Lighthouse) se hace solo si Diego la pide.
+- Ningún ícono decorativo: los íconos solo acompañan funciones (llamar, WhatsApp, horario, ubicación).
+- Hero completo dentro de 390×844 sin scroll; header en una línea en escritorio.
+- Contraste según §3.2, también sobre fotos (velo); foco visible; teclado en menú, selector y control
+  Casa/Negocio.
+- Cada animación de §7 tiene su versión con movimiento reducido y su versión sin JS.
+- Presupuesto (móvil 4G, p75): LCP < 2,5 s, CLS < 0,1, INP < 200 ms.
+  HTML+CSS+JS propio < 80 KB comprimidos; GSAP + ScrollTrigger ~45 KB comprimidos, con `defer` y solo
+  sin movimiento reducido; fuentes < 90 KB; hero normal ≤ 160 KB y capa térmica ≤ 120 KB (se carga
+  después del LCP); video ≤ 1,5 MB y nunca en la carga inicial.
+- La medición real (Lighthouse) se hace solo si Diego la pide.

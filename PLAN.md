@@ -142,15 +142,18 @@ enfriamiento, ruidos extraños. Cualquier otra falla, marca o equipo se agrega s
 
 ## 4. Dirección de diseño
 
-Definida en **`DISENO.md`** (fuente única; este resumen no la reemplaza):
-- Concepto «ficha técnica en frío»: neutrales gris hielo con tinte azul + **un solo acento ámbar**
-  `#E09A1F` para todo lo que se toca. Tema automático claro/oscuro.
-- Archivo variable (titulares anchos y cuerpo) + IBM Plex Mono (datos). Radio único de 6 px.
-- Diales: variación 6, motion 4, densidad 4. Motion solo con propósito (entrada del hero, estados del
-  selector, barra de contacto móvil), todo apagado con `prefers-reduced-motion`.
-- Elemento firma: selector «¿Qué está fallando?» que arma el mensaje de WhatsApp (DISENO §9.1 y §10.1).
-- Íconos Tabler outline 1,5; fotos reales; nada de stock presentado como trabajo.
-- Accesibilidad AA, áreas táctiles de 44 px, presupuesto de rendimiento en DISENO §11.
+Definida en **`DISENO.md`** (fuente única; este resumen no la reemplaza). Revisión 2 (05-11-2026):
+Diego pidió un sitio **vivo, realista y sin íconos genéricos**.
+- Concepto «del calor de la falla al frío que vuelve»: base gris hielo, un solo acento ámbar
+  `#E09A1F` para la acción, tonos térmicos solo dentro de las fotos. Tema claro/oscuro automático.
+- Archivo variable + IBM Plex Mono. Radio único de 6 px. Diales: variación 7, motion 7, densidad 4.
+- Cinco momentos firma: **lente térmica** en el hero que sigue al puntero o al dedo, **wordmark con
+  escarcha**, **selector que escribe el mensaje** de WhatsApp en vivo, **servicios que se apilan** con
+  el scroll y **recorrido del técnico** que se dibuja. GSAP + ScrollTrigger autoalojados.
+- Equipos y servicios mostrados con **fotografía**, nunca con íconos. Fotos y videos reales del cliente
+  primero; fotorrealistas generadas (solo manos y detalles, sin rostros ni marcas) para lo que falte,
+  nunca presentadas como trabajos propios.
+- Todo tiene versión con movimiento reducido y sin JS. Presupuesto de rendimiento en DISENO §11.
 
 ## 5. Arquitectura técnica (patrón del estudio)
 
@@ -291,8 +294,8 @@ ZEROK/
 | Día | Bloque | Entregable |
 |-----|--------|------------|
 | 1 | Arranque | Material pedido al cliente (§9), dominio verificado y comprado, git init, repo GitHub |
-| 2 | Dirección visual | Home móvil diseñada con datos reales (paleta y tipografía según logo) |
-| 3–4 | Inicio + Servicios | Páginas 1 y 2 completas, selector «¿Qué está fallando?» |
+| 2 | Dirección visual e imágenes | Home móvil con datos reales; prompts y generación de imágenes faltantes (manos y detalles), capa térmica del hero, textura de escarcha |
+| 3–4 | Inicio + Servicios | Páginas 1 y 2 completas con los cinco momentos firma (lente térmica, escarcha, selector, servicios apilados, recorrido) |
 | 5 | Precios + Contacto | Páginas 3 y 5, catálogo con render en servidor |
 | 6 | Blog | Página 4, listado y plantilla de entrada, 1–3 borradores para revisión del técnico |
 | 7 | Panel | `/admin/` con textos, servicios, precios/productos, fotos (R2) y blog |
@@ -316,20 +319,23 @@ Se envía por WhatsApp (lo hace Diego; ningún script escribe al cliente).
    horario o domingo? (No se publica «24/7» ni «emergencias» con horario sin confirmarlo.)
 3. **Sectores y comunas** que atiende fuera de Osorno (lista concreta). Clave para SEO local.
 4. **10 a 20 fotos reales** de trabajos (o permiso para usar las de Instagram en buena resolución).
+5. **3 a 5 videos verticales de 10 a 15 s** grabados con el celular durante trabajos reales (manos,
+   equipo abierto, manómetro, prueba final). Sin rostros de clientes ni direcciones visibles.
+6. ¿Usa **cámara térmica** o termómetro infrarrojo para diagnosticar? (define si el copy lo nombra).
 
 **Para completar el sitio**
-5. ¿Cobra la **visita técnica/diagnóstico**? ¿Cuánto? ¿Se descuenta si se repara?
-6. **Precios y productos** iniciales (si vende repuestos, equipos o planes de mantención).
-7. **Medios de pago** que acepta (transferencia, débito, crédito, efectivo).
-8. ¿Da **garantía** en las reparaciones? Plazo y qué cubre.
-9. ¿Entrega **boleta o factura**? (relevante para clientes comerciales).
-10. **Marcas** con las que trabaja o en que tiene experiencia (solo si son reales).
-11. **Credenciales**: para trabajos en calefones a gas, ¿tiene registro de instalador SEC? Si no, el
+7. ¿Cobra la **visita técnica/diagnóstico**? ¿Cuánto? ¿Se descuenta si se repara?
+8. **Precios y productos** iniciales (si vende repuestos, equipos o planes de mantención).
+9. **Medios de pago** que acepta (transferencia, débito, crédito, efectivo).
+10. ¿Da **garantía** en las reparaciones? Plazo y qué cubre.
+11. ¿Entrega **boleta o factura**? (relevante para clientes comerciales).
+12. **Marcas** con las que trabaja o en que tiene experiencia (solo si son reales).
+13. **Credenciales**: para trabajos en calefones a gas, ¿tiene registro de instalador SEC? Si no, el
     copy se limita a lo que pueda hacer legalmente y no se menciona certificación. *(Inferencia a
     verificar: en Chile la intervención en artefactos e instalaciones de gas exige instalador autorizado
     SEC; confirmar alcance con el cliente.)*
-12. ¿Años de experiencia o historia del negocio? (opcional, solo dato real).
-13. ¿Ya existe un **perfil de Google** del negocio? (para reclamarlo en vez de crear uno nuevo).
+14. ¿Años de experiencia o historia del negocio? (opcional, solo dato real).
+15. ¿Ya existe un **perfil de Google** del negocio? (para reclamarlo en vez de crear uno nuevo).
 
 Dominio (zerok.cl) y trato (tú) ya están decididos.
 
