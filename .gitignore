@@ -1,0 +1,10 @@
+# Herramientas de agentes instaladas localmente: no son parte del sitio.
+.agents/
+.claude/
+.devin/
+.grok/
+skills-lock.json
+
+# Material crudo del cliente: queda local.
+material/originales/
+node_modules/
