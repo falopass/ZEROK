@@ -54,6 +54,26 @@ de pantallas armados con divs, fotos generadas presentadas como trabajos del cli
 
 ---
 
+## 2.1 Relación con la skill del proyecto
+
+En `.claude/skills/design-taste-frontend` (tasteskill 2.5, instalada en esta carpeta el 05-11-2026)
+ZÉROK cae en el tipo **service** (`site-kind other`). Esa skill pide, para ese tipo, fotografía como
+protagonista, capa de micro-interacciones al pasar el mouse y **sin efectos, momentos ni loops** (los
+reserva para sitios tech). Diego pidió explícitamente un sitio vivo y con animaciones, así que:
+
+- **Se adopta de la skill:** fotografía como protagonista, fotos de librería solo para detalles, sin
+  pies de foto (créditos en el footer), capa de hover (foto 1,03, tarjeta sube 2 px, botones que bajan
+  al presionar, subrayados que se dibujan), bordes izquierdo y derecho iguales, cada sección de una a dos
+  pantallas de alto, copy primero.
+- **Se mantiene por pedido de Diego:** los cinco momentos de §7.2. Ninguno es un shader ni un efecto
+  decorativo: todos trabajan sobre fotos reales o son respuesta directa a lo que la persona toca.
+- **No aplica a un cliente real:** la regla 9 de la skill (teléfonos falsos y contactos `.example`) es
+  para demos. Aquí van el teléfono, WhatsApp e Instagram reales.
+- El verificador de la skill (`consistency.mjs`) es una prueba en navegador: no se corre salvo que
+  Diego lo pida.
+
+---
+
 ## 3. Color
 
 Tema **automático** según `prefers-color-scheme` (claro por defecto), sin interruptor. Una sola
@@ -170,8 +190,15 @@ paso ni un beneficio. Se copian del paquete oficial; no se dibujan a mano.
 
 ### 6.2 Fuentes de imagen, en orden
 1. **Fotos y videos reales del cliente** (Instagram + lo que mande por WhatsApp). Son los únicos que
-   pueden aparecer en «Trabajos recientes» y como prueba de trabajo.
-2. **Imágenes fotorrealistas generadas** para lo que falte al lanzar, con reglas estrictas:
+   pueden aparecer en «Trabajos recientes», en el hero definitivo y como prueba de trabajo.
+2. **Fotos reales de librería** (Unsplash y Wikimedia Commons) con `scripts/photos.mjs` de la skill del
+   proyecto (`.claude/skills/design-taste-frontend`, ver su `references/photos.md`): solo **planos de
+   detalle** (manos, herramientas, manómetros, cañerías, compresores, filtros), revisados uno por uno,
+   sin marcas legibles ni personas reconocibles, máximo 1 de cada 3 fotos de la página salvo que se use
+   su «draft path». Llevan `data-source="library-…"` y el crédito en **una sola línea del footer**.
+   Son la primera opción para cubrir lo que falte: es fotografía real, no generada.
+3. **Imágenes fotorrealistas generadas**, solo para lo que la librería no tenga (sobre todo la capa
+   térmica del hero y las fotos de producto recortadas del selector), con reglas estrictas:
    - **Solo manos y detalles, sin rostros** (no se insinúa que es el equipo de ZÉROK).
    - Sin marcas, logos ni textos legibles en los equipos.
    - Contexto del sur de Chile: casas con madera, luz gris de lluvia en la ventana, una panadería o
@@ -181,7 +208,7 @@ paso ni un beneficio. Se copian del paquete oficial; no se dibujan a mano.
    - Se generan fuera de esta sesión (aquí no hay herramienta de imagen): delegando a Codex, como se
      hizo con el logo de C&G, o con el generador que Diego prefiera. Los prompts van en
      `material/prompts.md`.
-3. **Si no hay ninguna de las dos**, el bloque queda con un slot marcado
+4. **Si no hay ninguna**, el bloque queda con un slot marcado
    (`<!-- TODO: foto real, 1200x1500 -->`) y esa sección no se publica.
 
 ### 6.3 Imágenes necesarias para el lanzamiento
@@ -206,7 +233,9 @@ paso ni un beneficio. Se copian del paquete oficial; no se dibujan a mano.
 ### 6.5 Tratamiento común
 Mismo ajuste de color en todas las fotos (blancos levemente fríos, negros profundos, saturación
 contenida) para que reales y generadas se vean como una sola serie. `.webp`, medidas declaradas,
-`loading="lazy"` salvo el hero (`fetchpriority="high"` + preload). Sin etiquetas encima de las fotos.
+`loading="lazy"` salvo el hero (`fetchpriority="high"` + preload). Sin etiquetas encima de las fotos
+y **sin pies de foto** debajo; los créditos de librería van en una línea del footer. Cada `<img>` lleva
+`data-source` (`client`, `library-…`, `generated`) para saber qué reemplazar cuando lleguen fotos reales.
 
 ---
 
@@ -271,7 +300,8 @@ arriba. *Qué comunica:* el proceso es corto y ordenado.
 | Mapa de cobertura | Al entrar en pantalla, los sectores confirmados aparecen como marcadores en secuencia (60 ms) sobre un mapa real de Osorno | Alcance |
 | Entrada del hero | Rubro, bajada y CTA suben 16 px después de la escarcha, con 80 ms de desfase | Jerarquía |
 | Revelados | Titulares de sección suben 24 px y aparecen, una vez | Ritmo de lectura |
-| Fotos | Al entrar, des-zoom leve de 1,06 a 1 (700 ms) | Profundidad |
+| Fotos | Al entrar, des-zoom leve de 1,06 a 1 (700 ms); al pasar el mouse, zoom 1,03 dentro de su marco | Profundidad y respuesta |
+| Tarjetas con enlace | Al pasar el mouse suben 2 px; los subrayados de enlaces se dibujan de izquierda a derecha | Que se puede tocar |
 | CTA primario | En escritorio, atracción magnética leve (máx. 6 px); `:active` baja 1 px | Respuesta física |
 | Barra de contacto móvil | Sube cuando el CTA del hero sale de pantalla y baja cuando vuelve | Evita CTA duplicados a la vista |
 | Header | Se compacta de 72 a 60 px y gana fondo sólido al bajar | Separación |
