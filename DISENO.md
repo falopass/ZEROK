@@ -57,16 +57,16 @@ de pantallas armados con divs, fotos generadas presentadas como trabajos del cli
 ## 2.1 Relación con la skill del proyecto
 
 En `.claude/skills/design-taste-frontend` (tasteskill 2.5, instalada en esta carpeta el 05-11-2026)
-ZÉROK cae en el tipo **service** (`site-kind other`). Esa skill pide, para ese tipo, fotografía como
-protagonista, capa de micro-interacciones al pasar el mouse y **sin efectos, momentos ni loops** (los
-reserva para sitios tech). Diego pidió explícitamente un sitio vivo y con animaciones, así que:
+ZÉROK cae en el tipo **service** (`site-kind other`). Para ese tipo la skill restringe efectos,
+momentos y loops a sitios tech. **Decisión de Diego (05-11-2026): en este sitio las animaciones van y
+no se prohíben.** Esa restricción de la skill no aplica aquí; el resto de la skill se usa como guía:
 
 - **Se adopta de la skill:** fotografía como protagonista, fotos de librería solo para detalles, sin
   pies de foto (créditos en el footer), capa de hover (foto 1,03, tarjeta sube 2 px, botones que bajan
   al presionar, subrayados que se dibujan), bordes izquierdo y derecho iguales, cada sección de una a dos
   pantallas de alto, copy primero.
-- **Se mantiene por pedido de Diego:** los cinco momentos de §7.2. Ninguno es un shader ni un efecto
-  decorativo: todos trabajan sobre fotos reales o son respuesta directa a lo que la persona toca.
+- **Animaciones: mandan §7 de este documento**, no las restricciones por tipo de la skill. Los cinco
+  momentos de §7.2 y las animaciones de §7.3 y §7.4 son parte del encargo.
 - **No aplica a un cliente real:** la regla 9 de la skill (teléfonos falsos y contactos `.example`) es
   para demos. Aquí van el teléfono, WhatsApp e Instagram reales.
 - El verificador de la skill (`consistency.mjs`) es una prueba en navegador: no se corre salvo que
@@ -308,10 +308,28 @@ arriba. *Qué comunica:* el proceso es corto y ordenado.
 | Cambio de página | View Transitions entre las 5 páginas (`@view-transition { navigation: auto; }`): el header se queda y el contenido se funde | Continuidad |
 | Preguntas frecuentes | `<details>`; la respuesta se despliega y el «+» gira a «×» | Abierto/cerrado |
 
-### 7.4 Prohibido
-Parallax de fondo, secuestro del scroll horizontal, marquees, loops decorativos infinitos, pulsos,
-cursores personalizados, contadores inventados, `window.addEventListener('scroll')` (se usa
-ScrollTrigger o `IntersectionObserver`), cualquier motion que impida leer o tocar el CTA.
+### 7.4 Más animación disponible (se usa donde aporte)
+Nada de esto está prohibido; se suma cuando la sección lo pida y se ve bien en el celular:
+- **Parallax suave** en fotos a sangre (desplazamiento de 8 a 12 %, con `scrub`), por ejemplo en el
+  bloque Casa/Negocio y en el cierre.
+- **Franja en movimiento** con los sectores que atiende ZÉROK (una por página, se detiene al pasar el
+  mouse o al tocarla), cuando el cliente confirme la lista.
+- **Loops cortos** en tarjetas: el vapor frío del split en el cierre, la escarcha que se forma en la
+  foto de la vitrina, el manómetro que se estabiliza en la foto del recorrido (videos cortos o
+  secuencias, 2,5 a 4 s, se reinician al pasar el mouse).
+- **Titulares que entran palabra por palabra** en secciones clave (no en todas).
+- **Contador de horario** que corre en vivo (ya en §7.3).
+- **Revelado de fotos con máscara** en Servicios y Trabajos (`clip-path` en diagonal o desde abajo).
+- **Transiciones compartidas** entre la tarjeta de un servicio en Inicio y su bloque en `/servicios/`
+  (View Transitions con `view-transition-name`).
+
+### 7.4.1 Límites técnicos (no son prohibiciones de estilo)
+Son para que la animación no rompa el sitio:
+- Nunca `window.addEventListener('scroll')`: ScrollTrigger o `IntersectionObserver`.
+- Nunca tapar ni retrasar el CTA ni el texto que se está leyendo.
+- Sin números inventados en contadores (solo datos reales como el horario).
+- Cursor del sistema siempre visible (se puede agregar la lente o un halo, no reemplazar el cursor).
+- Todo con su versión de movimiento reducido (§7.5) y fluido en un celular de gama media.
 
 ### 7.5 Movimiento reducido y sin JS
 - Con `prefers-reduced-motion: reduce` no se cargan GSAP ni los efectos: lente fija, escarcha resuelta,
@@ -451,7 +469,8 @@ Síntomas del selector: «no enfría», «tiene una fuga de gas», «hace un rui
 - Hero completo dentro de 390×844 sin scroll; header en una línea en escritorio.
 - Contraste según §3.2, también sobre fotos (velo); foco visible; teclado en menú, selector y control
   Casa/Negocio.
-- Cada animación de §7 tiene su versión con movimiento reducido y su versión sin JS.
+- Cada animación de §7 tiene su versión con movimiento reducido y su versión sin JS. Las animaciones
+  no se recortan por el tipo de sitio: el límite es técnico (§7.4.1), no de estilo.
 - Presupuesto (móvil 4G, p75): LCP < 2,5 s, CLS < 0,1, INP < 200 ms.
   HTML+CSS+JS propio < 80 KB comprimidos; GSAP + ScrollTrigger ~45 KB comprimidos, con `defer` y solo
   sin movimiento reducido; fuentes < 90 KB; hero normal ≤ 160 KB y capa térmica ≤ 120 KB (se carga

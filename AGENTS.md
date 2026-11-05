@@ -5,6 +5,8 @@ se hace en esta carpeta (`D:\Códigos\clientes\ZEROK`), nunca en otro repo. Remo
 `https://github.com/falopass/ZEROK` (rama `main`). Plan completo en `PLAN.md`.
 **Antes de tocar cualquier página pública, leer `DISENO.md`** (paleta, tipografía, motion, componentes,
 composición y copy). El panel `/admin/` se diseña con `interface-design` y solo comparte tokens.
+**Animaciones: van y no se prohíben** (decisión de Diego, 05-11-2026); las restricciones por tipo de
+sitio de la skill `design-taste-frontend` no aplican aquí.
 
 ## Decisiones cerradas (05-11-2026)
 - Dominio: **zerok.cl** (disponibilidad por verificar en NIC Chile).
