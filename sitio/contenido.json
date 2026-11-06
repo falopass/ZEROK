@@ -1,0 +1,33 @@
+{
+  "general": {
+    "telefono": "+56977896895",
+    "telefonoVisible": "+56 9 7789 6895",
+    "whatsapp": "56977896895",
+    "instagram": "https://www.instagram.com/zerok_osorno/",
+    "horarioConfirmado": false,
+    "abre": "07:30",
+    "cierra": "",
+    "cobertura": ["Osorno"],
+    "bajada": "Servicio técnico especializado en refrigeración, climatización y línea blanca a domicilio en Osorno y la Región de Los Lagos.",
+    "presentacion": "En ZÉROK nos especializamos en la reparación, revisión y mantención a domicilio de refrigeradores, vitrinas comerciales y equipos de aire acondicionado en Osorno. Solucionamos fugas de gas, cambios de motor, problemas de enfriamiento y ruidos extraños. Servicio técnico rápido, transparente y confiable, directo en tu casa o negocio.",
+    "hero": "/img/refrigeracion.webp",
+    "heroReal": false,
+    "heroAlt": "Detalle ilustrativo de manos revisando las cañerías y el compresor de un refrigerador",
+    "casaFoto": "",
+    "negocioFoto": "",
+    "aviso": ""
+  },
+  "servicios": [
+    { "id": "emergencias", "titulo": "Servicio técnico y emergencias", "resumen": "Cuéntanos qué equipo falló y en qué sector estás. Coordinamos la revisión a domicilio en Osorno y sectores de Los Lagos.", "equipos": "Equipos del hogar y de tu negocio", "fallas": [], "foto": "", "visible": true },
+    { "id": "refrigeradores-y-vitrinas", "titulo": "Refrigeradores y vitrinas", "resumen": "Reparación, revisión y mantención de refrigeradores de hogar y vitrinas comerciales. Vamos donde está tu equipo.", "equipos": "Refrigeradores de hogar y vitrinas comerciales", "fallas": ["Problemas de enfriamiento", "Fugas de gas", "Ruidos extraños", "Cambio de motores"], "foto": "", "visible": true },
+    { "id": "aire-acondicionado", "titulo": "Aire acondicionado", "resumen": "Instalación, mantención, reparación y desmantelamiento. Limpieza de conductos y reemplazo de filtros.", "equipos": "Splits, equipos portátiles y sistemas de conductos", "fallas": [], "foto": "", "visible": true },
+    { "id": "aire-acondicionado-automotriz", "titulo": "Aire acondicionado automotriz", "resumen": "Servicio técnico para el aire acondicionado de tu automóvil. Escríbenos para contarnos qué le pasa.", "equipos": "Aire acondicionado de automóviles", "fallas": [], "foto": "", "visible": true },
+    { "id": "lavadoras-y-secadoras", "titulo": "Lavadoras y secadoras", "resumen": "Reparación y mantención de lavadoras y secadoras a domicilio. Cuéntanos qué equipo tienes y qué falla presenta.", "equipos": "Lavadoras y secadoras", "fallas": [], "foto": "", "visible": true },
+    { "id": "calefones-y-calefaccion", "titulo": "Calefones y calefacción", "resumen": "Reparación y mantención de calefones y sistemas de calefacción. También instalamos termostatos.", "equipos": "Calefones, calefacción y termostatos", "fallas": [], "foto": "", "visible": true },
+    { "id": "equipos-comerciales", "titulo": "Equipos comerciales", "resumen": "Mantención de los equipos que acompañan tu trabajo: conservadores, máquinas cecineras y de panadería.", "equipos": "Conservadores, máquinas cecineras y de panadería", "fallas": [], "foto": "", "visible": true }
+  ],
+  "productos": [],
+  "trabajos": [],
+  "faq": [],
+  "blog": []
+}

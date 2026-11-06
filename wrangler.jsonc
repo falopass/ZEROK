@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "zerok",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-11-05",
+  "workers_dev": true,
+  "assets": { "directory": "sitio", "binding": "ASSETS", "run_worker_first": true, "html_handling": "none" },
+  "vars": { "SITE_URL": "https://zerok.cl", "PUBLIC_INDEXING": "false" },
+  "kv_namespaces": [{ "binding": "CONTENIDO" }],
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "zerok-media" }],
+  "durable_objects": { "bindings": [{ "name": "ADMIN", "class_name": "Admin" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Admin"] }]
+}

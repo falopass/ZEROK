@@ -8,3 +8,8 @@ skills-lock.json
 # Material crudo del cliente: queda local.
 material/originales/
 node_modules/
+.wrangler/
+.dev.vars
+.env
+.env.*
+*.log

@@ -1,0 +1,41 @@
+name: Publicar ZÉROK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zerok-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Publicar Worker y archivos
+        run: npm run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Comprobar HTTP 200
+        env:
+          SITE_HEALTH_URL: ${{ vars.SITE_HEALTH_URL }}
+        run: |
+          if [ -z "$SITE_HEALTH_URL" ]; then
+            echo 'Configura SITE_HEALTH_URL con la URL pública del Worker.'
+            exit 1
+          fi
+          code=$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "$SITE_HEALTH_URL")
+          [ "$code" = '200' ]
