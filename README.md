@@ -8,6 +8,8 @@ Sitio y panel del servicio técnico ZÉROK en Osorno. HTML, CSS y JavaScript, si
 - Selector de equipo y falla que prepara el mensaje en el dispositivo. Solo abre WhatsApp cuando la persona pulsa Enviar mensaje. No envía mensajes automáticamente ni almacena datos del formulario.
 - Lente térmica, entrada de marca, láminas apiladas, revelados, cambio Casa/Negocio y recorrido animado. Alternativas con movimiento reducido y lectura sin JavaScript.
 - Revisión 3 de diseño (06-11-2026, ver `DISENO.md`): radios en escala, bloques en tinta noche, franja en movimiento, selector con fotos y burbuja que «escribe», servicios apilados con foto, Casa/Negocio a sangre con parallax, presentación que se enciende con el scroll, recorrido con pasos que se marcan, mapa de Osorno con marcador y cierre fotográfico.
+- Logo del cliente (06-11-2026) vectorizado con potrace en `sitio/img/logo.svg` (símbolos `#simbolo` y `#palabra`, colores por variables CSS para modo claro, oscuro y bloques noche), `favicon.svg`, `icono-180.png` y `logo.png` para datos estructurados. La paleta se recalibró con el azul marino y el celeste del logo; el ámbar queda para las acciones.
+- Fotos reales del cliente en `sitio/img/trabajos/` (patentes difuminadas): sección «Trabajo real» en Inicio con la frase del técnico, aire acondicionado automotriz, refrigeradores y vitrinas, y selector.
 - Fotos de apoyo de Wikimedia Commons en `sitio/img/fotos/`, registradas con autoría y licencia en `src/creditos.js` y listadas en `/creditos/`. Solo se muestran si están registradas; las fotos que suba el cliente desde el panel las reemplazan.
 - Catálogo filtrable y blog renderizados en servidor. Sin contenido publicado responden 404 con `noindex` y desaparecen de navegación y sitemap.
 - Panel `/admin/` con textos, horario, cobertura, servicios, precios/productos, fotografías, blog y FAQ. Todos los elementos nuevos de catálogo/blog empiezan ocultos o en borrador.
@@ -52,7 +54,7 @@ Antes de indexar: confirmar horario, sectores y fotografías; conectar `zerok.cl
 2. En cada lista, **Agregar elemento**, completar y **Guardar y publicar**. Servicios y productos se pueden ordenar. Los cambios de KV pueden tardar aproximadamente un minuto en propagarse.
 3. Para precios, introducir pesos enteros sin puntos. Marcar Visible para publicar; Destacado agrega el producto a Inicio. Sin stock conserva el precio y retira el botón de pedido.
 4. En Blog, separar párrafos con una línea vacía. Un subtítulo empieza con `## `. Elegir servicio relacionado y marcar Publicar solo después de revisión del técnico. La fecha futura publica a partir de ese día UTC.
-5. En Trabajos, usar únicamente fotos reales del cliente. Las descripciones se usan como texto alternativo; no son pies de foto.
+5. En Trabajos, usar únicamente fotos reales del cliente, verticales si es posible. La frase se muestra sobre la foto, entre comillas, con la voz de quien hizo el trabajo («Acá estoy…»). Tapar patentes y caras antes de subir. Las tres primeras van en Inicio y en los datos estructurados.
 6. Al reemplazar la portada, ajustar su descripción y marcar si es real. La lente térmica solo acompaña la imagen ilustrativa original.
 7. Si aparece un conflicto de versiones, descargar un respaldo JSON desde **Seguridad y respaldo** antes de cargar la última versión. No se sobrescribe automáticamente el trabajo de otra sesión.
 

@@ -46,4 +46,5 @@ Pago en línea, carrito y agenda de reservas quedan fuera del plan.
 - Sin tests, lint ni build local. Revisión de código y sintaxis; falta observarlo en ejecución después del despliegue autorizado.
 - 06-11-2026: primer deploy en https://zerok.ddiegosebastianbb.workers.dev con KV, R2 y Durable Object creados (HTTP 200 comprobado).
 - 06-11-2026: revisión 3 de diseño (menos plano, más foto y motion; detalle en `DISENO.md`). Fotos de apoyo de Wikimedia Commons con créditos en `/creditos/` hasta que lleguen las del cliente.
+- 06-11-2026: logo del cliente vectorizado y paleta recalibrada; primeras 3 fotos reales con su frase en «Trabajo real» (revisión 4 en `DISENO.md`).
 - Pendiente: secreto `ADMIN_SETUP_TOKEN` del Worker, secretos de GitHub para el deploy automático, material real del cliente (§9 del plan), horario exacto y registro/conexión del dominio. Precios, blog, galería y FAQ siguen ocultos hasta cargar contenido confirmado.

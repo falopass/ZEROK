@@ -25,6 +25,19 @@ Pedido de Diego: «demasiado plana y cuadrada, le falta vida». Cambios que reem
   encienden con el scroll, pasos del recorrido que se marcan al pasar la línea, escritura antes de la
   burbuja del mensaje, CTA magnético y fotos que se descubren al entrar. Todo con alternativa reducida.
 
+### Revisión 4 (06-11-2026): logo y fotos reales
+- **Logo del cliente**: copo con Z y aguja de manómetro, azul marino `#042C56` y celestes `#65BED7`,
+  `#2381A9`, `#0C426C`. Vectorizado en `sitio/img/logo.svg`; se usa en header, hero (símbolo que entra
+  girando y rota con el scroll) y footer. En oscuro y bloques noche la palabra pasa a `--texto` y el símbolo
+  a celestes más claros. Bajo la palabra, el rubro en mayúsculas espaciadas, como en el logo.
+- **Paleta recalibrada con el logo** (§3.3): tinta, bloques noche y modo oscuro pasan a azul marino
+  (`--texto #0C2340`, `--cierre #071A30`, oscuro `--fondo #071626`). El ámbar sigue siendo el único color
+  de acción: contrasta con el azul de marca y mantiene «calor = falla, ámbar = acción».
+- **Fotos reales con su frase**: la regla «sin pies de foto» no aplica a «Trabajo real». Cada foto lleva
+  la frase del técnico entre comillas («Acá estoy…»), porque es la prueba más creíble del sitio. Formato
+  vertical 3:5, tres columnas escalonadas en escritorio y riel deslizable en móvil. Patentes difuminadas.
+- La sección va justo después del selector: la prueba aparece antes que el catálogo de servicios.
+
 ---
 
 ## 1. Lectura del diseño
