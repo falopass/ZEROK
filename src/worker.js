@@ -1,6 +1,6 @@
 import { Admin, json } from './admin.js';
 import { readContent, published } from './content.js';
-import { header, footer, page, structured } from './render.js';
+import { header, footer, page, structured, agendar, agendaLista } from './render.js';
 
 export { Admin };
 
@@ -14,6 +14,7 @@ function secure(response, privatePage = false) {
   headers.set('strict-transport-security', 'max-age=31536000');
   if (privatePage) {
     headers.set('cache-control', 'no-store');
+    headers.set('referrer-policy', 'no-referrer');
     headers.set('x-robots-tag', 'noindex, nofollow');
   }
   return new Response(response.body, { status: response.status, headers });
@@ -43,10 +44,47 @@ async function upload(request, env) {
   return json({ url: `/media/${key}` }, 201);
 }
 
+const objeto = env => env.ADMIN.get(env.ADMIN.idFromName('zerok-admin'));
+const interno = (env, path, init) => objeto(env).fetch(new Request(`https://zerok.internal/interno/${path}`, init));
+const dias = async env => (await (await interno(env, 'dias')).json()).dias;
+
+async function leer(request, max) {
+  const reader = request.body?.getReader();
+  if (!reader) return '';
+  const chunks = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > max) { await reader.cancel(); return null; }
+    chunks.push(value);
+  }
+  return new TextDecoder().decode(await new Blob(chunks).arrayBuffer());
+}
+
+async function reservar(request, env, url, data) {
+  const origin = request.headers.get('origin');
+  if (origin !== url.origin) return new Response('Origen no permitido.', { status: 403 });
+  if (!request.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) return new Response('Formato no admitido.', { status: 415 });
+  const raw = await leer(request, 8000);
+  if (raw === null) return new Response('La solicitud es demasiado grande.', { status: 413 });
+  const input = Object.fromEntries(new URLSearchParams(raw));
+  // Honeypot: bots that fill the hidden field see the usual confirmation and nothing is stored.
+  if (input.empresa) return Response.redirect(new URL('/agendar/listo/', url), 303);
+  const response = await interno(env, 'reserva', { method: 'POST', headers: { 'content-type': 'application/json', 'x-zerok-ip': request.headers.get('cf-connecting-ip') || 'local' }, body: JSON.stringify(input) });
+  const result = await response.json();
+  if (response.ok) {
+    return Response.redirect(new URL(`/agendar/listo/?dia=${result.dia}`, url), 303);
+  }
+  return render(request, env, url, data, '/agendar/', agendar(data, await dias(env), input, result.error, response.status));
+}
+
 async function handle(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
-  const admin = () => env.ADMIN.get(env.ADMIN.idFromName('zerok-admin'));
+  const admin = () => objeto(env);
+  if (/^\/interno(?:\/|$)/.test(path)) return json({ error: 'Ruta no encontrada.' }, 404);
   if (path.startsWith('/admin/api/')) {
     if (!env.ADMIN || !env.CONTENIDO) return json({ error: 'Falta configurar el almacenamiento del panel.' }, 503);
     if (!['GET', 'POST', 'PUT'].includes(request.method)) return json({ error: 'Método no permitido.' }, 405);
@@ -58,6 +96,11 @@ async function handle(request, env) {
     }
     return admin().fetch(request);
   }
+  if (path === '/agendar/' && request.method === 'POST') {
+    const data = await siteData(env);
+    if (data.agenda && env.ADMIN) return reservar(request, env, url, data);
+    return json({ error: 'La agenda en línea no está disponible. Llámanos para agendar tu visita.' }, 403);
+  }
   if (!['GET', 'HEAD'].includes(request.method)) return new Response('Método no permitido.', { status: 405, headers: { allow: 'GET, HEAD' } });
   if (path.startsWith('/media/')) {
     if (!/^\/media\/[a-f0-9-]{36}\.webp$/.test(path) || !env.MEDIA) return new Response('No encontrado.', { status: 404 });
@@ -68,17 +111,30 @@ async function handle(request, env) {
   if (path === '/admin') return Response.redirect(new URL('/admin/', url), 308);
   if (path.startsWith('/admin/')) return env.ASSETS.fetch(path === '/admin/' ? new URL('/admin/index.html', url) : request);
   if (/^\/(css|js|fonts|img)\//.test(path)) return env.ASSETS.fetch(request);
-  const data = published(await readContent(env));
+  const data = await siteData(env);
   const origin = env.SITE_URL || url.origin;
   const indexing = env.PUBLIC_INDEXING === 'true' && url.origin === new URL(origin).origin;
   if (path === '/robots.txt') return new Response(indexing ? `User-agent: *\nDisallow: /admin/\nDisallow: /api/\nSitemap: ${origin}/sitemap.xml\n` : 'User-agent: *\nDisallow: /\n', { headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-cache' } });
   if (path === '/sitemap.xml') {
-    const paths = ['/', '/servicios/', '/contacto/', ...(data.productos.length ? ['/precios/'] : []), ...(data.blog.length ? ['/blog/', ...data.blog.map(p => `/blog/${p.slug}/`)] : [])];
+    const paths = ['/', '/servicios/', ...(data.agenda ? ['/agendar/'] : []), '/contacto/', ...(data.productos.length ? ['/precios/'] : []), ...(data.blog.length ? ['/blog/', ...data.blog.map(p => `/blog/${p.slug}/`)] : [])];
     return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${paths.map(p => `<url><loc>${new URL(p, origin).href}</loc></url>`).join('')}</urlset>`, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'no-cache' } });
   }
   if (path === '/index.html') return Response.redirect(new URL('/', url), 308);
   if (path !== '/' && !path.includes('.') && !path.endsWith('/')) return Response.redirect(new URL(`${path}/${url.search}`, url), 308);
-  const rendered = page(data, path);
+  const rendered = path === '/agendar/' && data.agenda ? agendar(data, await dias(env))
+    : path === '/agendar/listo/' && data.agenda ? agendaLista(data, url.searchParams.get('dia'))
+    : page(data, path);
+  return render(request, env, url, data, path, rendered);
+}
+
+async function siteData(env) {
+  const [content, agenda] = await Promise.all([readContent(env), env.CONTENIDO?.get('agenda', 'json')]);
+  return { ...published(content), agenda: agenda?.activa === true && !!env.ADMIN };
+}
+
+async function render(request, env, url, data, path, rendered) {
+  const origin = env.SITE_URL || url.origin;
+  const indexing = env.PUBLIC_INDEXING === 'true' && url.origin === new URL(origin).origin && !rendered.noindex;
   const canonical = new URL(path, origin).href;
   const template = await env.ASSETS.fetch(new URL('/index.html', url));
   const replace = html => ({ element(element) { element.setInnerContent(html, { html: true }); } });
@@ -111,6 +167,13 @@ export default {
     let response;
     try { response = await handle(request, env); }
     catch { response = json({ error: 'El sitio no está disponible en este momento. Vuelve a intentarlo en unos minutos.' }, 503); }
-    return secure(response, new URL(request.url).pathname.startsWith('/admin/'));
+    return secure(response, new URL(request.url).pathname.startsWith('/admin/') || new URL(request.url).pathname.startsWith('/agendar/') || !['GET', 'HEAD'].includes(request.method));
+  },
+
+  // Retry durable notifications every fifteen minutes; the object applies Chilean reminder days.
+  async scheduled(controller, env) {
+    if (!env.ADMIN) return;
+    const response = await interno(env, 'cron', { method: 'POST' });
+    if (!response.ok) throw new Error('No se pudo procesar la cola de avisos.');
   }
 };
