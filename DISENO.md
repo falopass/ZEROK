@@ -38,6 +38,13 @@ Pedido de Diego: «demasiado plana y cuadrada, le falta vida». Cambios que reem
   vertical 3:5, tres columnas escalonadas en escritorio y riel deslizable en móvil. Patentes difuminadas.
 - La sección va justo después del selector: la prueba aparece antes que el catálogo de servicios.
 
+### Revisión 5 (06-11-2026): escala de escritorio
+Pedido de Diego: en escritorio «todo demasiado gigante, llega a ser abrumador». Se baja la escala desde 1024 px;
+el móvil no cambia. Contenedor 1200 px; H1 hasta 4rem, H2 hasta 2,875rem, títulos de láminas y de
+recorrido hasta 2,75 y 2,25rem; secciones de 80 px; hero hasta 700 px de alto con logo de 360 px; láminas
+de servicios de 400 px; Casa/Negocio de 460 px; trabajos en columnas de 320 px como máximo, en 4:5;
+fotos de detalle en 16:11. Toda la home bajó de unos 12.650 a unos 9.730 px de alto a 1440×900.
+
 ---
 
 ## 1. Lectura del diseño
