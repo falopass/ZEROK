@@ -7,6 +7,24 @@ composición, hero ni motion de la web pública.
 Fecha: 05-11-2026 (revisión 2: sitio vivo, fotográfico, sin íconos decorativos). Decisiones cerradas con Diego: dominio **zerok.cl**, trato de **tú**, precios se
 cargan después (la página Precios queda oculta hasta tener ítems).
 
+### Revisión 3 (06-11-2026): menos plano, menos cuadrado
+Pedido de Diego: «demasiado plana y cuadrada, le falta vida». Cambios que reemplazan reglas de abajo:
+- **Radios en escala**, no radio único: `--radio 10px` (botones, inputs), `--radio-l 20px` (fotos,
+  láminas, paneles), `--radio-xl 32px` (hero, bloque de servicios y cierre, insertos a 8-16 px del borde).
+  Etiquetas de fallas, sectores e índice de servicios van en píldora.
+- **Tinta noche en más de un bloque**: franja en movimiento, vista previa del mensaje, servicios
+  apilados y cierre (clase `.noche`, que reutiliza los tokens oscuros). En el resto manda el tema automático.
+- **Sombras teñidas** también en láminas, menú, barra de contacto y elementos elegidos (`--sombra`).
+- **Franja en movimiento** bajo el hero con horario, cobertura y las cuatro fallas que nombra el cliente.
+- **Fotos de apoyo de Wikimedia Commons** (licencias libres, créditos en `/creditos/`) en servicios,
+  selector, Casa/Negocio, recorrido y cierre, hasta que lleguen las fotos reales del cliente. Se
+  registran en `src/creditos.js`; reemplazarlas desde el panel no exige tocar código.
+- **Mapa de Osorno** propio a partir de teselas de OpenStreetMap (`sitio/img/mapa-osorno.webp`), con
+  marcador animado y atribución visible.
+- Motion sumado: lente térmica con mira, parallax en fotos a sangre, palabras de la presentación que se
+  encienden con el scroll, pasos del recorrido que se marcan al pasar la línea, escritura antes de la
+  burbuja del mensaje, CTA magnético y fotos que se descubren al entrar. Todo con alternativa reducida.
+
 ---
 
 ## 1. Lectura del diseño

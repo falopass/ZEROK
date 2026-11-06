@@ -7,6 +7,8 @@ Sitio y panel del servicio técnico ZÉROK en Osorno. HTML, CSS y JavaScript, si
 - Inicio, Servicios y Contacto con los siete servicios y los contactos reales.
 - Selector de equipo y falla que prepara el mensaje en el dispositivo. Solo abre WhatsApp cuando la persona pulsa Enviar mensaje. No envía mensajes automáticamente ni almacena datos del formulario.
 - Lente térmica, entrada de marca, láminas apiladas, revelados, cambio Casa/Negocio y recorrido animado. Alternativas con movimiento reducido y lectura sin JavaScript.
+- Revisión 3 de diseño (06-11-2026, ver `DISENO.md`): radios en escala, bloques en tinta noche, franja en movimiento, selector con fotos y burbuja que «escribe», servicios apilados con foto, Casa/Negocio a sangre con parallax, presentación que se enciende con el scroll, recorrido con pasos que se marcan, mapa de Osorno con marcador y cierre fotográfico.
+- Fotos de apoyo de Wikimedia Commons en `sitio/img/fotos/`, registradas con autoría y licencia en `src/creditos.js` y listadas en `/creditos/`. Solo se muestran si están registradas; las fotos que suba el cliente desde el panel las reemplazan.
 - Catálogo filtrable y blog renderizados en servidor. Sin contenido publicado responden 404 con `noindex` y desaparecen de navegación y sitemap.
 - Panel `/admin/` con textos, horario, cobertura, servicios, precios/productos, fotografías, blog y FAQ. Todos los elementos nuevos de catálogo/blog empiezan ocultos o en borrador.
 - Subida WebP a R2: el navegador redimensiona hasta 1600 px y comprime a 200 KB. El servidor limita tamaño y formato.
@@ -80,6 +82,8 @@ Fotografías reales de servicios, selector, recorrido y Casa/Negocio se cargará
 ## Dependencias y fuentes
 
 - Wrangler 4.156.0 fijado en lockfile; solo herramienta de despliegue.
+- Íconos utilitarios de [Tabler Icons](https://tabler.io/icons) 3.50 (MIT), incrustados en `src/render.js`.
+- Mapa estático generado con teselas de [OpenStreetMap](https://www.openstreetmap.org/copyright) (ODbL), con atribución visible.
 - GSAP y ScrollTrigger 3.13.0 autoalojados, con avisos de licencia originales. [Licencia comercial sin cargo](https://gsap.com/community/standard-license/).
 - Archivo variable y IBM Plex Mono latín, autoalojadas con licencias OFL junto a los archivos. Las fuentes suman 105 KB antes de transferencia.
 - [Workers Static Assets y binding](https://developers.cloudflare.com/workers/static-assets/binding/), [manejo de HTML](https://developers.cloudflare.com/workers/static-assets/routing/advanced/html-handling/) y [configuración de Wrangler](https://developers.cloudflare.com/workers/wrangler/configuration/).
