@@ -7,6 +7,44 @@ composición, hero ni motion de la web pública.
 Fecha: 05-11-2026 (revisión 2: sitio vivo, fotográfico, sin íconos decorativos). Decisiones cerradas con Diego: dominio **zerok.cl**, trato de **tú**, precios se
 cargan después (la página Precios queda oculta hasta tener ítems).
 
+### Revisión 3 (06-11-2026): menos plano, menos cuadrado
+Pedido de Diego: «demasiado plana y cuadrada, le falta vida». Cambios que reemplazan reglas de abajo:
+- **Radios en escala**, no radio único: `--radio 10px` (botones, inputs), `--radio-l 20px` (fotos,
+  láminas, paneles), `--radio-xl 32px` (hero, bloque de servicios y cierre, insertos a 8-16 px del borde).
+  Etiquetas de fallas, sectores e índice de servicios van en píldora.
+- **Tinta noche en más de un bloque**: franja en movimiento, vista previa del mensaje, servicios
+  apilados y cierre (clase `.noche`, que reutiliza los tokens oscuros). En el resto manda el tema automático.
+- **Sombras teñidas** también en láminas, menú, barra de contacto y elementos elegidos (`--sombra`).
+- **Franja en movimiento** bajo el hero con horario, cobertura y las cuatro fallas que nombra el cliente.
+- **Fotos de apoyo de Wikimedia Commons** (licencias libres, créditos en `/creditos/`) en servicios,
+  selector, Casa/Negocio, recorrido y cierre, hasta que lleguen las fotos reales del cliente. Se
+  registran en `src/creditos.js`; reemplazarlas desde el panel no exige tocar código.
+- **Mapa de Osorno** propio a partir de teselas de OpenStreetMap (`sitio/img/mapa-osorno.webp`), con
+  marcador animado y atribución visible.
+- Motion sumado: lente térmica con mira, parallax en fotos a sangre, palabras de la presentación que se
+  encienden con el scroll, pasos del recorrido que se marcan al pasar la línea, escritura antes de la
+  burbuja del mensaje, CTA magnético y fotos que se descubren al entrar. Todo con alternativa reducida.
+
+### Revisión 4 (06-11-2026): logo y fotos reales
+- **Logo del cliente**: copo con Z y aguja de manómetro, azul marino `#042C56` y celestes `#65BED7`,
+  `#2381A9`, `#0C426C`. Vectorizado en `sitio/img/logo.svg`; se usa en header, hero (símbolo que entra
+  girando y rota con el scroll) y footer. En oscuro y bloques noche la palabra pasa a `--texto` y el símbolo
+  a celestes más claros. Bajo la palabra, el rubro en mayúsculas espaciadas, como en el logo.
+- **Paleta recalibrada con el logo** (§3.3): tinta, bloques noche y modo oscuro pasan a azul marino
+  (`--texto #0C2340`, `--cierre #071A30`, oscuro `--fondo #071626`). El ámbar sigue siendo el único color
+  de acción: contrasta con el azul de marca y mantiene «calor = falla, ámbar = acción».
+- **Fotos reales con su frase**: la regla «sin pies de foto» no aplica a «Trabajo real». Cada foto lleva
+  la frase del técnico entre comillas («Acá estoy…»), porque es la prueba más creíble del sitio. Formato
+  vertical 3:5, tres columnas escalonadas en escritorio y riel deslizable en móvil. Patentes difuminadas.
+- La sección va justo después del selector: la prueba aparece antes que el catálogo de servicios.
+
+### Revisión 5 (06-11-2026): escala de escritorio
+Pedido de Diego: en escritorio «todo demasiado gigante, llega a ser abrumador». Se baja la escala desde 1024 px;
+el móvil no cambia. Contenedor 1200 px; H1 hasta 4rem, H2 hasta 2,875rem, títulos de láminas y de
+recorrido hasta 2,75 y 2,25rem; secciones de 80 px; hero hasta 700 px de alto con logo de 360 px; láminas
+de servicios de 400 px; Casa/Negocio de 460 px; trabajos en columnas de 320 px como máximo, en 4:5;
+fotos de detalle en 16:11. Toda la home bajó de unos 12.650 a unos 9.730 px de alto a 1440×900.
+
 ---
 
 ## 1. Lectura del diseño

@@ -7,6 +7,10 @@ Sitio y panel del servicio técnico ZÉROK en Osorno. HTML, CSS y JavaScript, si
 - Inicio, Servicios y Contacto con los siete servicios y los contactos reales.
 - Selector de equipo y falla que prepara el mensaje en el dispositivo. Solo abre WhatsApp cuando la persona pulsa Enviar mensaje. No envía mensajes automáticamente ni almacena datos del formulario.
 - Lente térmica, entrada de marca, láminas apiladas, revelados, cambio Casa/Negocio y recorrido animado. Alternativas con movimiento reducido y lectura sin JavaScript.
+- Revisión 3 de diseño (06-11-2026, ver `DISENO.md`): radios en escala, bloques en tinta noche, franja en movimiento, selector con fotos y burbuja que «escribe», servicios apilados con foto, Casa/Negocio a sangre con parallax, presentación que se enciende con el scroll, recorrido con pasos que se marcan, mapa de Osorno con marcador y cierre fotográfico.
+- Logo del cliente (06-11-2026) vectorizado con potrace en `sitio/img/logo.svg` (símbolos `#simbolo` y `#palabra`, colores por variables CSS para modo claro, oscuro y bloques noche), `favicon.svg`, `icono-180.png` y `logo.png` para datos estructurados. La paleta se recalibró con el azul marino y el celeste del logo; el ámbar queda para las acciones.
+- Fotos reales del cliente en `sitio/img/trabajos/` (patentes difuminadas): sección «Trabajo real» en Inicio con la frase del técnico, aire acondicionado automotriz, refrigeradores y vitrinas, y selector.
+- Fotos de apoyo de Wikimedia Commons en `sitio/img/fotos/`, registradas con autoría y licencia en `src/creditos.js` y listadas en `/creditos/`. Solo se muestran si están registradas; las fotos que suba el cliente desde el panel las reemplazan.
 - Catálogo filtrable y blog renderizados en servidor. Sin contenido publicado responden 404 con `noindex` y desaparecen de navegación y sitemap.
 - Panel `/admin/` con textos, horario, cobertura, servicios, precios/productos, fotografías, blog y FAQ. Todos los elementos nuevos de catálogo/blog empiezan ocultos o en borrador.
 - Subida WebP a R2: el navegador redimensiona hasta 1600 px y comprime a 200 KB. El servidor limita tamaño y formato.
@@ -30,7 +34,7 @@ Las páginas comparten una plantilla en vez de duplicar header, footer y metadat
 
 ## Configuración del alojamiento
 
-No se ha realizado un deploy ni conectado el dominio. El repositorio no tenía secretos de despliegue configurados al comenzar la construcción. No se leyeron valores de credenciales.
+Primer deploy hecho el 06-11-2026 en https://zerok.ddiegosebastianbb.workers.dev (cuenta Cloudflare del estudio). Recursos creados: KV `zerok-contenido` (ID en `wrangler.jsonc`), bucket R2 `zerok-media` y Durable Object `Admin` (migración `v1`). Indexación desactivada. El dominio sigue sin conectar y el secreto `ADMIN_SETUP_TOKEN` todavía no se carga, así que el panel queda cerrado hasta el paso 5. Los pasos 1 a 4 ya están cumplidos; faltan 5 a 7.
 
 1. En la cuenta Cloudflare del cliente, habilitar R2 y preparar un token con permisos para Workers, KV, R2 y Durable Objects. No almacenar el token en el repositorio.
 2. Configurar en GitHub los secretos `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`.
@@ -50,7 +54,7 @@ Antes de indexar: confirmar horario, sectores y fotografías; conectar `zerok.cl
 2. En cada lista, **Agregar elemento**, completar y **Guardar y publicar**. Servicios y productos se pueden ordenar. Los cambios de KV pueden tardar aproximadamente un minuto en propagarse.
 3. Para precios, introducir pesos enteros sin puntos. Marcar Visible para publicar; Destacado agrega el producto a Inicio. Sin stock conserva el precio y retira el botón de pedido.
 4. En Blog, separar párrafos con una línea vacía. Un subtítulo empieza con `## `. Elegir servicio relacionado y marcar Publicar solo después de revisión del técnico. La fecha futura publica a partir de ese día UTC.
-5. En Trabajos, usar únicamente fotos reales del cliente. Las descripciones se usan como texto alternativo; no son pies de foto.
+5. En Trabajos, usar únicamente fotos reales del cliente, verticales si es posible. La frase se muestra sobre la foto, entre comillas, con la voz de quien hizo el trabajo («Acá estoy…»). Tapar patentes y caras antes de subir. Las tres primeras van en Inicio y en los datos estructurados.
 6. Al reemplazar la portada, ajustar su descripción y marcar si es real. La lente térmica solo acompaña la imagen ilustrativa original.
 7. Si aparece un conflicto de versiones, descargar un respaldo JSON desde **Seguridad y respaldo** antes de cargar la última versión. No se sobrescribe automáticamente el trabajo de otra sesión.
 
@@ -71,15 +75,46 @@ Las fotografías retiradas del contenido no se borran de R2 automáticamente, pa
 - Cambiar contraseña invalida las otras sesiones. El acceso queda cerrado si faltan bindings o el secreto de configuración.
 - Sin caché ni indexación en el panel. CSP, cabeceras de tipo, política de referente y HTTPS.
 
+## Agenda de visitas
+
+La agenda se incluye sin costo adicional para ZÉROK como beneficio al primer cliente. El cliente solicita un día preferido, describe la falla y deja sus datos. No es una reserva confirmada ni promete un cupo: Vicente llama, coordina la hora y confirma desde **Agenda de visitas** en el panel.
+
+- Desactivada por defecto. Se abre desde **Disponibilidad y avisos**, después de configurar el acceso al panel. Al desactivarla, los botones vuelven a WhatsApp.
+- Ofrece los próximos 14 días desde mañana, de lunes a sábado, con fechas bloqueables. No publica horas. La jornada exacta y los sectores atendidos siguen pendientes de confirmación.
+- Estados: por confirmar, confirmada, realizada, no estaba, cancelada y cerrada. Se puede borrar definitivamente cada visita.
+- Al marcar realizada, programa el llamado a los **14 días** desde ese día, según el calendario de Santiago. El plazo puede cambiarse para futuras visitas.
+- El cron de 15 minutos procesa avisos nuevos y reintentos. Desde las 09:00 de Chile, recuerda diariamente los llamados vencidos mientras no se cierren.
+- Los datos personales viven en SQLite del Durable Object, no en KV ni archivos públicos. Se eliminan después de 365 días desde la última modificación. El borrado no elimina automáticamente correos ya entregados.
+- Validación en servidor, consentimiento obligatorio, campo señuelo y límites de 5 solicitudes por red/hora y 40 globales/día. Se conserva temporalmente un hash de red, no la IP en claro.
+- Formularios, confirmaciones y APIs administrativas usan `no-store` y `noindex`. Las acciones del panel verifican la versión para evitar sobrescrituras entre sesiones.
+
+### Habilitar avisos por correo
+
+El código usa **Cloudflare Email Service**, no solo Email Routing. Los avisos permanecen apagados con `AVISOS_HABILITADOS=false`; las solicitudes se guardan igualmente y el panel advierte que debes revisarlas manualmente.
+
+1. Comprar y conectar `zerok.cl` a Cloudflare DNS.
+2. Incorporar el dominio a Email Sending y verificar sus registros de autenticación.
+3. Configurar y verificar el reenvío privado de `avisos@zerok.cl` al correo del técnico. No poner el correo personal en el frontend ni en el repositorio.
+4. Incorporar a Wrangler el binding `send_email` con nombre `AVISOS` y `destination_address: "avisos@zerok.cl"`, según las restricciones y verificaciones de la cuenta.
+5. Publicar con `AVISOS_HABILITADOS=true` únicamente cuando remitente y destinatario estén habilitados. Comprobar la recepción real de una solicitud y un seguimiento.
+
+Remitente y destinatario del código son `avisos@zerok.cl`. La cola persiste los fallos con reintentos; no envía solicitudes ya atendidas. La entrega es al menos una vez: un fallo entre la aceptación del proveedor y el registro local puede duplicar un aviso. No se ha confirmado la disponibilidad ni el costo del servicio de correo en esta cuenta.
+
+Referencias: [API de envío](https://developers.cloudflare.com/email-service/api/send-emails/workers-api/), [bindings](https://developers.cloudflare.com/email-service/configuration/send-bindings/) y [configuración del dominio](https://developers.cloudflare.com/email-service/get-started/send-emails/).
+
 ## Comprobaciones y límites
 
-No se ejecutaron tests, lint, build local ni navegador. La entrega se revisa mediante lectura del código y comprobación de sintaxis JavaScript. No se ha observado el render ni probado el servicio de Cloudflare en ejecución. Tras el deploy autorizado corresponde comprobar HTTP 200, como pide el proyecto.
+Agenda comprobada en el Preview local con Wrangler: validación de campos y teléfono, solicitud con datos ficticios, confirmación manual, visita realizada con seguimiento a 14 días y cierre del llamado. Revisados el formulario y el panel a 390 × 844, la sintaxis JavaScript y el diff. No se ejecutaron suites de tests, lint, build ni Lighthouse.
 
-Fotografías reales de servicios, selector, recorrido y Casa/Negocio se cargarán cuando el cliente las entregue. Mientras tanto, esos bloques usan texto útil y la galería permanece oculta; no hay imágenes rotas ni fotos de librería presentadas como trabajos propios. La portada ilustrativa y su versión térmica están en `sitio/img/`, con procedencia y prompts en `material/prompts.md`.
+El Preview usa la fecha de compatibilidad `2026-10-30` por la versión local de workerd; producción conserva `2026-11-05`. El código nuevo de agenda aún no se ha desplegado y no se ha verificado la entrega real de correo. El dominio y el remitente siguen pendientes. Tras el despliegue autorizado, comprobar HTTP 200.
+
+Las fotos de apoyo se identifican en Créditos y no se presentan como trabajos propios. Las fotos reales del cliente están en Trabajo real. La portada ilustrativa y su versión térmica están en `sitio/img/`, con procedencia y prompts en `material/prompts.md`.
 
 ## Dependencias y fuentes
 
 - Wrangler 4.156.0 fijado en lockfile; solo herramienta de despliegue.
+- Íconos utilitarios de [Tabler Icons](https://tabler.io/icons) 3.50 (MIT), incrustados en `src/render.js`.
+- Mapa estático generado con teselas de [OpenStreetMap](https://www.openstreetmap.org/copyright) (ODbL), con atribución visible.
 - GSAP y ScrollTrigger 3.13.0 autoalojados, con avisos de licencia originales. [Licencia comercial sin cargo](https://gsap.com/community/standard-license/).
 - Archivo variable y IBM Plex Mono latín, autoalojadas con licencias OFL junto a los archivos. Las fuentes suman 105 KB antes de transferencia.
 - [Workers Static Assets y binding](https://developers.cloudflare.com/workers/static-assets/binding/), [manejo de HTML](https://developers.cloudflare.com/workers/static-assets/routing/advanced/html-handling/) y [configuración de Wrangler](https://developers.cloudflare.com/workers/wrangler/configuration/).

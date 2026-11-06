@@ -1,15 +1,17 @@
+import { agendaPanel } from './agenda.js';
 import { MAX_CONTENT_BYTES, CONTENT_SIZE_ERROR } from '../js/limites.js';
 
 const $ = selector => document.querySelector(selector);
 const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 let documentData, revision, section = 'general', dirty = false, setup = false, saving = false;
-const titles = { general: 'Textos y cobertura', servicios: 'Servicios', productos: 'Precios y productos', trabajos: 'Trabajos y fotos', blog: 'Blog', faq: 'Preguntas frecuentes', seguridad: 'Seguridad y respaldo' };
+const visitas = agendaPanel($('#editor'), api, status, () => section === 'agenda');
+const titles = { agenda: 'Agenda de visitas', general: 'Textos y cobertura', servicios: 'Servicios', productos: 'Precios y productos', trabajos: 'Trabajos y fotos', blog: 'Blog', faq: 'Preguntas frecuentes', seguridad: 'Seguridad y respaldo' };
 const field = (key, label, type = 'text', options = {}) => ({ key, label, type, ...options });
 const schemas = {
   general: [field('bajada', 'Bajada de la portada', 'textarea', { max: 350, required: true }), field('presentacion', 'Presentación', 'textarea', { max: 2000, required: true }), field('hero', 'Imagen de portada', 'image'), field('heroAlt', 'Descripción de la imagen', 'text', { max: 200, required: true }), field('heroReal', 'La portada es una foto real del cliente', 'checkbox'), field('cobertura', 'Sectores confirmados', 'lines', { help: 'Un sector por línea. No agregues sectores sin confirmar.' }), field('horarioConfirmado', 'El cliente confirmó este horario de lunes a sábado', 'checkbox'), field('abre', 'Apertura', 'time'), field('cierra', 'Cierre', 'time'), field('casaFoto', 'Foto del bloque En tu casa', 'image'), field('negocioFoto', 'Foto del bloque En tu negocio', 'image'), field('aviso', 'Aviso temporal', 'textarea', { max: 250, help: 'Déjalo vacío para ocultarlo.' })],
   servicios: [field('id', 'Identificador del enlace', 'text', { required: true, max: 100, help: 'Conserva este valor para mantener los enlaces existentes.' }), field('titulo', 'Título', 'text', { required: true, max: 100 }), field('resumen', 'Qué hacemos', 'textarea', { required: true, max: 1000 }), field('equipos', 'Equipos', 'text', { max: 250 }), field('fallas', 'Fallas confirmadas', 'lines', { help: 'Una falla por línea.' }), field('foto', 'Foto real del servicio', 'image'), field('visible', 'Visible en el sitio', 'checkbox')],
   productos: [field('id', 'Identificador', 'text', { required: true, max: 100 }), field('nombre', 'Nombre', 'text', { required: true, max: 120 }), field('categoria', 'Categoría', 'text', { required: true, max: 60 }), field('descripcion', 'Descripción', 'textarea', { max: 500 }), field('precio', 'Precio en pesos chilenos', 'number', { required: true }), field('foto', 'Foto del producto', 'image'), field('desde', 'Mostrar precio desde', 'checkbox'), field('disponible', 'Disponible', 'checkbox'), field('destacado', 'Destacado en Inicio', 'checkbox'), field('visible', 'Visible en el sitio', 'checkbox')],
-  trabajos: [field('foto', 'Foto real del trabajo', 'image'), field('texto', 'Descripción accesible de la foto', 'text', { required: true, max: 200 }), field('fecha', 'Fecha', 'date')],
+  trabajos: [field('foto', 'Foto real del trabajo', 'image'), field('texto', 'Frase que acompaña la foto (por ejemplo: Acá estoy arreglando una vitrina de pasteles.)', 'text', { required: true, max: 200 }), field('fecha', 'Fecha', 'date')],
   blog: [field('slug', 'Dirección de la entrada', 'text', { required: true, max: 100, help: 'Minúsculas y guiones. Conserva el valor después de publicar.' }), field('titulo', 'Título', 'text', { required: true, max: 150 }), field('extracto', 'Extracto', 'textarea', { required: true, max: 350 }), field('cuerpo', 'Artículo', 'textarea', { required: true, max: 25000, help: 'Separa párrafos con una línea vacía. Para un subtítulo, empieza con ## seguido de un espacio. No se admite HTML.' }), field('foto', 'Imagen', 'image'), field('fecha', 'Fecha de publicación', 'date', { required: true }), field('servicio', 'Servicio relacionado', 'service'), field('publicado', 'Publicar: contenido revisado por el técnico', 'checkbox')],
   faq: [field('pregunta', 'Pregunta', 'text', { required: true, max: 200 }), field('respuesta', 'Respuesta confirmada por el cliente', 'textarea', { required: true, max: 1500 })]
 };
@@ -52,10 +54,15 @@ function render() {
     if (button.dataset.section === section) button.setAttribute('aria-current', 'page');
     else button.removeAttribute('aria-current');
   });
-  $('#save').hidden = section === 'seguridad';
+  $('#save').hidden = ['seguridad', 'agenda'].includes(section);
   const editor = $('#editor');
+  if (section === 'agenda') {
+    editor.innerHTML = '<p role="status">Cargando agenda...</p>';
+    visitas.load();
+    return;
+  }
   if (section === 'seguridad') {
-    editor.innerHTML = `<section class="editor-group"><h2>Respaldo del contenido</h2><p>Descarga una copia con los cambios de esta pestaña. Guárdala antes de recargar si hay un conflicto de versiones.</p><div class="security-actions"><button class="editor-action" type="button" data-export>Descargar respaldo JSON</button><button class="editor-action" type="button" data-publish>Publicar de nuevo</button><button class="editor-action" type="button" data-reload>Cargar última versión</button></div></section><section class="editor-group"><h2>Cambiar contraseña</h2><div class="password-fields"><label class="admin-field">Contraseña actual<input type="password" name="current" autocomplete="current-password" maxlength="200"></label><label class="admin-field">Nueva contraseña<input type="password" name="new-password" autocomplete="new-password" minlength="12" maxlength="200"></label><label class="admin-field">Repite la nueva contraseña<input type="password" name="new-repeat" autocomplete="new-password" minlength="12" maxlength="200"></label><button class="button outline" type="button" data-password>Cambiar contraseña</button></div></section><p class="editor-note">No hay contador de visitas activado. Los formularios de contacto no guardan datos personales.</p>`;
+    editor.innerHTML = `<section class="editor-group"><h2>Respaldo del contenido</h2><p>Descarga una copia con los cambios de esta pestaña. Guárdala antes de recargar si hay un conflicto de versiones.</p><div class="security-actions"><button class="editor-action" type="button" data-export>Descargar respaldo JSON</button><button class="editor-action" type="button" data-publish>Publicar de nuevo</button><button class="editor-action" type="button" data-reload>Cargar última versión</button></div></section><section class="editor-group"><h2>Cambiar contraseña</h2><div class="password-fields"><label class="admin-field">Contraseña actual<input type="password" name="current" autocomplete="current-password" maxlength="200"></label><label class="admin-field">Nueva contraseña<input type="password" name="new-password" autocomplete="new-password" minlength="12" maxlength="200"></label><label class="admin-field">Repite la nueva contraseña<input type="password" name="new-repeat" autocomplete="new-password" minlength="12" maxlength="200"></label><button class="button outline" type="button" data-password>Cambiar contraseña</button></div></section><p class="editor-note">No hay contador de visitas activado. El formulario de WhatsApp no guarda datos. La agenda de visitas sí almacena datos personales; puedes borrarlos desde Agenda.</p>`;
     return;
   }
   if (section === 'general') {
@@ -116,6 +123,7 @@ function newItem() {
 }
 
 $('#editor').addEventListener('click', async event => {
+  if (section === 'agenda') return;
   const button = event.target.closest('button');
   if (!button) return;
   if (button.hasAttribute('data-add')) { documentData[section].push(newItem()); changed(); render(); }
