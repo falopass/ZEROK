@@ -58,6 +58,8 @@ El panel conserva en Durable Objects el documento actual y una versión anterior
 
 El documento completo tiene un límite conjunto de 400000 bytes (400 KB) en JSON UTF-8, además de los máximos de cada campo y lista. Los límites individuales no son una garantía de que todos puedan llenarse simultáneamente. Las fotos viven aparte en R2. El panel avisa antes de enviar un documento demasiado grande y el servidor aplica el mismo límite, con respuesta 413. Una solicitud sin JSON devuelve 415 y un JSON inválido devuelve 400, sin modificar lo guardado.
 
+La solicitud de contenido admite hasta 800000 bytes para incluir el envoltorio, la revisión y la sangría del respaldo descargado. Después de leerla, el servidor mantiene el límite de 400000 bytes para el documento normalizado. Para restaurar, el mantenedor conserva `data` del respaldo y utiliza la revisión vigente del servidor; si no coincide, el endpoint devuelve 409 para evitar sobrescribir cambios ajenos.
+
 Las fotografías retiradas del contenido no se borran de R2 automáticamente, para conservar recuperación y enlaces. El mantenedor puede retirar objetos sin referencias desde Cloudflare después de comprobarlos.
 
 ## Acceso y seguridad

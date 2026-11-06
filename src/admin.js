@@ -1,5 +1,5 @@
 import { defaults, validateContent } from './content.js';
-import { MAX_CONTENT_BYTES, CONTENT_SIZE_ERROR } from '../sitio/js/limites.js';
+import { MAX_CONTENT_BYTES } from '../sitio/js/limites.js';
 
 const enc = new TextEncoder();
 const hex = bytes => Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
@@ -16,8 +16,8 @@ async function derive(password, salt) {
   return hex(new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(salt), iterations: 100000 }, key, 256)));
 }
 
-export async function body(request, max = MAX_CONTENT_BYTES + 1024) {
-  // Reserve space for the revision and JSON envelope around the content document.
+export async function body(request, max = MAX_CONTENT_BYTES * 2) {
+  // Allow indentation in exported backups; validateContent limits the normalized document.
   if (!request.headers.get('content-type')?.startsWith('application/json')) throw Object.assign(new Error('Se requiere JSON.'), { status: 415 });
   const reader = request.body?.getReader();
   if (!reader) throw Object.assign(new Error('Falta el contenido.'), { status: 400 });
@@ -29,7 +29,7 @@ export async function body(request, max = MAX_CONTENT_BYTES + 1024) {
     size += value.byteLength;
     if (size > max) {
       await reader.cancel();
-      throw Object.assign(new Error(max > MAX_CONTENT_BYTES ? CONTENT_SIZE_ERROR : 'La solicitud supera el tamaño permitido.'), { status: 413 });
+      throw Object.assign(new Error('La solicitud supera el tamaño permitido.'), { status: 413 });
     }
     chunks.push(value);
   }
