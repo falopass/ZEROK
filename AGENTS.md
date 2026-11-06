@@ -42,5 +42,6 @@ Pago en línea, carrito y agenda de reservas quedan fuera del plan.
 - El WhatsApp del cliente no lo escribe ningún script.
 
 ## Estado
-- 05-11-2026: plan (`PLAN.md`) y sistema visual (`DISENO.md`, rev. 2: sitio vivo y fotográfico, sin íconos decorativos) definidos. Sin código aún.
-  Pendiente: material del cliente (§9 del plan) y registro del dominio.
+- 05-11-2026: sitio y panel implementados en `sitio/` y `src/`, con render en servidor, contenido en KV, medios en R2 y acceso serializado en Durable Objects. Configuración y límites en `README.md`.
+- Sin tests, lint ni build local. Revisión de código y sintaxis; falta observarlo en ejecución después del despliegue autorizado.
+- Pendiente: recursos y secretos de Cloudflare, despliegue, material real del cliente (§9 del plan), horario exacto y registro/conexión del dominio. Precios, blog, galería y FAQ siguen ocultos hasta cargar contenido confirmado.

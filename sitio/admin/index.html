@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="light dark">
+  <title>Administración | ZÉROK</title>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/estilos.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+  <script src="/admin/admin.js" type="module"></script>
+</head>
+<body class="admin-body">
+  <main>
+    <section id="access" class="access-panel">
+      <a class="wordmark" href="/">ZÉROK</a>
+      <p class="mono">Administración del sitio</p>
+      <h1 id="access-title">Inicia sesión.</h1>
+      <p id="access-intro">Usa tu contraseña para editar el contenido de tu sitio.</p>
+      <form id="login-form">
+        <label id="setup-code" hidden>Código de configuración<input name="code" type="password" autocomplete="off" maxlength="200"></label>
+        <label>Contraseña<input name="password" type="password" minlength="12" maxlength="200" autocomplete="current-password" required></label>
+        <label id="password-repeat" hidden>Repite la contraseña<input name="repeat" type="password" minlength="12" maxlength="200" autocomplete="new-password"></label>
+        <button class="button primary" type="submit" disabled>Entrar</button>
+        <p id="login-status" role="status" aria-live="polite">Conectando con el panel...</p>
+      </form>
+      <a class="backlink" href="/">Volver al sitio</a>
+    </section>
+    <section id="workspace" hidden>
+      <header class="admin-topbar"><a class="wordmark" href="/">ZÉROK</a><span class="mono">Tu sitio</span><a href="/" target="_blank" rel="noopener noreferrer">Ver sitio ↗</a><button type="button" id="logout">Salir</button></header>
+      <div class="admin-layout">
+        <aside class="admin-sidebar"><nav aria-label="Secciones del panel">
+          <button data-section="general" aria-current="page">Textos y cobertura</button>
+          <button data-section="servicios">Servicios</button>
+          <button data-section="productos">Precios y productos</button>
+          <button data-section="trabajos">Trabajos y fotos</button>
+          <button data-section="blog">Blog</button>
+          <button data-section="faq">Preguntas frecuentes</button>
+          <button data-section="seguridad">Seguridad y respaldo</button>
+        </nav><p>Publica solo información y fotografías confirmadas por el cliente.</p></aside>
+        <div class="admin-content">
+          <div class="editor-heading"><div><p class="mono">Contenido del sitio</p><h1 id="section-title">Textos y cobertura</h1></div><button id="save" class="button primary" type="button">Guardar y publicar</button></div>
+          <p id="save-status" class="save-status" role="status" aria-live="polite"></p>
+          <form id="editor"></form>
+        </div>
+      </div>
+    </section>
+  </main>
+  <noscript><p class="wrap section">Necesitas activar JavaScript para editar el sitio. El sitio público se puede leer sin JavaScript.</p></noscript>
+</body>
+</html>
