@@ -74,3 +74,22 @@
 .editor-heading .button{width:100%}
 .admin-content{padding-top:28px}
 }
+
+.agenda-toolbar,.agenda-filtros{display:flex;gap:8px;flex-wrap:wrap}
+.agenda-toolbar{justify-content:space-between;margin-bottom:8px}
+.agenda-filtros [aria-pressed=true]{background:var(--superficie-2);border-color:var(--texto);font-weight:600}
+.visita>summary{flex-wrap:wrap;justify-content:flex-start}
+.visita>summary::after{margin-left:auto}
+.visita-sub{display:block;font-size:.8125rem;font-weight:400;color:var(--texto-2);margin-top:8px;line-height:1.5}
+.visita-estado{padding:6px 10px;background:var(--superficie-2);font-size:.75rem;border-radius:4px;line-height:1.5}
+.visita-datos{display:grid;gap:8px;margin:0 0 24px;overflow-wrap:anywhere}
+.visita-datos dt{font-size:.75rem;font-weight:600;color:var(--texto-2);margin-top:8px}
+.visita-datos dd{margin:0;white-space:pre-wrap}
+.visita .admin-field,.agenda-config .admin-field{margin-block:24px}
+.visita-coordinar{margin-block:28px;padding-top:24px;border-top:1px solid var(--linea)}
+.visita-coordinar legend{font-size:.875rem;font-weight:600;padding-right:16px}
+.visita-coordinar .admin-field{margin:0 0 16px}
+.visita-borrar{border-top:1px solid var(--linea);padding-top:24px;margin-top:28px}
+.editor-action.danger{color:var(--error)}
+.agenda-config>p,.agenda-config .help{font-size:.8125rem;color:var(--texto-2)}
+@media(min-width:768px){.visita-datos{grid-template-columns:140px minmax(0,1fr);gap:12px 24px}.visita-datos dt{margin:0}}
