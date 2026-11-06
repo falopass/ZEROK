@@ -1,4 +1,5 @@
 import defaults from '../sitio/contenido.json';
+import { MAX_CONTENT_BYTES, CONTENT_SIZE_ERROR } from '../sitio/js/limites.js';
 
 export { defaults };
 export const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -42,7 +43,7 @@ export function validateContent(data) {
     hero: photo(g.hero), heroReal: bool(g.heroReal), heroAlt: string(g.heroAlt, 200, 'descripción de portada', true),
     casaFoto: photo(g.casaFoto), negocioFoto: photo(g.negocioFoto), aviso: string(g.aviso, 250, 'aviso')
   };
-  return {
+  const content = {
     general,
     servicios: unique(list(data.servicios, 20, s => ({ id: id(s.id), titulo: string(s.titulo, 100, 'servicio', true), resumen: string(s.resumen, 1000, 'resumen', true), equipos: string(s.equipos, 250, 'equipos'), fallas: list(s.fallas, 12, v => string(v, 100, 'falla')), foto: photo(s.foto), visible: bool(s.visible) })), 'id'),
     productos: unique(list(data.productos, 100, p => {
@@ -59,4 +60,6 @@ export function validateContent(data) {
       return { slug: id(p.slug), titulo: string(p.titulo, 150, 'título', true), extracto: string(p.extracto, 350, 'extracto', true), cuerpo: string(p.cuerpo, 25000, 'artículo', true), foto: photo(p.foto), fecha: p.fecha, servicio: string(p.servicio, 100, 'servicio relacionado'), publicado: bool(p.publicado) };
     }), 'slug')
   };
+  if (new TextEncoder().encode(JSON.stringify(content)).byteLength > MAX_CONTENT_BYTES) throw Object.assign(new Error(CONTENT_SIZE_ERROR), { status: 413 });
+  return content;
 }

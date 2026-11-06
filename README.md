@@ -56,6 +56,8 @@ Antes de indexar: confirmar horario, sectores y fotografías; conectar `zerok.cl
 
 El panel conserva en Durable Objects el documento actual y una versión anterior; KV sirve como copia pública. Si KV falla al publicar, el guardado sigue disponible y **Publicar de nuevo** permite reintentar. Los borradores nunca se sirven en las páginas públicas. El respaldo descargable incluye todo el documento de la pestaña y puede ser repuesto por el mantenedor usando el endpoint autenticado; no hay importación automática en la interfaz.
 
+El documento completo tiene un límite conjunto de 400000 bytes (400 KB) en JSON UTF-8, además de los máximos de cada campo y lista. Los límites individuales no son una garantía de que todos puedan llenarse simultáneamente. Las fotos viven aparte en R2. El panel avisa antes de enviar un documento demasiado grande y el servidor aplica el mismo límite, con respuesta 413. Una solicitud sin JSON devuelve 415 y un JSON inválido devuelve 400, sin modificar lo guardado.
+
 Las fotografías retiradas del contenido no se borran de R2 automáticamente, para conservar recuperación y enlaces. El mantenedor puede retirar objetos sin referencias desde Cloudflare después de comprobarlos.
 
 ## Acceso y seguridad

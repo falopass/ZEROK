@@ -1,4 +1,5 @@
 import { defaults, validateContent } from './content.js';
+import { MAX_CONTENT_BYTES, CONTENT_SIZE_ERROR } from '../sitio/js/limites.js';
 
 const enc = new TextEncoder();
 const hex = bytes => Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
@@ -15,23 +16,29 @@ async function derive(password, salt) {
   return hex(new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(salt), iterations: 100000 }, key, 256)));
 }
 
-export async function body(request, max = 400000) {
-  if (!request.headers.get('content-type')?.startsWith('application/json')) throw new Error('Se requiere JSON.');
+export async function body(request, max = MAX_CONTENT_BYTES + 1024) {
+  // Reserve space for the revision and JSON envelope around the content document.
+  if (!request.headers.get('content-type')?.startsWith('application/json')) throw Object.assign(new Error('Se requiere JSON.'), { status: 415 });
   const reader = request.body?.getReader();
-  if (!reader) throw new Error('Falta el contenido.');
+  if (!reader) throw Object.assign(new Error('Falta el contenido.'), { status: 400 });
   const chunks = [];
   let size = 0;
   for (;;) {
     const { value, done } = await reader.read();
     if (done) break;
     size += value.byteLength;
-    if (size > max) { await reader.cancel(); throw new Error('El contenido supera el tamaño permitido.'); }
+    if (size > max) {
+      await reader.cancel();
+      throw Object.assign(new Error(max > MAX_CONTENT_BYTES ? CONTENT_SIZE_ERROR : 'La solicitud supera el tamaño permitido.'), { status: 413 });
+    }
     chunks.push(value);
   }
   const bytes = new Uint8Array(size);
   let offset = 0;
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
-  return JSON.parse(new TextDecoder().decode(bytes));
+  const input = JSON.parse(new TextDecoder().decode(bytes));
+  if (!input || typeof input !== 'object' || Array.isArray(input)) throw Object.assign(new Error('Se requiere un objeto JSON.'), { status: 400 });
+  return input;
 }
 
 // A single Durable Object serializes setup, login attempts, sessions and edits.
@@ -44,6 +51,7 @@ export class Admin {
       try { return await this.handle(request); }
       catch (error) {
         if (error instanceof SyntaxError) return json({ error: 'El JSON no es válido.' }, 400);
+        if ([400, 413, 415].includes(error.status)) return json({ error: error.message }, error.status);
         return json({ error: 'No se pudo completar la operación. Inténtalo de nuevo.' }, 500);
       }
     });
@@ -77,8 +85,7 @@ export class Admin {
       let rate = await this.ctx.storage.get(key);
       if (!rate || rate.expires <= now) rate = { count: 0, expires: now + 900000 };
       if (rate.count >= 5) return json({ error: 'Demasiados intentos. Vuelve a intentar en 15 minutos.' }, 429, { 'retry-after': String(Math.ceil((rate.expires - now) / 1000)) });
-      let input;
-      try { input = await body(request, 2000); } catch { return json({ error: 'Solicitud inválida.' }, 400); }
+      const input = await body(request, 2000);
       if (!passwordOK(input.password)) return json({ error: 'La contraseña debe tener entre 12 y 200 caracteres.' }, 400);
       if (path.endsWith('/setup') && credentials) return json({ error: 'La cuenta ya está configurada. Inicia sesión.' }, 409);
       const valid = path.endsWith('/setup')
@@ -121,7 +128,7 @@ export class Admin {
         const input = await body(request);
         if (input.revision !== current.revision) return json({ error: 'Hay una versión más reciente. Exporta tus cambios y vuelve a cargar antes de guardar.' }, 409);
         let data;
-        try { data = validateContent(input.data); } catch (error) { return json({ error: error.message }, 400); }
+        try { data = validateContent(input.data); } catch (error) { return json({ error: error.message }, error.status === 413 ? 413 : 400); }
         const record = { data, revision: crypto.randomUUID(), updated: new Date().toISOString() };
         // Save durably first. If KV fails, the canonical edit is still recoverable.
         await this.ctx.storage.put({ content: record, previous: current });

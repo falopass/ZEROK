@@ -1,3 +1,5 @@
+import { MAX_CONTENT_BYTES, CONTENT_SIZE_ERROR } from '../js/limites.js';
+
 const $ = selector => document.querySelector(selector);
 const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 let documentData, revision, section = 'general', dirty = false, setup = false, saving = false;
@@ -67,10 +69,12 @@ function render() {
 
 async function load(preserve = false) {
   const record = await api('content');
+  const conflict = preserve && dirty && documentData && revision !== record.revision;
+  // Local edits keep their base revision: adopting the new one would bypass the conflict guard.
   if (!preserve || !dirty || !documentData) { documentData = record.data; revision = record.revision; dirty = false; }
   $('#access').hidden = true; $('#workspace').hidden = false;
   render();
-  status(dirty ? 'Recuperamos tus cambios de esta pestaña. Aún no están guardados.' : record.updated ? `Último guardado: ${new Date(record.updated).toLocaleString('es-CL')}.` : 'Contenido inicial. Todavía no hay cambios publicados desde el panel.');
+  status(conflict ? 'Conservamos tus cambios, pero otra sesión publicó una versión más reciente. Descarga un respaldo en Seguridad y respaldo antes de cargar la última versión.' : dirty ? 'Recuperamos tus cambios de esta pestaña. Aún no están guardados.' : record.updated ? `Último guardado: ${new Date(record.updated).toLocaleString('es-CL')}.` : 'Contenido inicial. Todavía no hay cambios publicados desde el panel.', !!conflict);
 }
 
 $('#login-form').addEventListener('submit', async event => {
@@ -140,8 +144,9 @@ $('#editor').addEventListener('click', async event => {
 
 $('#save').addEventListener('click', async () => {
   if (saving || !$('#editor').reportValidity()) return;
-  saving = true; $('#save').disabled = true;
   const snapshot = JSON.stringify(documentData);
+  if (new TextEncoder().encode(snapshot).byteLength > MAX_CONTENT_BYTES) { status(CONTENT_SIZE_ERROR, true); return; }
+  saving = true; $('#save').disabled = true;
   status('Guardando y publicando...');
   try {
     const record = await api('content', { method: 'PUT', body: JSON.stringify({ data: JSON.parse(snapshot), revision }) });
