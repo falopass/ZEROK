@@ -1,5 +1,6 @@
 # Herramientas de agentes instaladas localmente: no son parte del sitio.
 .agents/
+.hoplite/
 .claude/
 .devin/
 .grok/

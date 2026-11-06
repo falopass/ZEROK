@@ -472,3 +472,24 @@ to{opacity:0;transform:scale(5)}
 #header{display:contents}
 .service-sheet:focus-within{z-index:8}
 .message-form noscript{grid-column:1/-1}
+
+/* Solicitud de visita */
+.agenda-form{display:grid;gap:32px;max-width:840px;margin-inline:auto}
+.agenda-form legend{font-size:1.25rem;font-weight:650;padding-right:16px}
+.agenda-form legend .mono{font-size:.8125rem;color:var(--texto-2);margin-right:16px}
+.agenda-form .form-fields{gap:24px}
+.agenda-form .equipment-rail{margin:0;max-width:100%}
+.agenda-form .field-help{margin:0}
+.agenda-form>.button{justify-self:start}
+.day-options{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:12px}
+.day-option{position:relative;cursor:pointer;font-size:.875rem}
+.day-option input{position:absolute;opacity:0;inset:0;width:100%;height:100%;margin:0;cursor:pointer}
+.day-option>span{display:grid;gap:4px;text-align:center;padding:12px 8px;border:1.5px solid var(--linea);border-radius:var(--radio);background:var(--fondo)}
+.day-option b{text-transform:capitalize;font-weight:600}
+.day-option input:checked+span{border-color:var(--texto);background:var(--acento);color:var(--sobre-acento)}
+.day-option input:focus-visible+span{outline:2px solid var(--texto);outline-offset:4px}
+.agenda-form .agenda-check{display:flex;align-items:flex-start;font-size:.875rem;font-weight:400;gap:12px}
+.agenda-check input{flex:none;width:20px;height:20px;margin:3px 0 0;accent-color:var(--acento)}
+.agenda-form .trampa{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+.agenda-error{padding:20px;border:1px solid var(--error);border-radius:var(--radio);margin:0}
+@media(min-width:768px){.agenda-form .equipment-rail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding-bottom:8px}}

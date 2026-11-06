@@ -75,11 +75,40 @@ Las fotografías retiradas del contenido no se borran de R2 automáticamente, pa
 - Cambiar contraseña invalida las otras sesiones. El acceso queda cerrado si faltan bindings o el secreto de configuración.
 - Sin caché ni indexación en el panel. CSP, cabeceras de tipo, política de referente y HTTPS.
 
+## Agenda de visitas
+
+La agenda se incluye sin costo adicional para ZÉROK como beneficio al primer cliente. El cliente solicita un día preferido, describe la falla y deja sus datos. No es una reserva confirmada ni promete un cupo: Vicente llama, coordina la hora y confirma desde **Agenda de visitas** en el panel.
+
+- Desactivada por defecto. Se abre desde **Disponibilidad y avisos**, después de configurar el acceso al panel. Al desactivarla, los botones vuelven a WhatsApp.
+- Ofrece los próximos 14 días desde mañana, de lunes a sábado, con fechas bloqueables. No publica horas. La jornada exacta y los sectores atendidos siguen pendientes de confirmación.
+- Estados: por confirmar, confirmada, realizada, no estaba, cancelada y cerrada. Se puede borrar definitivamente cada visita.
+- Al marcar realizada, programa el llamado a los **14 días** desde ese día, según el calendario de Santiago. El plazo puede cambiarse para futuras visitas.
+- El cron de 15 minutos procesa avisos nuevos y reintentos. Desde las 09:00 de Chile, recuerda diariamente los llamados vencidos mientras no se cierren.
+- Los datos personales viven en SQLite del Durable Object, no en KV ni archivos públicos. Se eliminan después de 365 días desde la última modificación. El borrado no elimina automáticamente correos ya entregados.
+- Validación en servidor, consentimiento obligatorio, campo señuelo y límites de 5 solicitudes por red/hora y 40 globales/día. Se conserva temporalmente un hash de red, no la IP en claro.
+- Formularios, confirmaciones y APIs administrativas usan `no-store` y `noindex`. Las acciones del panel verifican la versión para evitar sobrescrituras entre sesiones.
+
+### Habilitar avisos por correo
+
+El código usa **Cloudflare Email Service**, no solo Email Routing. Los avisos permanecen apagados con `AVISOS_HABILITADOS=false`; las solicitudes se guardan igualmente y el panel advierte que debes revisarlas manualmente.
+
+1. Comprar y conectar `zerok.cl` a Cloudflare DNS.
+2. Incorporar el dominio a Email Sending y verificar sus registros de autenticación.
+3. Configurar y verificar el reenvío privado de `avisos@zerok.cl` al correo del técnico. No poner el correo personal en el frontend ni en el repositorio.
+4. Incorporar a Wrangler el binding `send_email` con nombre `AVISOS` y `destination_address: "avisos@zerok.cl"`, según las restricciones y verificaciones de la cuenta.
+5. Publicar con `AVISOS_HABILITADOS=true` únicamente cuando remitente y destinatario estén habilitados. Comprobar la recepción real de una solicitud y un seguimiento.
+
+Remitente y destinatario del código son `avisos@zerok.cl`. La cola persiste los fallos con reintentos; no envía solicitudes ya atendidas. La entrega es al menos una vez: un fallo entre la aceptación del proveedor y el registro local puede duplicar un aviso. No se ha confirmado la disponibilidad ni el costo del servicio de correo en esta cuenta.
+
+Referencias: [API de envío](https://developers.cloudflare.com/email-service/api/send-emails/workers-api/), [bindings](https://developers.cloudflare.com/email-service/configuration/send-bindings/) y [configuración del dominio](https://developers.cloudflare.com/email-service/get-started/send-emails/).
+
 ## Comprobaciones y límites
 
-No se ejecutaron tests, lint, build local ni navegador. La entrega se revisa mediante lectura del código y comprobación de sintaxis JavaScript. No se ha observado el render ni probado el servicio de Cloudflare en ejecución. Tras el deploy autorizado corresponde comprobar HTTP 200, como pide el proyecto.
+Agenda comprobada en el Preview local con Wrangler: validación de campos y teléfono, solicitud con datos ficticios, confirmación manual, visita realizada con seguimiento a 14 días y cierre del llamado. Revisados el formulario y el panel a 390 × 844, la sintaxis JavaScript y el diff. No se ejecutaron suites de tests, lint, build ni Lighthouse.
 
-Fotografías reales de servicios, selector, recorrido y Casa/Negocio se cargarán cuando el cliente las entregue. Mientras tanto, esos bloques usan texto útil y la galería permanece oculta; no hay imágenes rotas ni fotos de librería presentadas como trabajos propios. La portada ilustrativa y su versión térmica están en `sitio/img/`, con procedencia y prompts en `material/prompts.md`.
+El Preview usa la fecha de compatibilidad `2026-10-30` por la versión local de workerd; producción conserva `2026-11-05`. El código nuevo de agenda aún no se ha desplegado y no se ha verificado la entrega real de correo. El dominio y el remitente siguen pendientes. Tras el despliegue autorizado, comprobar HTTP 200.
+
+Las fotos de apoyo se identifican en Créditos y no se presentan como trabajos propios. Las fotos reales del cliente están en Trabajo real. La portada ilustrativa y su versión térmica están en `sitio/img/`, con procedencia y prompts en `material/prompts.md`.
 
 ## Dependencias y fuentes
 
