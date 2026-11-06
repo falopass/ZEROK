@@ -1,6 +1,11 @@
+const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
 export function setupMessages() {
   for (const form of document.querySelectorAll('[data-message]')) {
     const preview = form.querySelector('.message-preview');
+    const bubble = form.querySelector('.message-bubble');
+    const result = form.querySelector('.message-result');
+    let typing;
     const error = form.querySelector('.form-error');
     let timer;
     const message = () => {
@@ -13,8 +18,15 @@ export function setupMessages() {
     };
     const update = () => {
       preview.textContent = message();
-      preview.classList.remove('updating');
-      requestAnimationFrame(() => preview.classList.add('updating'));
+      bubble.classList.remove('updating');
+      requestAnimationFrame(() => bubble.classList.add('updating'));
+    };
+    // Choosing an option shows a short typing state before the new message appears.
+    const typeThen = () => {
+      if (reduced.matches) return update();
+      clearTimeout(typing);
+      result.classList.add('is-typing');
+      typing = setTimeout(() => { result.classList.remove('is-typing'); update(); }, 600);
     };
     form.addEventListener('submit', event => {
       event.preventDefault();
@@ -25,11 +37,12 @@ export function setupMessages() {
       url.searchParams.set('text', message());
       window.location.assign(url.href);
     });
-    form.addEventListener('input', () => {
+    form.addEventListener('input', event => {
+      if (event.target.matches('input[type=radio], select')) return;
       clearTimeout(timer);
       timer = setTimeout(update, 220);
     });
-    form.addEventListener('change', update);
+    form.addEventListener('change', event => event.target.matches('input[type=radio], select') ? typeThen() : update());
     for (const control of form.querySelectorAll('[disabled]')) control.disabled = false;
     update();
   }
