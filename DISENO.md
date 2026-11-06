@@ -47,6 +47,13 @@ fotos de detalle en 16:11. Toda la home bajó de unos 12.650 a unos 9.730 px de 
 
 ---
 
+### Agenda de visitas (06-11-2026): composición de escritorio
+- Dos columnas: presentación con foto real y resumen oscuro a la izquierda; formulario secuenciado a la derecha.
+- El resumen permanece visible al hacer scroll y refleja equipo y día elegidos. Solo aparece con JavaScript; el formulario completo funciona sin él.
+- Equipos como opciones tipográficas uniformes, sin mezclar recortes fotográficos. Ámbar para selección, fechas con día destacado, campos de contacto agrupados.
+- Entrada suave, revelado de secciones y hover fotográfico, respetando movimiento reducido. En móvil se omiten foto y resumen para priorizar el formulario.
+- Se mantiene la confirmación manual por teléfono, sin promesas de cupo ni de atención preferente.
+
 ## 1. Lectura del diseño
 
 **Lectura:** landing de servicio técnico local para dueños de casa y negocios de Osorno, con un
