@@ -6,7 +6,7 @@
   "workers_dev": true,
   "assets": { "directory": "sitio", "binding": "ASSETS", "run_worker_first": true, "html_handling": "none" },
   "vars": { "SITE_URL": "https://zerok.cl", "PUBLIC_INDEXING": "false" },
-  "kv_namespaces": [{ "binding": "CONTENIDO" }],
+  "kv_namespaces": [{ "binding": "CONTENIDO", "id": "1cd1a1ea2d5b4a2a801701ea5723aea3" }],
   "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "zerok-media" }],
   "durable_objects": { "bindings": [{ "name": "ADMIN", "class_name": "Admin" }] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Admin"] }]

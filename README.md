@@ -30,7 +30,7 @@ Las páginas comparten una plantilla en vez de duplicar header, footer y metadat
 
 ## Configuración del alojamiento
 
-No se ha realizado un deploy ni conectado el dominio. El repositorio no tenía secretos de despliegue configurados al comenzar la construcción. No se leyeron valores de credenciales.
+Primer deploy hecho el 06-11-2026 en https://zerok.ddiegosebastianbb.workers.dev (cuenta Cloudflare del estudio). Recursos creados: KV `zerok-contenido` (ID en `wrangler.jsonc`), bucket R2 `zerok-media` y Durable Object `Admin` (migración `v1`). Indexación desactivada. El dominio sigue sin conectar y el secreto `ADMIN_SETUP_TOKEN` todavía no se carga, así que el panel queda cerrado hasta el paso 5. Los pasos 1 a 4 ya están cumplidos; faltan 5 a 7.
 
 1. En la cuenta Cloudflare del cliente, habilitar R2 y preparar un token con permisos para Workers, KV, R2 y Durable Objects. No almacenar el token en el repositorio.
 2. Configurar en GitHub los secretos `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`.
