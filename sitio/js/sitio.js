@@ -133,6 +133,8 @@ async function motion() {
     if (text) text.innerHTML = text.textContent.split(/(\s+)/).map(part => part.trim() ? `<span class="palabra">${part.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c])}</span>` : part).join('');
     const media = gsap.matchMedia();
     media.add('(prefers-reduced-motion: no-preference)', () => {
+      const giro = document.querySelector('.hero-giro');
+      if (giro) gsap.to(giro, { rotate: 75, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
       for (const image of gsap.utils.toArray('.parallax')) gsap.fromTo(image, { yPercent: -6 }, { yPercent: 6, ease: 'none', scrollTrigger: { trigger: image.parentElement, start: 'top bottom', end: 'bottom top', scrub: true } });
       const route = document.querySelector('.journey ol');
       if (route) gsap.fromTo(route, { '--route-progress': 0 }, { '--route-progress': 1, ease: 'none', scrollTrigger: { trigger: route, start: 'top 65%', end: 'bottom 55%', scrub: true } });
