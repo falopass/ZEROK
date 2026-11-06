@@ -149,3 +149,23 @@ async function motion() {
 }
 if ('requestIdleCallback' in window) requestIdleCallback(motion, { timeout: 2000 });
 else setTimeout(motion, 1200);
+
+const agenda = document.querySelector('.agenda-form');
+if (agenda) {
+  document.querySelector('[data-agenda-resumen]').hidden = false;
+  const resumen = () => {
+    const equipo = agenda.querySelector('[name="equipo"]:checked');
+    const dia = agenda.querySelector('[name="dia"]:checked');
+    document.querySelector('[data-agenda-equipo]').textContent = equipo?.value || 'Elige tu equipo';
+    document.querySelector('[data-agenda-dia]').textContent = dia
+      ? new Intl.DateTimeFormat('es-CL', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(dia.value + 'T12:00:00Z'))
+      : 'Elige tu día preferido';
+  };
+  agenda.addEventListener('change', resumen);
+  agenda.addEventListener('focusin', event => {
+    const pasos = [...agenda.querySelectorAll('.agenda-paso')];
+    const actual = pasos.indexOf(event.target.closest('.agenda-paso'));
+    if (actual !== -1) document.querySelector('.agenda-etiqueta').textContent = `0${actual + 1} / 04`;
+  });
+  resumen();
+}
