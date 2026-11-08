@@ -27,10 +27,12 @@ export function setupMessages() {
     const message = () => {
       const values = new FormData(form);
       const equipo = String(values.get('equipo') || 'equipo').toLowerCase();
-      const limpia = s => String(s || '').trim().replace(/[.!?\s]+$/, '');
-      const falla = limpia(values.get('problema')).replace(/^./, c => c.toLowerCase()) || 'tiene una falla';
+      const limpia = s => String(s || '').trim().replace(/^[¿¡]+/, '').replace(/[.\s]+$/, '');
+      // First letter lowers only in sentence case, so fault codes like "E1" survive.
+      const primera = f => f.replace(/^[A-ZÁÉÍÓÚÑ](?=[a-záéíóúñ])/, c => c.toLowerCase());
+      const falla = primera(limpia(values.get('problema'))) || 'tiene una falla';
       const sector = limpia(values.get('sector')).replace(/^en\s+/i, '');
-      return `Mi ${equipo} ${falla}.${sector ? ` Estoy en ${sector}.` : ''}`;
+      return `Mi ${equipo} ${falla}${/[.!?]$/.test(falla) ? '' : '.'}${sector ? ` Estoy en ${sector}.` : ''}`;
     };
     const update = () => {
       preview.textContent = message();
