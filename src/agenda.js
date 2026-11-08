@@ -2,6 +2,17 @@ import { esc } from './content.js';
 
 export const equipos = ['Refrigerador', 'Vitrina o conservador', 'Aire acondicionado', 'Aire acondicionado de auto', 'Lavadora o secadora', 'Calefón o calefacción', 'Equipo comercial'];
 
+// Symptoms describe what the customer observes, never a promised service.
+export const sintomas = {
+  Refrigerador: ['No enfría', 'Hace un ruido extraño', 'Gotea o se escarcha', 'No enciende', 'Mantención'],
+  'Vitrina o conservador': ['No enfría bien', 'Se escarcha', 'Hace un ruido', 'No enciende', 'Mantención'],
+  'Aire acondicionado': ['No enfría o no calienta', 'Gotea agua', 'Hace un ruido', 'Instalación', 'Mantención o limpieza', 'Desinstalación'],
+  'Aire acondicionado de auto': ['No enfría', 'Fuga de gas', 'Hace un ruido', 'Revisión'],
+  'Lavadora o secadora': ['No enciende', 'No desagua', 'No centrifuga o no seca', 'Ruido o vibración', 'Bota agua'],
+  'Calefón o calefacción': ['No enciende', 'Se apaga', 'No calienta bien', 'Instalar termostato', 'Mantención'],
+  'Equipo comercial': ['No enfría bien', 'Se escarcha', 'Hace un ruido', 'No enciende', 'Mantención']
+};
+
 // Visits are scheduled by Chilean calendar day; the Worker clock runs in UTC.
 export const hoy = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Santiago', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 export const sumar = (dia, n) => new Date(Date.parse(`${dia}T12:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
@@ -56,10 +67,16 @@ async function enviar(env, subject, text, html) {
 }
 
 export async function avisoReserva(env, v) {
-  const datos = [['Día preferido', etiqueta(v.dia)], ['Nombre', v.nombre], ['Teléfono', telefonoVisible(v.telefono)], ['Dirección', `${v.direccion}, ${v.sector}`], ...(v.referencia ? [['Referencia', v.referencia]] : []), ['Equipo', v.equipo], ['Problema', v.problema]];
-  const text = `Nueva solicitud de visita\n\n${datos.map(([k, x]) => `${k}: ${x}`).join('\n')}\n\nLlamar: tel:${v.telefono}\nMapa: ${mapa(v)}\nConfirmar en el panel: ${panel(env)}\n`;
-  const html = `<h1 style="font-size:20px">Nueva solicitud de visita</h1><table cellpadding="6" style="border-collapse:collapse">${datos.map(([k, x]) => `<tr><th align="left" valign="top">${esc(k)}</th><td>${esc(x).replace(/\n/g, '<br>')}</td></tr>`).join('')}</table><p><a href="tel:${v.telefono}">Llamar a ${esc(v.nombre)}</a></p><p><a href="${esc(mapa(v))}">Ver la dirección en el mapa</a></p><p><a href="${esc(panel(env))}">Confirmar en el panel</a></p>`;
-  await enviar(env, `Nueva visita: ${v.nombre}, ${v.equipo.toLowerCase()}, ${etiqueta(v.dia, { weekday: 'short', day: 'numeric', month: 'short' })}`, text, html);
+  // A request queued before its preferred day passed is labeled pending work, never "new".
+  const atrasada = esFecha(v.dia) && v.dia < hoy();
+  const wsp = /^\+56\d{9}$/.test(v.telefono || '') ? v.telefono.slice(1) : '';
+  const recibida = esFecha((v.creada || '').slice(0, 10)) ? v.creada.slice(0, 10) : '';
+  const datos = [[atrasada ? 'Día pedido (ya pasó)' : 'Día preferido', etiqueta(v.dia)], ...(atrasada && recibida ? [['Recibida', etiqueta(recibida)]] : []), ['Nombre', v.nombre], ['Teléfono', telefonoVisible(v.telefono)], ['Dirección', `${v.direccion}, ${v.sector}`], ...(v.referencia ? [['Referencia', v.referencia]] : []), ['Equipo', v.equipo], ['Problema', v.problema]];
+  const titulo = atrasada ? 'Solicitud pendiente de visita' : 'Nueva solicitud de visita';
+  const text = `${titulo}\n\n${datos.map(([k, x]) => `${k}: ${x}`).join('\n')}\n\nLlamar: tel:${v.telefono}\n${wsp ? `WhatsApp: https://wa.me/${wsp}\n` : ''}Mapa: ${mapa(v)}\nConfirmar en el panel: ${panel(env)}\n`;
+  const html = `<h1 style="font-size:20px">${titulo}</h1><table cellpadding="6" style="border-collapse:collapse">${datos.map(([k, x]) => `<tr><th align="left" valign="top">${esc(k)}</th><td>${esc(x).replace(/\n/g, '<br>')}</td></tr>`).join('')}</table><p><a href="tel:${v.telefono}">Llamar a ${esc(v.nombre)}</a>${wsp ? ` · <a href="https://wa.me/${wsp}">Escribir por WhatsApp</a>` : ''}</p><p><a href="${esc(mapa(v))}">Ver la dirección en el mapa</a></p><p><a href="${esc(panel(env))}">Confirmar en el panel</a></p>`;
+  const corto = etiqueta(v.dia, { weekday: 'short', day: 'numeric', month: 'short' });
+  await enviar(env, atrasada ? `Solicitud pendiente: ${v.nombre}, ${v.equipo.toLowerCase()}, día pedido ${corto}` : `Nueva visita: ${v.nombre}, ${v.equipo.toLowerCase()}, ${corto}`, text, html);
 }
 
 export async function avisoSeguimiento(env, visitas) {

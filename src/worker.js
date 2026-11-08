@@ -1,6 +1,7 @@
 import { Admin, json } from './admin.js';
 import { readContent, published } from './content.js';
 import { header, footer, page, structured, agendar, agendaLista } from './render.js';
+import { equipos, limpiar } from './agenda.js';
 
 export { Admin };
 
@@ -63,12 +64,15 @@ async function leer(request, max) {
   return new TextDecoder().decode(await new Blob(chunks).arrayBuffer());
 }
 
+// A human form submit always gets the styled page back, never bare text or JSON.
 async function reservar(request, env, url, data) {
+  const oferta = await dias(env);
+  const pagina = (v, error, status) => render(request, env, url, data, '/agendar/', agendar(data, oferta, v, error, status));
   const origin = request.headers.get('origin');
-  if (origin !== url.origin) return new Response('Origen no permitido.', { status: 403 });
-  if (!request.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) return new Response('Formato no admitido.', { status: 415 });
+  if (origin !== url.origin) return pagina({}, 'No se pudo comprobar el origen del formulario. Vuelve a intentarlo desde esta página.', 403);
+  if (!request.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) return pagina({}, 'El formulario no se pudo leer. Vuelve a intentarlo.', 415);
   const raw = await leer(request, 8000);
-  if (raw === null) return new Response('La solicitud es demasiado grande.', { status: 413 });
+  if (raw === null) return pagina({}, 'La solicitud es demasiado grande. Acorta los campos y vuelve a intentarlo.', 413);
   const input = Object.fromEntries(new URLSearchParams(raw));
   // Honeypot: bots that fill the hidden field see the usual confirmation and nothing is stored.
   if (input.empresa) return Response.redirect(new URL('/agendar/listo/', url), 303);
@@ -77,7 +81,26 @@ async function reservar(request, env, url, data) {
   if (response.ok) {
     return Response.redirect(new URL(`/agendar/listo/?dia=${result.dia}`, url), 303);
   }
-  return render(request, env, url, data, '/agendar/', agendar(data, await dias(env), input, result.error, response.status));
+  return pagina(input, result.error || 'No pudimos registrar tu solicitud. Revisa los datos o llámanos para agendar.', response.status);
+}
+
+// Stateless handoff: the selector posts equipo/problema/sector here and the agenda page is
+// rendered with them prefilled. Nothing is stored and free text never enters a URL.
+async function preparar(request, env, url, data) {
+  const oferta = data.agenda && env.ADMIN ? await dias(env) : [];
+  const pagina = (v = {}, error = '', status) => render(request, env, url, data, '/agendar/', agendar(data, oferta, v, error, status));
+  const origin = request.headers.get('origin');
+  const fetchSite = request.headers.get('sec-fetch-site');
+  if (origin ? origin !== url.origin : fetchSite === 'cross-site') return pagina({}, 'No se pudo comprobar el origen del formulario. Vuelve a intentarlo desde esta página.', 403);
+  if (!request.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) return pagina({}, 'El formulario no se pudo leer. Vuelve a intentarlo.', 415);
+  const raw = await leer(request, 4000);
+  if (raw === null) return pagina({}, 'La solicitud es demasiado grande. Acorta los campos y vuelve a intentarlo.', 413);
+  const input = Object.fromEntries(new URLSearchParams(raw));
+  const v = {};
+  if (equipos.includes(input.equipo)) v.equipo = input.equipo;
+  if (limpiar(input.problema, 600)) v.problema = limpiar(input.problema, 600);
+  if (limpiar(input.sector, 80)) v.sector = limpiar(input.sector, 80);
+  return pagina(v);
 }
 
 async function handle(request, env) {
@@ -99,7 +122,12 @@ async function handle(request, env) {
   if (path === '/agendar/' && request.method === 'POST') {
     const data = await siteData(env);
     if (data.agenda && env.ADMIN) return reservar(request, env, url, data);
-    return json({ error: 'La agenda en línea no está disponible. Llámanos para agendar tu visita.' }, 403);
+    return render(request, env, url, data, '/agendar/', agendar(data, [], {}, '', 403));
+  }
+  if (path === '/agendar/preparar/') {
+    const data = await siteData(env);
+    if (request.method === 'POST') return preparar(request, env, url, data);
+    return Response.redirect(new URL(`/agendar/${url.search}`, url), 303);
   }
   if (!['GET', 'HEAD'].includes(request.method)) return new Response('Método no permitido.', { status: 405, headers: { allow: 'GET, HEAD' } });
   if (path.startsWith('/media/')) {
@@ -121,7 +149,10 @@ async function handle(request, env) {
   }
   if (path === '/index.html') return Response.redirect(new URL('/', url), 308);
   if (path !== '/' && !path.includes('.') && !path.endsWith('/')) return Response.redirect(new URL(`${path}/${url.search}`, url), 308);
-  const rendered = path === '/agendar/' && data.agenda ? agendar(data, await dias(env))
+  // Only the equipment enum may arrive by GET; free text never travels in the URL.
+  const equipo = url.searchParams.get('equipo');
+  const prefill = equipos.includes(equipo) ? { equipo } : {};
+  const rendered = path === '/agendar/' && data.agenda ? agendar(data, await dias(env), prefill)
     : path === '/agendar/listo/' && data.agenda ? agendaLista(data, url.searchParams.get('dia'))
     : page(data, path);
   return render(request, env, url, data, path, rendered);
