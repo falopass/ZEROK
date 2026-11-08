@@ -33,7 +33,7 @@ if ('IntersectionObserver' in window) {
   const hero = document.querySelector('.hero-actions');
   const bar = document.querySelector('.contact-bar');
   if (hero && bar) new IntersectionObserver(entries => bar.classList.toggle('out-of-view', entries[0].isIntersecting), { threshold: .3 }).observe(hero);
-  const first = document.querySelector('.hero') || document.querySelector('.page-heading');
+  const first = document.querySelector('.hero, .page-heading, .agenda-layout');
   if (first) new IntersectionObserver(entries => document.querySelector('.site-header')?.classList.toggle('is-compact', !entries[0].isIntersecting)).observe(first);
   const index = document.querySelector('.service-index');
   if (index) {

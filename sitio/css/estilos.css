@@ -543,12 +543,14 @@ to{opacity:0;transform:scale(5)}
 }
 @media(min-width:1000px){
 .agenda-layout{grid-template-columns:minmax(0,.85fr) minmax(0,1.6fr);gap:clamp(40px,5vw,80px);align-items:start;padding-block:56px 100px}
-.agenda-presentacion{position:sticky;top:min(104px,calc(100dvh - 840px))}
 .agenda-presentacion .backlink{margin-bottom:36px}
 .agenda-foto img{aspect-ratio:2/1}
 .agenda-encabezado{min-height:60px;margin-bottom:28px}
 .agenda-form .form-fields{padding:28px 32px}
 .agenda-equipos{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(min-width:1000px) and (min-height:860px){
+.agenda-presentacion{position:sticky;top:104px}
 }
 @media(hover:hover) and (prefers-reduced-motion:no-preference){
 .agenda-equipo:hover>span,.day-option:hover>span{transform:translateY(-2px);border-color:var(--texto-2)}
