@@ -1,4 +1,14 @@
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+const frasesSolicitud = {
+  'Mantención': 'necesita mantención',
+  'Instalación': 'necesita instalación',
+  'Mantención o limpieza': 'necesita mantención o limpieza',
+  'Desinstalación': 'necesita desinstalación',
+  'Revisión': 'necesita una revisión',
+  'Instalar termostato': 'necesita instalar un termostato',
+  'Fuga de gas': 'tiene una fuga de gas',
+  'Ruido o vibración': 'hace ruido o vibra'
+};
 
 export function setupMessages() {
   for (const form of document.querySelectorAll('[data-message]')) {
@@ -65,7 +75,7 @@ export function setupMessages() {
         const label = document.createElement('label');
         label.className = 'sintoma-chip';
         label.style.setProperty('--i', i);
-        label.innerHTML = `<input type="radio" name="sintoma" value="${texto === 'Otra falla' ? '' : texto.toLowerCase()}"><span>${texto}</span>`;
+        label.innerHTML = `<input type="radio" name="sintoma" value="${texto === 'Otra falla' ? '' : frasesSolicitud[texto] || texto.toLowerCase()}"><span>${texto}</span>`;
         return label;
       }));
     };
