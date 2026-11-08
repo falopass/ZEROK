@@ -112,7 +112,6 @@ main:focus{outline:0}
 .diagnosis-head{max-width:720px}
 .diagnosis-head>p:not(.eyebrow){color:var(--texto-2)}
 .message-form{position:relative;isolation:isolate;margin-top:36px;display:grid;gap:16px}
-.message-form::before{content:'';position:absolute;top:-28px;left:50%;z-index:-1;width:min(720px,120vw);height:260px;translate:-50%;background:radial-gradient(circle,rgb(35 129 169 / .18),rgb(189 84 28 / .08) 48%,transparent 72%);pointer-events:none}
 .form-fields{position:relative;overflow:hidden;display:grid;gap:24px;min-width:0;padding:24px 18px;background:linear-gradient(180deg,var(--superficie),color-mix(in srgb,var(--superficie-2) 42%,var(--superficie)));border:1px solid var(--linea);border-radius:24px;box-shadow:0 24px 50px -36px rgb(7 26 48 / .5)}
 .form-fields::before{content:'';position:absolute;inset:0 0 auto;height:5px;background:var(--termico)}
 .form-fields::after{content:'';position:absolute;inset:0;background:linear-gradient(var(--linea) 1px,transparent 1px),linear-gradient(90deg,var(--linea) 1px,transparent 1px);background-size:34px 34px;opacity:.14;pointer-events:none;-webkit-mask-image:linear-gradient(#000,transparent 72%);mask-image:linear-gradient(#000,transparent 72%)}
@@ -143,7 +142,7 @@ legend{display:flex;align-items:center;gap:10px;font-size:.9375rem}
 input:not([type=radio]):not([type=checkbox]):not([type=file]),select,textarea{width:100%;min-height:48px;border:1.5px solid var(--linea);background:color-mix(in srgb,var(--fondo) 82%,#fff);border-radius:14px;padding:12px 14px;font-size:1rem;line-height:1.5;transition:border-color 150ms,box-shadow 150ms}
 textarea{min-height:104px;resize:vertical}
 input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0 0 3px rgb(224 154 31 / .35)}
-.message-result{position:relative;isolation:isolate;overflow:hidden;padding:32px 18px 24px;border:1px solid var(--linea);border-radius:24px;display:flex;flex-direction:column;align-items:flex-start;min-height:380px;background:radial-gradient(circle at 100% 0,rgb(101 190 215 / .18),transparent 42%),var(--fondo);box-shadow:var(--sombra)}
+.message-result{position:relative;isolation:isolate;overflow:hidden;padding:32px 18px 24px;border:1px solid var(--linea);border-radius:24px;display:flex;flex-direction:column;align-items:flex-start;min-height:380px;background:var(--fondo);box-shadow:var(--sombra)}
 .message-result::before{content:'';position:absolute;inset:0 0 auto;height:4px;background:var(--termico)}
 .message-result>.mono{color:var(--texto-2);margin-bottom:20px}
 .message-typing,.message-bubble{position:relative;align-self:flex-end;max-width:100%;background:#eef3f5;color:#0f1d26;border-radius:4px 20px 20px 20px;margin-bottom:16px;box-shadow:0 16px 32px -20px rgb(0 0 0 / .8)}
@@ -554,10 +553,10 @@ to{opacity:0;transform:scale(5)}
 .sintoma-lista:empty{display:none}
 .sintoma-chip{position:relative;cursor:pointer}
 .sintoma-chip input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
-.sintoma-chip>span{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 14px;border:1px solid var(--linea);border-radius:14px;font-size:.8125rem;font-weight:550;background:color-mix(in srgb,var(--fondo) 82%,#fff);transition:background 200ms,border-color 200ms,color 200ms,transform 300ms var(--resorte)}
-.sintoma-chip>span::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--acento);transform:scale(0);transition:transform 300ms var(--resorte)}
+.sintoma-chip>span{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 14px;border:1px solid var(--linea);border-radius:999px;font-size:.8125rem;font-weight:550;background:color-mix(in srgb,var(--fondo) 82%,#fff);transition:background 200ms,border-color 200ms,color 200ms,transform 300ms var(--resorte)}
+.sintoma-chip>span::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--sobre-acento);transform:scale(0);transition:transform 300ms var(--resorte)}
 .sintoma-chip:hover>span{border-color:var(--texto-2)}
-.sintoma-chip input:checked+span{background:var(--marca);color:var(--fondo);border-color:var(--marca);transform:translateY(-1px)}
+.sintoma-chip input:checked+span{background:var(--acento);color:var(--sobre-acento);border-color:var(--acento);transform:translateY(-1px)}
 .sintoma-chip input:checked+span::before{transform:scale(1)}
 .sintoma-chip input:focus-visible+span{outline:2px solid var(--texto);outline-offset:3px}
 .motion-on .sintoma-chip{animation:chip-in 420ms var(--resorte) both;animation-delay:calc(var(--i) * 40ms)}
