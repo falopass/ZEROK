@@ -276,7 +276,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0
 .contact-data dd{margin:4px 0}
 .contact-data dd a{display:inline-flex;align-items:center;gap:6px}
 .contact-privacy{font-size:.875rem;color:var(--texto-2);max-width:35ch;margin:0}
-.contact-form{margin-top:32px}
+.contact-layout .message-form{margin-top:32px}
 .category-filters{display:flex;gap:8px;overflow:auto;margin-bottom:40px}
 .category-filters button{min-height:44px;padding:10px 18px;white-space:nowrap;font-size:.875rem;font-weight:550;border:1px solid var(--linea);border-radius:999px;background:transparent}
 .category-filters [aria-pressed=true]{background:var(--acento);color:var(--sobre-acento);border-color:var(--acento)}
@@ -370,11 +370,13 @@ to{opacity:0;transform:scale(5)}
 .audience-panel{padding:48px}
 }
 
-@media(min-width:768px){.message-form:not(.contact-form){grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px}
-.message-form:not(.contact-form) .equipment-rail{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));overflow:visible}
+@media(min-width:768px){.message-form{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px}
+.message-form .equipment-rail{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));overflow:visible}
 .coverage{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:64px}
 .contact-layout{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr)}
-.contact-form .equipment-option{flex-basis:140px}
+.contact-layout .message-form{grid-template-columns:minmax(0,1fr)}
+.contact-layout .equipment-rail{display:flex;overflow-x:auto}
+.contact-layout .equipment-option{flex-basis:140px}
 .service-detail:has(img){grid-template-columns:1fr 1fr;gap:64px;align-items:center}
 .service-detail:nth-child(even):has(img)>img{order:-1}
 .product-grid{grid-template-columns:repeat(3,1fr)}
@@ -477,7 +479,9 @@ to{opacity:0;transform:scale(5)}
 /* Termómetro de scroll: del calor de la falla al frío que vuelve */
 .termometro{position:absolute;left:0;right:0;bottom:-1px;height:2px;display:none;transform-origin:left}
 @supports (animation-timeline: scroll()) {
+@media(prefers-reduced-motion:no-preference){
 .termometro{display:block;background:linear-gradient(90deg,#e4ac4b 0%,#bd541c 34%,#2381a9 68%,#65bed7 100%);background-size:280% 100%;animation:termo-progreso linear both;animation-timeline:scroll(root)}
+}
 @keyframes termo-progreso{from{background-position:0% 0;transform:scaleX(.1)}to{background-position:100% 0;transform:scaleX(1)}}
 }
 
@@ -512,7 +516,8 @@ to{opacity:0;transform:scale(5)}
 .motion-on .trabajos-rail:not(.is-visible) .trabajo{transform:translateX(calc(var(--i) * -104%)) rotate(calc(var(--i) * 4deg - 4deg))}
 .trabajo-open{position:absolute;inset:0;z-index:3;border-radius:inherit}
 .trabajo-open:focus-visible{outline:3px solid var(--acento);outline-offset:-3px}
-.trabajo-dialog{border:0;padding:0;width:min(92vw,540px);max-width:100%;border-radius:var(--radio-l);background:#071a30;color:#eef3f5;overflow:hidden}
+.trabajo-dialog{border:0;padding:0;width:min(92vw,540px);max-width:100%;max-height:92dvh;border-radius:var(--radio-l);background:#071a30;color:#eef3f5;overflow-x:hidden;overflow-y:auto}
+.trabajo-dialog:not([open]){display:none}
 .trabajo-dialog::backdrop{background:rgb(4 15 24 / .82)}
 .trabajo-dialog-foto{display:block}
 .trabajo-dialog-foto img{aspect-ratio:3/4;max-height:62dvh;width:100%}

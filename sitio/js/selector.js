@@ -12,6 +12,7 @@ export function setupMessages() {
     const waLink = form.querySelector('[data-message-wa]');
     const error = form.querySelector('.form-error');
     const problema = form.querySelector('[name=problema]');
+    form.querySelector('[name=sector]').required = true;
     let typing, timer;
     const message = () => {
       const values = new FormData(form);
@@ -42,12 +43,13 @@ export function setupMessages() {
       const img = option?.querySelector('img');
       if (!img || !fotoTarget) return;
       const place = () => fotoTarget.replaceChildren(img.cloneNode());
-      if (reduced.matches) return place();
+      if (reduced.matches || typeof img.animate !== 'function') return place();
       const s = img.getBoundingClientRect();
       const t = fotoTarget.getBoundingClientRect();
       if (!s.width || !t.width) return place();
       const ghost = img.cloneNode();
       ghost.style.cssText = `position:fixed;left:${s.left}px;top:${s.top}px;width:${s.width}px;height:${s.height}px;object-fit:cover;border-radius:14px;z-index:60;pointer-events:none;margin:0`;
+      ghost.style.transformOrigin = 'top left';
       document.body.append(ghost);
       fotoTarget.replaceChildren();
       const scale = Math.min(t.width / s.width, t.height / s.height);

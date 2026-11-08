@@ -125,6 +125,7 @@ async function handle(request, env) {
     return render(request, env, url, data, '/agendar/', agendar(data, [], {}, '', 403));
   }
   if (path === '/agendar/preparar/') {
+    if (!['GET', 'HEAD', 'POST'].includes(request.method)) return new Response('Método no permitido.', { status: 405, headers: { allow: 'GET, HEAD, POST' } });
     const data = await siteData(env);
     if (request.method === 'POST') return preparar(request, env, url, data);
     return Response.redirect(new URL(`/agendar/${url.search}`, url), 303);

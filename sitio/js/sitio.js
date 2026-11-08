@@ -1,8 +1,7 @@
 import { setupMessages } from './selector.js';
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-if (!reduced.matches) document.documentElement.classList.add('motion-on');
-reduced.addEventListener('change', () => document.documentElement.classList.toggle('motion-on', !reduced.matches));
+const canReveal = 'IntersectionObserver' in window;
 setupMessages();
 
 const menu = document.querySelector('.mobile-menu');
@@ -14,7 +13,7 @@ document.addEventListener('click', event => {
 });
 
 // Observers leave the content readable if JS, motion, or a vendor script fails.
-if ('IntersectionObserver' in window) {
+if (canReveal) {
   const reveal = new IntersectionObserver(entries => {
     for (const entry of entries) if (entry.isIntersecting) {
       if (!reduced.matches) entry.target.animate([{ opacity: .3, transform: 'translateY(24px)' }, { opacity: 1, transform: 'none' }], { duration: 700, easing: 'cubic-bezier(.16,1,.3,1)' });
@@ -45,7 +44,9 @@ if ('IntersectionObserver' in window) {
     }, { rootMargin: '-180px 0px -45% 0px', threshold: 0 });
     document.querySelectorAll('.service-detail').forEach(section => active.observe(section));
   }
+  if (!reduced.matches) document.documentElement.classList.add('motion-on');
 }
+reduced.addEventListener('change', () => document.documentElement.classList.toggle('motion-on', !reduced.matches && canReveal));
 
 for (const group of document.querySelectorAll('[data-audience]')) {
   group.addEventListener('click', event => {
@@ -84,7 +85,8 @@ for (const form of document.querySelectorAll('[data-native-submit]')) {
 
 // Trabajo real: each card opens a native dialog with the full photo and phrase.
 const dialog = document.querySelector('[data-trabajo-dialog]');
-if (dialog) {
+if (dialog && typeof dialog.showModal === 'function') {
+  dialog.setAttribute('aria-label', 'Foto del trabajo');
   let trigger;
   for (const open of document.querySelectorAll('[data-trabajo-open]')) {
     open.addEventListener('click', event => {
@@ -202,6 +204,7 @@ else setTimeout(motion, 1200);
 
 const agenda = document.querySelector('.agenda-form');
 if (agenda) {
+  agenda.addEventListener('invalid', event => event.target.closest('details')?.setAttribute('open', ''), true);
   document.querySelector('[data-agenda-resumen]').hidden = false;
   const falla = document.querySelector('[data-agenda-problema]');
   const resumen = () => {
@@ -221,6 +224,10 @@ if (agenda) {
     if (actual !== -1) document.querySelector('.agenda-etiqueta').textContent = `0${actual + 1} / 04`;
   });
   // With a completed request, the day step gets keyboard focus.
-  if (agenda.dataset.prefill !== undefined) agenda.querySelector('[name=dia]')?.focus();
+  if (agenda.dataset.prefill !== undefined && !agenda.querySelector('.agenda-error')) {
+    const detalle = agenda.querySelector('.agenda-detalle');
+    if (detalle) detalle.open = false;
+    agenda.querySelector('[name=dia]')?.focus();
+  }
   resumen();
 }
