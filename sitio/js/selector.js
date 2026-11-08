@@ -92,8 +92,11 @@ export function setupMessages() {
     form.addEventListener('change', event => {
       const target = event.target;
       if (target.name === 'equipo') {
+        const anterior = lista.querySelector('[name=sintoma]:checked');
+        if (anterior?.value && problema.value === anterior.value) problema.value = '';
         fly(target.closest('.equipment-option'));
         buildSintomas();
+        update();
         typeThen();
       } else if (target.name === 'sintoma') {
         if (target.value) {

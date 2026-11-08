@@ -210,6 +210,10 @@ if (agenda) {
   const resumen = () => {
     const equipo = agenda.querySelector('[name="equipo"]:checked');
     const dia = agenda.querySelector('[name="dia"]:checked');
+    const detalleEquipo = agenda.querySelector('.agenda-detalle-linea b');
+    const detalleFalla = agenda.querySelector('.agenda-detalle-falla');
+    if (detalleEquipo) detalleEquipo.textContent = equipo?.value || 'Elige tu equipo';
+    if (detalleFalla) detalleFalla.textContent = agenda.querySelector('[name=problema]')?.value.trim() || 'Cuéntanos qué le pasa';
     document.querySelector('[data-agenda-equipo]').textContent = equipo?.value || 'Elige tu equipo';
     if (falla) falla.textContent = agenda.querySelector('[name=problema]')?.value.trim() || 'Cuéntanos qué le pasa';
     document.querySelector('[data-agenda-dia]').textContent = dia

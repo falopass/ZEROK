@@ -24,7 +24,11 @@ document.addEventListener('visibilitychange', () => {
   if (autenticado && document.visibilityState === 'visible' && !visitas.dirty()) visitas.load();
 });
 addEventListener('pagehide', detenerRefresco);
-addEventListener('pageshow', event => { if (event.persisted && autenticado) iniciarRefresco(); });
+addEventListener('pageshow', event => {
+  if (!event.persisted || !autenticado) return;
+  iniciarRefresco();
+  if (document.visibilityState === 'visible' && !visitas.dirty()) visitas.load();
+});
 const titles = { agenda: 'Agenda de visitas', general: 'Textos y cobertura', servicios: 'Servicios', productos: 'Precios y productos', trabajos: 'Trabajos y fotos', blog: 'Blog', faq: 'Preguntas frecuentes', seguridad: 'Seguridad y respaldo' };
 const field = (key, label, type = 'text', options = {}) => ({ key, label, type, ...options });
 const schemas = {
