@@ -363,6 +363,9 @@ to{opacity:0;transform:scale(5)}
 .motion-on .coverage-map img{transform:scale(1.18);transition:transform 1800ms var(--ease)}
 .motion-on .coverage-map.is-visible img{transform:none}
 
+@media(max-width:480px){.closing-hero h2{font-size:2rem}
+}
+
 @media(min-width:640px){.product-grid{grid-template-columns:1fr 1fr}
 .hero-visual{height:380px}
 .hero-copy{padding-block:32px 8px}
