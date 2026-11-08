@@ -103,7 +103,9 @@ export function agendar(data, dias, v = {}, error = '', status) {
   const elegido = equipment.some(([n]) => n === v.equipo) ? v.equipo : equipment[0][0];
   const meta = { title: 'Agenda tu visita técnica en Osorno | ZÉROK', description: 'Pide una visita técnica a domicilio en Osorno y sectores de Los Lagos. Elige el día y te llamamos para confirmar la hora.', status };
   if (!dias.length) {
-    const mensaje = `Hola ZÉROK, necesito una visita para mi ${elegido.toLowerCase()}.${v.problema ? ` Le pasa lo siguiente: ${v.problema}.` : ''}${v.sector ? ` Estoy en ${v.sector}.` : ''}`;
+    const corta = s => String(s || '').trim().replace(/[.!?\s]+$/, '');
+    const sector = corta(v.sector).replace(/^en\s+/i, '');
+    const mensaje = `Hola ZÉROK, necesito una visita para mi ${elegido.toLowerCase()}.${v.problema ? ` Le pasa lo siguiente: ${corta(v.problema)}.` : ''}${sector ? ` Estoy en ${sector}.` : ''}`;
     return { ...meta, html: `${heading('Agenda tu visita.', 'Por ahora no hay días disponibles para agendar en línea. Llámanos o escríbenos y coordinamos la visita.')}<div class="wrap section hero-actions">${link(`tel:${g.telefono}`, 'Llamar')}${link(wa(g, mensaje), 'Escribir por WhatsApp', 'outline')}</div>` };
   }
   const legend = (n, text) => `<legend><span class="mono">${n}</span>${text}</legend>`;

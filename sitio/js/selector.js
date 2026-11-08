@@ -3,9 +3,9 @@ const frasesSolicitud = {
   'Mantención': 'necesita mantención',
   'Instalación': 'necesita instalación',
   'Mantención o limpieza': 'necesita mantención o limpieza',
-  'Desinstalación': 'necesita desinstalación',
+  'Desinstalación': 'necesita que lo desinstalen',
   'Revisión': 'necesita una revisión',
-  'Instalar termostato': 'necesita instalar un termostato',
+  'Instalar termostato': 'necesita que le instalen un termostato',
   'Fuga de gas': 'tiene una fuga de gas',
   'Ruido o vibración': 'hace ruido o vibra'
 };
@@ -27,8 +27,9 @@ export function setupMessages() {
     const message = () => {
       const values = new FormData(form);
       const equipo = String(values.get('equipo') || 'equipo').toLowerCase();
-      const falla = String(values.get('problema') || '').trim() || 'tiene una falla';
-      const sector = String(values.get('sector') || '').trim();
+      const limpia = s => String(s || '').trim().replace(/[.!?\s]+$/, '');
+      const falla = limpia(values.get('problema')).replace(/^./, c => c.toLowerCase()) || 'tiene una falla';
+      const sector = limpia(values.get('sector')).replace(/^en\s+/i, '');
       return `Mi ${equipo} ${falla}.${sector ? ` Estoy en ${sector}.` : ''}`;
     };
     const update = () => {
