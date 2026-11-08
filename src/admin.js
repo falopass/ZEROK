@@ -59,7 +59,12 @@ export class Admin {
     config.activa = config.activa === true && !!await this.ctx.storage.get('credentials');
     return config;
   }
-  async agenda() { return { visitas: this.sql('SELECT * FROM visitas ORDER BY dia, creada'), hoy: hoy(), config: await this.config(), correo: correoActivo(this.env) }; }
+  async agenda() {
+    // Aggregate queue counts only; the panel never reads message bodies here.
+    const pendientes = this.sql("SELECT COUNT(*) AS n FROM avisos WHERE enviada = ''")[0].n;
+    const reintentos = this.sql("SELECT COUNT(*) AS n FROM avisos WHERE enviada = '' AND intentos > 0")[0].n;
+    return { visitas: this.sql('SELECT * FROM visitas ORDER BY dia, creada'), hoy: hoy(), config: await this.config(), correo: correoActivo(this.env), avisos: { pendientes, reintentos } };
+  }
 
   // Routes under /interno/ are only reachable from the Worker, which forwards nothing but /admin/api/ from outside.
   async interno(path, request) {

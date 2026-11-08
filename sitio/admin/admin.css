@@ -75,6 +75,13 @@
 .admin-content{padding-top:28px}
 }
 
+.agenda-badge{display:inline-grid;place-items:center;min-width:22px;height:22px;margin-left:8px;padding-inline:6px;border-radius:999px;background:var(--acento);color:var(--sobre-acento);font-size:.6875rem;font-weight:600;vertical-align:2px}
+.visita-acciones{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.visita-acciones .editor-action{flex:1;min-width:110px;min-height:52px}
+.visita-estado.estado-solicitada{background:var(--acento);color:var(--sobre-acento)}
+.visita-estado.estado-confirmada{background:#0c426c;color:#eef3f5}
+.visita-estado.estado-realizada{background:transparent;border:1px solid var(--texto-2);color:var(--texto)}
+.visita-pasada{color:var(--error)}
 .agenda-toolbar,.agenda-filtros{display:flex;gap:8px;flex-wrap:wrap}
 .agenda-toolbar{justify-content:space-between;margin-bottom:8px}
 .agenda-filtros [aria-pressed=true]{background:var(--superficie-2);border-color:var(--texto);font-weight:600}
