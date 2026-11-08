@@ -34,7 +34,7 @@ Las páginas comparten una plantilla en vez de duplicar header, footer y metadat
 
 ## Configuración del alojamiento
 
-Primer deploy hecho el 06-11-2026 en https://zerok.ddiegosebastianbb.workers.dev (cuenta Cloudflare del estudio). Recursos creados: KV `zerok-contenido` (ID en `wrangler.jsonc`), bucket R2 `zerok-media` y Durable Object `Admin` (migración `v1`). El 08-11-2026 se publicó manualmente la revisión `3522619` (PR #4), versión del Worker `66f88e66-3383-444c-822c-7157f02b990f`, con Wrangler 4.156.0 fijado en el lockfile y autorización de Diego. Indexación y avisos por correo continúan desactivados. El dominio, la configuración del acceso y la activación de solicitudes siguen pendientes; no se modificaron secretos ni se habilitó el workflow automático.
+Primer deploy hecho el 06-11-2026 en https://zerok.ddiegosebastianbb.workers.dev (cuenta Cloudflare del estudio). Recursos creados: KV `zerok-contenido` (ID en `wrangler.jsonc`), bucket R2 `zerok-media` y Durable Object `Admin` (migración `v1`). El 08-11-2026 se publicó manualmente la revisión `3522619` (PR #4), versión del Worker `66f88e66-3383-444c-822c-7157f02b990f`, con Wrangler 4.156.0 fijado en el lockfile y autorización de Diego. El 08-11-2026 se configuró `ADMIN_SETUP_TOKEN`, se creó el acceso del panel y se activaron las solicitudes en línea. Indexación, correo y dominio continúan desactivados; el workflow automático sigue sin habilitarse.
 
 1. En la cuenta Cloudflare del cliente, habilitar R2 y preparar un token con permisos para Workers, KV, R2 y Durable Objects. No almacenar el token en el repositorio.
 2. Configurar en GitHub los secretos `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`.
@@ -83,7 +83,7 @@ La agenda se incluye sin costo adicional para ZÉROK como beneficio al primer cl
 - El correo al técnico incluye Llamar, WhatsApp (número normalizado y validado) y Mapa. Solicitudes cuyo día pedido ya pasó se avisan como «Solicitud pendiente», nunca como nuevas.
 - El panel muestra el conteo agregado de avisos en cola (pendientes y reintentos), sin prometer entregas.
 
-- Desactivada por defecto. Se abre desde **Disponibilidad y avisos**, después de configurar el acceso al panel. Al desactivarla, los botones vuelven a WhatsApp.
+- Activa desde **Disponibilidad y avisos**, después de configurar el acceso al panel. Al desactivarla, los botones vuelven a WhatsApp.
 - Ofrece los próximos 14 días desde mañana, de lunes a sábado, con fechas bloqueables. No publica horas. La jornada exacta y los sectores atendidos siguen pendientes de confirmación.
 - Estados: por confirmar, confirmada, realizada, no estaba, cancelada y cerrada. Se puede borrar definitivamente cada visita.
 - Al marcar realizada, programa el llamado a los **14 días** desde ese día, según el calendario de Santiago. El plazo puede cambiarse para futuras visitas.
@@ -110,7 +110,7 @@ Referencias: [API de envío](https://developers.cloudflare.com/email-service/api
 
 Evidencia previa al PR #4: agenda comprobada en Preview local con Wrangler usando datos ficticios, con validación, confirmación manual, visita realizada, seguimiento a 14 días y cierre del llamado. Ese pase no verifica el rediseño y las interacciones incorporadas por el PR #4.
 
-Entrega del 08-11-2026: revisión del diff y `node --check` de los JavaScript modificados, sin errores de sintaxis. Tras el deploy autorizado se comprobó HTTP 200 en Inicio, Servicios, Contacto y Admin. `/agendar/` devuelve 404 mientras las solicitudes están desactivadas; los CTA públicos conservan el fallback a WhatsApp. Producción mantiene la fecha de compatibilidad `2026-11-05`. No se ejecutaron tests, lint, build de aplicación, navegador ni Lighthouse para esta entrega. El render a 390/1440, FLIP, mazo, diálogo, View Transitions, sesiones y recepción real de correos no se observaron en ejecución. No se activaron solicitudes, notificaciones, dominio ni indexación.
+Entrega del 08-11-2026: revisión del diff y `node --check` de los JavaScript modificados, sin errores de sintaxis. Tras el deploy autorizado se comprobó HTTP 200 en Inicio, Servicios, Contacto y Admin. El 08-11-2026 se configuró el acceso y se activaron las solicitudes; `/agendar/` responde 200. Producción mantiene la fecha de compatibilidad `2026-11-05`. No se ejecutaron tests, lint, build de aplicación, navegador ni Lighthouse para esta entrega. El render a 390/1440, FLIP, mazo, diálogo, View Transitions, sesiones y recepción real de correos no se observaron en ejecución. Notificaciones, dominio e indexación siguen desactivados.
 
 Las fotos de apoyo se identifican en Créditos y no se presentan como trabajos propios. Las fotos reales del cliente están en Trabajo real. La portada ilustrativa y su versión térmica están en `sitio/img/`, con procedencia y prompts en `material/prompts.md`.
 
