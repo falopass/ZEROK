@@ -12,7 +12,7 @@ const hace = iso => {
   return `hace ${Math.floor(h / 24)} d`;
 };
 
-export function agendaPanel(root, api, status, activo, avisar = () => {}) {
+export function agendaPanel(root, api, status, activo, avisar = () => {}, autorizado = () => true) {
   let data, vista = 'pendientes', cargando = false, configDirty = false;
   const filtros = {
     pendientes: ['Por confirmar', v => v.estado === 'solicitada'],
@@ -46,10 +46,16 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}) {
   }
   async function load() {
     if (cargando) return true;
+    if (!autorizado()) return false;
     cargando = true;
     try {
-      data = await api('visitas');
-      avisar(data.visitas.filter(v => v.estado === 'solicitada').length);
+      const reciente = await api('visitas');
+      if (!autorizado()) return false;
+      avisar(reciente.visitas.filter(v => v.estado === 'solicitada').length);
+      // Edits typed while the request was in flight keep the displayed snapshot and DOM;
+      // expectedUpdated must stay the one the user sees, so a stale base returns a 409, not a silent overwrite.
+      if (activo() && dirty()) return true;
+      data = reciente;
       render();
       return true;
     } catch (error) { status(error.message, true); return false; }
@@ -57,6 +63,8 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}) {
   }
   // True while a card or the availability form has typed edits that a refresh must not wipe.
   const dirty = () => configDirty || !!root.querySelector('[data-visita][data-dirty]');
+  // Drops the typed-edit markers. Runs only after the user confirms discarding them.
+  const discard = () => { configDirty = false; root.querySelectorAll('[data-visita][data-dirty]').forEach(card => delete card.dataset.dirty); };
   root.addEventListener('input', event => {
     const card = event.target.closest('[data-visita]');
     if (card) card.dataset.dirty = '1';
@@ -66,8 +74,14 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}) {
     if (!activo()) return;
     const button = event.target.closest('button');
     if (!button) return;
-    if (button.dataset.vista) { vista = button.dataset.vista; render(); return; }
-    if (button.hasAttribute('data-agenda-refresh')) { await load(); return; }
+    if (button.dataset.vista) {
+      if (dirty() && !confirm('Tienes cambios sin guardar en la agenda. ¿Cambiar de vista y descartarlos?')) return;
+      vista = button.dataset.vista; discard(); render(); return;
+    }
+    if (button.hasAttribute('data-agenda-refresh')) {
+      if (dirty() && !confirm('Tienes cambios sin guardar en la agenda. ¿Actualizar y descartarlos?')) return;
+      discard(); await load(); return;
+    }
     if (button.hasAttribute('data-copiar')) {
       const texto = button.dataset.copiar;
       const aviso = ok => { button.textContent = ok ? 'Dirección copiada' : 'No se pudo copiar'; setTimeout(() => { button.textContent = 'Copiar dirección'; }, 1800); };
@@ -94,16 +108,22 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}) {
     if (action === 'eliminar' && !confirm('¿Borrar definitivamente esta visita y sus datos personales? No se puede deshacer.')) return;
     if (action === 'realizada' && !confirm(`¿La visita ya se realizó? Se programará el llamado para dentro de ${data.config.seguimiento} días.`)) return;
     if (action === 'cancelar' && !confirm('¿Cancelar esta visita? Coordina el cambio con el cliente por teléfono.')) return;
+    const pendientes = config ? !!root.querySelector('[data-visita][data-dirty]')
+      : configDirty || [...root.querySelectorAll('[data-visita][data-dirty]')].some(card => card !== group);
+    if (pendientes && !confirm('Hay cambios sin guardar en otra parte de la agenda. Al guardar este cambio se descartarán. ¿Seguir?')) return;
     const visita = action && data.visitas.find(v => v.id === group.dataset.visita);
     const input = config ? { revision: data.config.revision, activa: group.querySelector('[name="activa"]').checked, bloqueados: value('bloqueados').split(/\s+/).filter(Boolean), seguimiento: Number(value('seguimiento')) }
       : { id: visita.id, expectedUpdated: visita.actualizada, accion: action, dia: value('dia'), hora: value('hora'), nota: value('nota'), resultado: value('resultado') };
     button.disabled = true;
     try {
-      data = await api(config ? 'agenda' : 'visitas', { method: 'PUT', body: JSON.stringify(input) });
+      const respuesta = await api(config ? 'agenda' : 'visitas', { method: 'PUT', body: JSON.stringify(input) });
+      // If the session ended mid-request the DOM still shows the old snapshot: keep it paired.
+      if (!autorizado()) return;
+      data = respuesta;
       avisar(data.visitas.filter(v => v.estado === 'solicitada').length);
       render(); status(data.warning || (config ? 'Disponibilidad guardada.' : 'Visita actualizada.'), !!data.warning);
     } catch (error) { status(error.message, true); }
     finally { button.disabled = false; }
   });
-  return { load, dirty };
+  return { load, dirty, discard };
 }
