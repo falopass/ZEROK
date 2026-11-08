@@ -54,6 +54,17 @@ fotos de detalle en 16:11. Toda la home bajó de unos 12.650 a unos 9.730 px de 
 - Entrada suave, revelado de secciones y hover fotográfico, respetando movimiento reducido. En móvil se omiten foto y resumen para priorizar el formulario.
 - Se mantiene la confirmación manual por teléfono, sin promesas de cupo ni de atención preferente.
 
+### Revisión 6 (08-11-2026): la solicitud es el canal principal
+Decisión de Diego: la persona envía la solicitud, ZÉROK recibe el aviso (correo cuando esté el dominio; panel mientras) y la llama al número que dejó. WhatsApp queda como alternativa deliberada.
+- **Un solo flujo**: el selector de Inicio es el paso 1 de la solicitud. Con agenda activa, «Elegir día y enviar» hace POST a `/agendar/preparar/` (entrega sin guardar, mismo origen, `no-store`; el texto libre nunca viaja en la URL) y llega a `/agendar/` con el paso 1 resuelto en un `<details>` editable. Con agenda inactiva se mantiene el envío a WhatsApp. En `/agendar/` solo el equipo puede llegar por GET (`?equipo=`); falla y sector jamás en la URL.
+- **Síntomas por equipo** en píldoras que rellenan el texto libre; «Otra falla» enfoca el campo. Describen lo que la persona ve, no promesas.
+- **Vista previa «Tu solicitud»** en lenguaje natural («Mi refrigerador no enfría. Estoy en Rahue.»); la foto elegida vuela a la tarjeta en FLIP (280 ms) y las píldoras entran en cascada (40 ms).
+- **Hero**: 7 chips de equipo llevan al selector y dejan el equipo marcado; la lente barre la foto una vez en todos los dispositivos antes de seguir al puntero; termómetro de 2 px bajo el header (`animation-timeline: scroll()`, calor a frío); entrada con resorte y 60 ms de desfase.
+- **Confirmación**: 3 pasos (solicitud → llamada → visita), símbolo que gira y se estabiliza, «Mandar fotos del equipo» por WhatsApp sin promesa de entrega.
+- **Tarjetas**: mazo de Trabajo real que se reparte y abre `<dialog>` nativo (Esc, foco de vuelta, enlace directo a la foto sin JS); láminas de servicios con índice grande en contorno fuera de la caja, foto con revelado en diagonal y píldoras escalonadas; sectores en secuencia; titular del cierre palabra por palabra (GSAP, con texto íntegro si falla).
+- **Panel**: abre en Agenda con contador de pendientes en menú y pestaña, refresco cada 60 s solo visible y sin pisar lo que se escribe, acciones móviles (llamar, WhatsApp, mapa, copiar dirección) y aviso honesto del correo pendiente.
+- **Errores del formulario siempre en la página**: origen, formato, tamaño o agenda desactivada responden la vista estilada, nunca JSON ni texto plano.
+
 ## 1. Lectura del diseño
 
 **Lectura:** landing de servicio técnico local para dueños de casa y negocios de Osorno, con un

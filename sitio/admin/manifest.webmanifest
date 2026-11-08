@@ -1,0 +1,13 @@
+{
+  "name": "ZÉROK · Administración",
+  "short_name": "ZÉROK",
+  "start_url": "/admin/",
+  "scope": "/admin/",
+  "display": "standalone",
+  "background_color": "#EEF3F5",
+  "theme_color": "#EEF3F5",
+  "icons": [
+    { "src": "/img/icono-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/img/logo.png", "sizes": "320x320", "type": "image/png" }
+  ]
+}

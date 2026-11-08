@@ -3,8 +3,32 @@ import { MAX_CONTENT_BYTES, CONTENT_SIZE_ERROR } from '../js/limites.js';
 
 const $ = selector => document.querySelector(selector);
 const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-let documentData, revision, section = 'general', dirty = false, setup = false, saving = false;
-const visitas = agendaPanel($('#editor'), api, status, () => section === 'agenda');
+let documentData, revision, section = 'agenda', dirty = false, setup = false, saving = false, autenticado = false;
+const badge = n => {
+  $('#agenda-badge').hidden = !n;
+  $('#agenda-badge').textContent = n;
+  document.title = n ? `(${n}) Administración | ZÉROK` : 'Administración | ZÉROK';
+};
+const visitas = agendaPanel($('#editor'), api, status, () => section === 'agenda', badge, () => autenticado);
+// The agenda refreshes every 60 s while visible, authenticated and without typed edits.
+let refresco;
+const detenerRefresco = () => { clearInterval(refresco); refresco = null; };
+const iniciarRefresco = () => {
+  detenerRefresco();
+  refresco = setInterval(async () => {
+    if (!autenticado || document.visibilityState !== 'visible' || visitas.dirty()) return;
+    if (!await visitas.load()) detenerRefresco();
+  }, 60000);
+};
+document.addEventListener('visibilitychange', () => {
+  if (autenticado && document.visibilityState === 'visible' && !visitas.dirty()) visitas.load();
+});
+addEventListener('pagehide', detenerRefresco);
+addEventListener('pageshow', event => {
+  if (!event.persisted || !autenticado) return;
+  iniciarRefresco();
+  if (document.visibilityState === 'visible' && !visitas.dirty()) visitas.load();
+});
 const titles = { agenda: 'Agenda de visitas', general: 'Textos y cobertura', servicios: 'Servicios', productos: 'Precios y productos', trabajos: 'Trabajos y fotos', blog: 'Blog', faq: 'Preguntas frecuentes', seguridad: 'Seguridad y respaldo' };
 const field = (key, label, type = 'text', options = {}) => ({ key, label, type, ...options });
 const schemas = {
@@ -20,9 +44,12 @@ async function api(path, options = {}) {
   const response = await fetch(`/admin/api/${path}`, { credentials: 'same-origin', ...options, headers: { ...(options.body && !(options.body instanceof Blob) ? { 'content-type': 'application/json' } : {}), ...options.headers } });
   const data = await response.json();
   if (!response.ok) {
-    if (response.status === 401 && path !== 'login' && path !== 'setup') {
+    if (response.status === 401 && !['login', 'setup', 'session'].includes(path)) {
+      autenticado = false;
+      detenerRefresco();
+      badge(0);
       $('#access').hidden = false; $('#workspace').hidden = true;
-      $('#login-status').textContent = 'Tu sesión terminó. Inicia sesión para recuperar tus cambios en esta pestaña.';
+      $('#login-status').textContent = 'Tu sesión terminó. Vuelve a entrar; lo que estabas editando se conserva en esta pestaña.';
     }
     throw new Error(data.error || 'No se pudo completar la operación.');
   }
@@ -57,7 +84,8 @@ function render() {
   $('#save').hidden = ['seguridad', 'agenda'].includes(section);
   const editor = $('#editor');
   if (section === 'agenda') {
-    editor.innerHTML = '<p role="status">Cargando agenda...</p>';
+    // An existing agenda (e.g. after a session renewal) keeps its DOM and typed edits.
+    if (!editor.querySelector('.agenda-toolbar')) editor.innerHTML = '<p role="status">Cargando agenda...</p>';
     visitas.load();
     return;
   }
@@ -95,12 +123,23 @@ $('#login-form').addEventListener('submit', async event => {
   try {
     await api(setup ? 'setup' : 'login', { method: 'POST', body: JSON.stringify({ password: values.get('password'), code: values.get('code') }) });
     form.reset(); setup = false;
+    autenticado = true;
     await load(true);
+    iniciarRefresco();
   } catch (error) { $('#login-status').textContent = error.message; $('#login-status').classList.add('error'); }
   finally { button.disabled = false; }
 });
 
-document.querySelectorAll('[data-section]').forEach(button => button.addEventListener('click', () => { section = button.dataset.section; render(); }));
+document.querySelectorAll('[data-section]').forEach(button => button.addEventListener('click', () => {
+  const destino = button.dataset.section;
+  // Agenda edits live only in its DOM: leaving the section would lose them, so ask first.
+  if (section === 'agenda' && destino !== 'agenda' && visitas.dirty()) {
+    if (!confirm('Tienes cambios sin guardar en la agenda. ¿Salir y descartarlos?')) return;
+    visitas.discard();
+  }
+  section = destino;
+  render();
+}));
 $('#editor').addEventListener('submit', event => event.preventDefault());
 $('#editor').addEventListener('input', event => {
   const input = event.target;
@@ -200,14 +239,17 @@ $('#editor').addEventListener('change', async event => {
 });
 
 $('#logout').addEventListener('click', async () => {
-  if (dirty && !confirm('Tienes cambios sin guardar. ¿Cerrar la sesión y descartarlos?')) return;
-  try { await api('logout', { method: 'POST' }); dirty = false; location.reload(); } catch (error) { status(error.message, true); }
+  if ((dirty || visitas.dirty()) && !confirm('Tienes cambios sin guardar. ¿Cerrar la sesión y descartarlos?')) return;
+  autenticado = false;
+  detenerRefresco();
+  try { await api('logout', { method: 'POST' }); dirty = false; location.reload(); }
+  catch (error) { autenticado = true; iniciarRefresco(); status(error.message, true); }
 });
-window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
+window.addEventListener('beforeunload', event => { if (dirty || visitas.dirty()) { event.preventDefault(); event.returnValue = ''; } });
 
 try {
   const state = await api('session');
-  if (state.autenticado) { $('#login-form button').disabled = false; await load(); }
+  if (state.autenticado) { autenticado = true; $('#login-form button').disabled = false; await load(); iniciarRefresco(); }
   else {
     setup = state.pendiente;
     $('#setup-code').hidden = !setup;
