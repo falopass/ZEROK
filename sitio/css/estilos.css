@@ -118,8 +118,6 @@ main:focus{outline:0}
 .form-fields::after{content:'';position:absolute;inset:0;background:linear-gradient(var(--linea) 1px,transparent 1px),linear-gradient(90deg,var(--linea) 1px,transparent 1px);background-size:34px 34px;opacity:.14;pointer-events:none;-webkit-mask-image:linear-gradient(#000,transparent 72%);mask-image:linear-gradient(#000,transparent 72%)}
 .form-fields>*{position:relative;z-index:1}
 .form-kicker{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-2px -2px 0;padding-bottom:14px;border-bottom:1px solid var(--linea);color:var(--texto-2);font-size:.6875rem;text-transform:uppercase;letter-spacing:.08em}
-.form-fields>fieldset{position:relative}
-.form-fields>fieldset::before{content:'';position:absolute;left:14px;top:46px;bottom:-14px;width:1px;background:var(--linea)}
 legend{display:flex;align-items:center;gap:10px;font-size:.9375rem}
 .step-number{display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:50%;background:var(--marca);color:var(--fondo);font-size:.6875rem}
 .step-heading{display:flex;align-items:center;gap:10px;margin-bottom:8px}
