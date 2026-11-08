@@ -165,7 +165,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0
 .message-bubble.updating{animation:bubble-in 450ms var(--resorte)}
 .message-result>.button{margin-top:0}
 .form-error{color:var(--error);font-size:.875rem;margin-top:16px}
-@media(max-width:767px){.message-result .button{width:100%}}
+@media(max-width:767px){.message-result .button{width:100%}
+.diagnosis{padding-bottom:24px}
+.trabajos{padding-top:24px}}
 
 /* Trabajo real */
 .trabajos-head{margin-bottom:32px}
