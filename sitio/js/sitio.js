@@ -60,6 +60,50 @@ for (const group of document.querySelectorAll('[data-audience]')) {
   });
 }
 
+// Hero equipment chips mark the matching option in the selector below.
+for (const chip of document.querySelectorAll('.hero-chip')) {
+  chip.addEventListener('click', () => {
+    const radio = document.querySelector(`[data-message] [name=equipo][value="${CSS.escape(chip.dataset.equipo)}"]`);
+    if (radio && !radio.checked) { radio.checked = true; radio.dispatchEvent(new Event('change', { bubbles: true })); }
+  });
+}
+
+// A deliberate submit disables its button until the page navigates; bfcache restores it.
+for (const form of document.querySelectorAll('[data-native-submit]')) {
+  const button = form.querySelector('[type=submit]');
+  const label = button?.querySelector('span');
+  const text = label?.textContent;
+  form.addEventListener('submit', () => {
+    button.disabled = true;
+    if (label) label.textContent = 'Enviando...';
+  });
+  addEventListener('pageshow', event => {
+    if (event.persisted) { button.disabled = false; if (label) label.textContent = text; }
+  });
+}
+
+// Trabajo real: each card opens a native dialog with the full photo and phrase.
+const dialog = document.querySelector('[data-trabajo-dialog]');
+if (dialog) {
+  let trigger;
+  for (const open of document.querySelectorAll('[data-trabajo-open]')) {
+    open.addEventListener('click', event => {
+      event.preventDefault();
+      trigger = open;
+      const link = dialog.querySelector('.trabajo-dialog-foto');
+      const img = link.querySelector('img');
+      link.href = open.href;
+      img.src = open.href;
+      img.alt = open.dataset.dialogTexto || '';
+      dialog.querySelector('[data-dialog-n]').textContent = `Trabajo ${open.dataset.dialogN}`;
+      dialog.querySelector('[data-dialog-texto]').textContent = `«${open.dataset.dialogTexto}.»`;
+      dialog.showModal();
+    });
+  }
+  dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+  dialog.addEventListener('close', () => trigger?.focus());
+}
+
 for (const button of document.querySelectorAll('[data-filter]')) {
   button.addEventListener('click', () => {
     document.querySelectorAll('[data-filter]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
@@ -102,8 +146,9 @@ if (thermal) {
     targetY = (event.clientY - rect.top) / rect.height * 100;
     if (!frame) frame = requestAnimationFrame(draw);
   });
-  if (!reduced.matches && matchMedia('(pointer: coarse)').matches) {
-    x = 15; y = 30;
+  // The lens sweeps the photo once on every device, then follows the pointer.
+  if (!reduced.matches) {
+    x = -6; y = 42;
     draw();
   }
 }
@@ -130,7 +175,10 @@ async function motion() {
     await load('/js/vendor/ScrollTrigger.min.js');
     gsap.registerPlugin(ScrollTrigger);
     const text = document.querySelector('.presentation [data-words]');
-    if (text) text.innerHTML = text.textContent.split(/(\s+)/).map(part => part.trim() ? `<span class="palabra">${part.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c])}</span>` : part).join('');
+    const palabra = part => part.trim() ? `<span class="palabra">${part.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c])}</span>` : part;
+    if (text) text.innerHTML = text.textContent.split(/(\s+)/).map(palabra).join('');
+    const cierre = document.querySelector('.closing-hero h2');
+    if (cierre) cierre.innerHTML = [...cierre.childNodes].map(node => node.nodeType === 3 ? node.textContent.split(/(\s+)/).map(palabra).join('') : node.outerHTML).join('');
     const media = gsap.matchMedia();
     media.add('(prefers-reduced-motion: no-preference)', () => {
       const giro = document.querySelector('.hero-giro');
@@ -140,6 +188,8 @@ async function motion() {
       if (route) gsap.fromTo(route, { '--route-progress': 0 }, { '--route-progress': 1, ease: 'none', scrollTrigger: { trigger: route, start: 'top 65%', end: 'bottom 55%', scrub: true } });
       const words = gsap.utils.toArray('.presentation .palabra');
       if (words.length) gsap.fromTo(words, { opacity: .16 }, { opacity: 1, ease: 'none', stagger: .1, scrollTrigger: { trigger: text, start: 'top 85%', end: 'bottom 50%', scrub: true } });
+      const palabras = gsap.utils.toArray('.closing-hero .palabra');
+      if (palabras.length) gsap.fromTo(palabras, { opacity: .12, y: 16 }, { opacity: 1, y: 0, stagger: .07, duration: .55, ease: 'power2.out', scrollTrigger: { trigger: '.closing-hero h2', start: 'top 85%', once: true } });
     });
     media.add('(min-width: 1024px) and (min-height: 800px) and (prefers-reduced-motion: no-preference)', () => {
       const sheets = gsap.utils.toArray('.service-sheet');
@@ -153,19 +203,24 @@ else setTimeout(motion, 1200);
 const agenda = document.querySelector('.agenda-form');
 if (agenda) {
   document.querySelector('[data-agenda-resumen]').hidden = false;
+  const falla = document.querySelector('[data-agenda-problema]');
   const resumen = () => {
     const equipo = agenda.querySelector('[name="equipo"]:checked');
     const dia = agenda.querySelector('[name="dia"]:checked');
     document.querySelector('[data-agenda-equipo]').textContent = equipo?.value || 'Elige tu equipo';
+    if (falla) falla.textContent = agenda.querySelector('[name=problema]')?.value.trim() || 'Cuéntanos qué le pasa';
     document.querySelector('[data-agenda-dia]').textContent = dia
       ? new Intl.DateTimeFormat('es-CL', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(dia.value + 'T12:00:00Z'))
       : 'Elige tu día preferido';
   };
   agenda.addEventListener('change', resumen);
+  agenda.addEventListener('input', resumen);
   agenda.addEventListener('focusin', event => {
     const pasos = [...agenda.querySelectorAll('.agenda-paso')];
     const actual = pasos.indexOf(event.target.closest('.agenda-paso'));
     if (actual !== -1) document.querySelector('.agenda-etiqueta').textContent = `0${actual + 1} / 04`;
   });
+  // With a completed request, the day step gets keyboard focus.
+  if (agenda.dataset.prefill !== undefined) agenda.querySelector('[name=dia]')?.focus();
   resumen();
 }
