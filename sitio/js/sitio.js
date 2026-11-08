@@ -29,9 +29,15 @@ if (canReveal) {
     for (const entry of entries) entry.target.classList.toggle('is-on', entry.isIntersecting || entry.boundingClientRect.top < 0);
   }, { rootMargin: '0px 0px -40% 0px' });
   document.querySelectorAll('.journey li').forEach(step => steps.observe(step));
-  const hero = document.querySelector('.hero-actions');
   const bar = document.querySelector('.contact-bar');
-  if (hero && bar) new IntersectionObserver(entries => bar.classList.toggle('out-of-view', entries[0].isIntersecting), { threshold: .3 }).observe(hero);
+  if (bar) {
+    const visibleActions = new Set();
+    const actionObserver = new IntersectionObserver(entries => {
+      for (const entry of entries) entry.isIntersecting ? visibleActions.add(entry.target) : visibleActions.delete(entry.target);
+      bar.classList.toggle('out-of-view', visibleActions.size > 0);
+    }, { threshold: .3 });
+    document.querySelectorAll('.hero-actions, .closing-actions').forEach(actions => actionObserver.observe(actions));
+  }
   const first = document.querySelector('.hero, .page-heading, .agenda-layout');
   if (first) new IntersectionObserver(entries => document.querySelector('.site-header')?.classList.toggle('is-compact', !entries[0].isIntersecting)).observe(first);
   const index = document.querySelector('.service-index');
