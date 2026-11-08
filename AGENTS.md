@@ -1,7 +1,7 @@
 # ZÉROK — contrato para agentes
 
 ## Qué es
-Sitio del cliente **ZÉROK Refrigeración & Climatización Profesional** (servicio técnico a domicilio, Osorno). Todo el trabajo de este cliente vive en esta carpeta; nunca en otro repo. Estado: implementado y **desplegado en workers.dev**; dominio, agenda y avisos por correo pendientes.
+Sitio del cliente **ZÉROK Refrigeración & Climatización Profesional** (servicio técnico a domicilio, Osorno). Todo el trabajo de este cliente vive en esta carpeta; nunca en otro repo. Estado: implementado y **desplegado en workers.dev**; dominio y avisos por correo pendientes.
 
 ## Stack y versiones
 Cloudflare Workers + Static Assets. HTML/CSS/JS vanilla en `sitio/`, contenido editable en KV, fotos en R2, panel de administración en `/admin/` con acceso serializado en Durable Objects. Render en servidor. Patrón copiado de `rancho-itahue` sin tocar ese repo. Límites y configuración en `README.md`.
@@ -52,5 +52,6 @@ $29.990/mes + $29.990 de activación, sin permanencia: hosting y dominio, 5 pág
 - 06-11-2026: logo del cliente vectorizado y paleta recalibrada; primeras 3 fotos reales con su frase en «Trabajo real» (revisión 4 en `DISENO.md`).
 - 06-11-2026: agenda de visitas implementada (`src/agenda.js`, pestaña en el panel y cron de avisos), incluida sin costo para el primer cliente. Inactiva hasta abrir el panel y activar «solicitudes en línea»; los avisos por correo esperan el dominio y Email Service.
 - 08-11-2026: agenda rediseñada en dos columnas (PR #3) y flujo de solicitud como canal principal: selector con síntomas por equipo que entrega por POST a `/agendar/preparar/` (el texto libre nunca viaja en la URL), chips en el hero, termómetro de scroll, mazo y `<dialog>` en Trabajo real, revelados en diagonal, panel que abre en Agenda con contador de pendientes y refresco visible, `manifest.webmanifest` del panel. Revisión 6 en `DISENO.md`.
-- 08-11-2026: PR #4 fusionado y revisión `3522619` desplegada manualmente con autorización de Diego; versión `66f88e66-3383-444c-822c-7157f02b990f`. HTTP 200 en Inicio, Servicios, Contacto y Admin. Agenda inactiva (404 en `/agendar/`), correo e indexación desactivados. Sintaxis comprobada; rediseño y sesiones sin observación en navegador.
-- Pendiente: secreto `ADMIN_SETUP_TOKEN` del Worker y creación del acceso, activación de la agenda, secretos de GitHub para el deploy automático, material real del cliente (§9 del plan), horario exacto y registro/conexión del dominio. Precios, blog, galería y FAQ siguen ocultos hasta cargar contenido confirmado.
+- 08-11-2026: PR #4 fusionado y revisión `3522619` desplegada manualmente con autorización de Diego; versión `66f88e66-3383-444c-822c-7157f02b990f`. HTTP 200 en Inicio, Servicios, Contacto y Admin. Sintaxis comprobada; rediseño y sesiones sin observación en navegador.
+- 08-11-2026: secreto `ADMIN_SETUP_TOKEN` configurado, acceso del panel creado y solicitudes en línea activadas; `/agendar/` responde 200. Correo sigue desactivado hasta dominio y Email Service.
+- Pendiente: secretos de GitHub para el deploy automático, material real del cliente (§9 del plan), horario exacto y registro/conexión del dominio. Precios, blog, galería y FAQ siguen ocultos hasta cargar contenido confirmado.
