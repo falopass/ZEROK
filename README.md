@@ -5,7 +5,7 @@ Sitio y panel del servicio técnico ZÉROK en Osorno. HTML, CSS y JavaScript, si
 ## Lo implementado
 
 - Inicio, Servicios y Contacto con los siete servicios y los contactos reales.
-- Selector de equipo y falla que prepara el mensaje en el dispositivo. Solo abre WhatsApp cuando la persona pulsa Enviar mensaje. No envía mensajes automáticamente ni almacena datos del formulario.
+- Selector de equipo y falla que es el primer paso de la solicitud de visita. Con la agenda activa, «Elegir día y enviar» entrega equipo, falla y sector por POST a `/agendar/preparar/` (mismo origen, sin guardar, `no-store`; el texto libre nunca viaja en la URL) y `/agendar/` recibe el paso resuelto. Con la agenda inactiva prepara el mensaje de WhatsApp en el dispositivo y solo lo abre al pulsar el botón.
 - Lente térmica, entrada de marca, láminas apiladas, revelados, cambio Casa/Negocio y recorrido animado. Alternativas con movimiento reducido y lectura sin JavaScript.
 - Revisión 3 de diseño (06-11-2026, ver `DISENO.md`): radios en escala, bloques en tinta noche, franja en movimiento, selector con fotos y burbuja que «escribe», servicios apilados con foto, Casa/Negocio a sangre con parallax, presentación que se enciende con el scroll, recorrido con pasos que se marcan, mapa de Osorno con marcador y cierre fotográfico.
 - Logo del cliente (06-11-2026) vectorizado con potrace en `sitio/img/logo.svg` (símbolos `#simbolo` y `#palabra`, colores por variables CSS para modo claro, oscuro y bloques noche), `favicon.svg`, `icono-180.png` y `logo.png` para datos estructurados. La paleta se recalibró con el azul marino y el celeste del logo; el ámbar queda para las acciones.
@@ -77,7 +77,11 @@ Las fotografías retiradas del contenido no se borran de R2 automáticamente, pa
 
 ## Agenda de visitas
 
-La agenda se incluye sin costo adicional para ZÉROK como beneficio al primer cliente. El cliente solicita un día preferido, describe la falla y deja sus datos. No es una reserva confirmada ni promete un cupo: Vicente llama, coordina la hora y confirma desde **Agenda de visitas** en el panel.
+La agenda se incluye sin costo adicional para ZÉROK como beneficio al primer cliente. El cliente solicita un día preferido, describe la falla y deja sus datos. No es una reserva confirmada ni promete un cupo: ZÉROK llama, coordina la hora y confirma desde **Agenda de visitas** en el panel.
+
+- El envío desactiva el botón mientras navega para evitar dobles envíos; no hay deduplicación en servidor, así que un reintento de red muy puntual podría registrar una solicitud dos veces (se revisa y se borra desde el panel).
+- El correo al técnico incluye Llamar, WhatsApp (número normalizado y validado) y Mapa. Solicitudes cuyo día pedido ya pasó se avisan como «Solicitud pendiente», nunca como nuevas.
+- El panel muestra el conteo agregado de avisos en cola (pendientes y reintentos), sin prometer entregas.
 
 - Desactivada por defecto. Se abre desde **Disponibilidad y avisos**, después de configurar el acceso al panel. Al desactivarla, los botones vuelven a WhatsApp.
 - Ofrece los próximos 14 días desde mañana, de lunes a sábado, con fechas bloqueables. No publica horas. La jornada exacta y los sectores atendidos siguen pendientes de confirmación.
