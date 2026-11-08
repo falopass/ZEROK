@@ -34,7 +34,7 @@ Las páginas comparten una plantilla en vez de duplicar header, footer y metadat
 
 ## Configuración del alojamiento
 
-Primer deploy hecho el 06-11-2026 en https://zerok.ddiegosebastianbb.workers.dev (cuenta Cloudflare del estudio). Recursos creados: KV `zerok-contenido` (ID en `wrangler.jsonc`), bucket R2 `zerok-media` y Durable Object `Admin` (migración `v1`). Indexación desactivada. El dominio sigue sin conectar y el secreto `ADMIN_SETUP_TOKEN` todavía no se carga, así que el panel queda cerrado hasta el paso 5. Los pasos 1 a 4 ya están cumplidos; faltan 5 a 7.
+Primer deploy hecho el 06-11-2026 en https://zerok.ddiegosebastianbb.workers.dev (cuenta Cloudflare del estudio). Recursos creados: KV `zerok-contenido` (ID en `wrangler.jsonc`), bucket R2 `zerok-media` y Durable Object `Admin` (migración `v1`). El 08-11-2026 se publicó manualmente la revisión `3522619` (PR #4), versión del Worker `66f88e66-3383-444c-822c-7157f02b990f`, con Wrangler 4.156.0 fijado en el lockfile y autorización de Diego. Indexación y avisos por correo continúan desactivados. El dominio, la configuración del acceso y la activación de solicitudes siguen pendientes; no se modificaron secretos ni se habilitó el workflow automático.
 
 1. En la cuenta Cloudflare del cliente, habilitar R2 y preparar un token con permisos para Workers, KV, R2 y Durable Objects. No almacenar el token en el repositorio.
 2. Configurar en GitHub los secretos `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`.
@@ -108,9 +108,9 @@ Referencias: [API de envío](https://developers.cloudflare.com/email-service/api
 
 ## Comprobaciones y límites
 
-Agenda comprobada en el Preview local con Wrangler: validación de campos y teléfono, solicitud con datos ficticios, confirmación manual, visita realizada con seguimiento a 14 días y cierre del llamado. Revisados el formulario y el panel a 390 × 844, la sintaxis JavaScript y el diff. No se ejecutaron suites de tests, lint, build ni Lighthouse.
+Evidencia previa al PR #4: agenda comprobada en Preview local con Wrangler usando datos ficticios, con validación, confirmación manual, visita realizada, seguimiento a 14 días y cierre del llamado. Ese pase no verifica el rediseño y las interacciones incorporadas por el PR #4.
 
-El Preview usa la fecha de compatibilidad `2026-10-30` por la versión local de workerd; producción conserva `2026-11-05`. El código nuevo de agenda aún no se ha desplegado y no se ha verificado la entrega real de correo. El dominio y el remitente siguen pendientes. Tras el despliegue autorizado, comprobar HTTP 200.
+Entrega del 08-11-2026: revisión del diff y `node --check` de los JavaScript modificados, sin errores de sintaxis. Tras el deploy autorizado se comprobó HTTP 200 en Inicio, Servicios, Contacto y Admin. `/agendar/` devuelve 404 mientras las solicitudes están desactivadas; los CTA públicos conservan el fallback a WhatsApp. Producción mantiene la fecha de compatibilidad `2026-11-05`. No se ejecutaron tests, lint, build de aplicación, navegador ni Lighthouse para esta entrega. El render a 390/1440, FLIP, mazo, diálogo, View Transitions, sesiones y recepción real de correos no se observaron en ejecución. No se activaron solicitudes, notificaciones, dominio ni indexación.
 
 Las fotos de apoyo se identifican en Créditos y no se presentan como trabajos propios. Las fotos reales del cliente están en Trabajo real. La portada ilustrativa y su versión térmica están en `sitio/img/`, con procedencia y prompts en `material/prompts.md`.
 
