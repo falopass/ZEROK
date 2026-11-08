@@ -65,6 +65,10 @@ Decisión de Diego: la persona envía la solicitud, ZÉROK recibe el aviso (corr
 - **Panel**: abre en Agenda con contador de pendientes en menú y pestaña, refresco cada 60 s solo visible y sin pisar lo que se escribe, acciones móviles (llamar, WhatsApp, mapa, copiar dirección) y aviso honesto del correo pendiente.
 - **Errores del formulario siempre en la página**: origen, formato, tamaño o agenda desactivada responden la vista estilada, nunca JSON ni texto plano.
 
+### Revisión 7 (08-11-2026): servicios móviles como índice
+- En pantallas bajo 1024 px, las siete láminas de servicios se convierten en un índice nativo `<details>`: todos los títulos quedan visibles de inmediato, una lámina se expande a la vez y cada detalle conserva foto, fallas y acciones.
+- La entrada cambia de láminas apiladas a filas que se escriben desde la izquierda; la apertura despliega el contenido y la foto aparece con el mismo revelado diagonal. Escritorio conserva el mazo sticky.
+
 ## 1. Lectura del diseño
 
 **Lectura:** landing de servicio técnico local para dueños de casa y negocios de Osorno, con un
