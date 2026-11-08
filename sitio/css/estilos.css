@@ -427,6 +427,7 @@ to{opacity:0;transform:scale(5)}
 }
 
 @media(min-width:768px){.message-form{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px}
+.message-result{position:sticky;top:96px;align-self:start}
 .message-form .equipment-rail{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));overflow:visible}
 .message-form .equipment-option>span{height:174px}
 .coverage{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:64px}
