@@ -142,22 +142,30 @@ legend{display:flex;align-items:center;gap:10px;font-size:.9375rem}
 input:not([type=radio]):not([type=checkbox]):not([type=file]),select,textarea{width:100%;min-height:48px;border:1.5px solid var(--linea);background:color-mix(in srgb,var(--fondo) 82%,#fff);border-radius:14px;padding:12px 14px;font-size:1rem;line-height:1.5;transition:border-color 150ms,box-shadow 150ms}
 textarea{min-height:104px;resize:vertical}
 input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0 0 3px rgb(224 154 31 / .35)}
-.message-result{position:relative;isolation:isolate;overflow:hidden;padding:32px 18px 24px;border:1px solid var(--linea);border-radius:24px;display:flex;flex-direction:column;align-items:flex-start;min-height:380px;background:var(--fondo);box-shadow:var(--sombra)}
+.message-result{position:relative;isolation:isolate;overflow:hidden;padding:24px 16px 20px;border:1px solid var(--linea);border-radius:24px;display:flex;flex-direction:column;align-items:flex-start;background:var(--fondo);box-shadow:var(--sombra)}
 .message-result::before{content:'';position:absolute;inset:0 0 auto;height:4px;background:var(--termico)}
 .message-result>.mono{color:var(--texto-2);margin-bottom:20px}
-.message-typing,.message-bubble{position:relative;align-self:flex-end;max-width:100%;background:#eef3f5;color:#0f1d26;border-radius:4px 20px 20px 20px;margin-bottom:16px;box-shadow:0 16px 32px -20px rgb(0 0 0 / .8)}
-.message-bubble::before{content:'';position:absolute;left:-7px;top:16px;width:14px;height:14px;background:inherit;clip-path:polygon(100% 0,0 50%,100% 100%)}
+.message-thread{display:grid;gap:10px;width:100%;margin-bottom:14px}
+.message-typing,.message-bubble{position:relative;justify-self:end;max-width:88%;background:#eef3f5;color:#0f1d26;border-radius:18px 18px 4px 18px;box-shadow:0 16px 32px -20px rgb(0 0 0 / .8)}
+.message-bubble::before{content:'';position:absolute;right:-7px;top:16px;width:14px;height:14px;background:inherit;clip-path:polygon(0 0,100% 50%,0 100%)}
 .message-typing{display:none;gap:6px;padding:16px 18px}
 .message-typing i{width:7px;height:7px;border-radius:50%;background:#4a5f6b;animation:typing 900ms ease-in-out infinite}
 .message-typing i:nth-child(2){animation-delay:150ms}
 .message-typing i:nth-child(3){animation-delay:300ms}
 .is-typing .message-typing{display:flex}
-.is-typing .message-bubble{display:none}
-.message-bubble{padding:16px 18px}
+.is-typing .message-bubble,.is-typing .message-reply{display:none}
+.message-bubble{padding:12px 14px}
 .message-preview{font-size:1.125rem;line-height:1.5;margin:0;overflow-wrap:anywhere}
+.message-meta{display:block;margin-top:8px;color:#5c7180;font-size:.6875rem;line-height:1.2}
+.message-reply{position:relative;justify-self:start;max-width:88%;padding:12px 14px;border:1px solid var(--linea);border-radius:4px 18px 18px 18px;background:var(--superficie-2);color:var(--texto)}
+.message-reply::before{content:'';position:absolute;left:-7px;top:16px;width:14px;height:14px;background:inherit;clip-path:polygon(100% 0,0 50%,100% 100%)}
+.message-author{display:block;margin-bottom:4px;color:#8fd3ee;font-size:.6875rem;letter-spacing:.08em;text-transform:uppercase}
+.message-reply p{margin:0;font-size:.9375rem;line-height:1.45}
+.message-note{margin:0 0 14px}
 .message-bubble.updating{animation:bubble-in 450ms var(--resorte)}
-.message-result>.button{margin-top:auto}
+.message-result>.button{margin-top:0}
 .form-error{color:var(--error);font-size:.875rem;margin-top:16px}
+@media(max-width:767px){.message-result .button{width:100%}}
 
 /* Trabajo real */
 .trabajos-head{margin-bottom:32px}
@@ -171,7 +179,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0
 .trabajo figcaption{position:absolute;inset:auto 0 0;padding:24px 22px}
 .trabajo .mono{color:#8fd3ee}
 .trabajo blockquote{margin:8px 0 0;font-size:clamp(1.125rem,1.5vw,1.3125rem);font-weight:620;font-stretch:108%;line-height:1.22;letter-spacing:-.02em;text-wrap:balance}
-.trabajos-pie{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px}
+.trabajos-pie{display:grid;gap:12px;margin-top:24px}
 
 /* Servicios apilados */
 .services-home{margin:24px 8px 0;border-radius:var(--radio-xl)}
@@ -419,7 +427,8 @@ to{opacity:0;transform:scale(5)}
 .hero-visual{height:380px}
 .hero-copy{padding-block:32px 8px}
 .form-fields{padding:32px}
-.message-result{padding:40px 32px 32px}
+.message-result{padding:32px}
+.trabajos-pie{display:flex;flex-wrap:wrap}
 .service-sheet{padding:20px}
 .service-sheet:not(.has-photo) .service-copy{padding:40px 28px}
 .footer{grid-template-columns:1fr 1fr}
