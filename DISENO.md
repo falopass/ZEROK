@@ -67,7 +67,7 @@ Decisión de Diego: la persona envía la solicitud, ZÉROK recibe el aviso (corr
 
 ### Revisión 7 (08-11-2026): servicios móviles como índice
 - En pantallas bajo 1024 px, las siete láminas de servicios se convierten en un índice nativo `<details>`: todos los títulos quedan visibles de inmediato, una lámina se expande a la vez y cada detalle conserva foto, fallas y acciones.
-- La entrada cambia de láminas apiladas a filas que se escriben desde la izquierda; la apertura despliega el contenido y la foto aparece con el mismo revelado diagonal. Escritorio conserva el mazo sticky.
+- La entrada cambia de láminas apiladas a filas que se escriben desde la izquierda; la apertura despliega el contenido, el cierre usa la misma transición con JavaScript y la foto aparece con el mismo revelado diagonal. Escritorio conserva el mazo sticky.
 
 ## 1. Lectura del diseño
 

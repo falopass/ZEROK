@@ -54,6 +54,35 @@ if (canReveal) {
 }
 reduced.addEventListener('change', () => document.documentElement.classList.toggle('motion-on', !reduced.matches && canReveal));
 
+const serviceMenu = document.querySelector('.service-menu');
+let closingService = null;
+const closeServiceItem = (item, after) => {
+  closingService = item;
+  item.classList.add('is-closing');
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    closingService = null;
+    item.classList.remove('is-closing');
+    item.open = false;
+    after?.();
+  };
+  item.querySelector('.service-item-body')?.addEventListener('transitionend', transition => {
+    if (transition.propertyName === 'grid-template-rows') finish();
+  }, { once: true });
+  setTimeout(finish, 650);
+};
+for (const item of serviceMenu?.querySelectorAll('.service-item') ?? []) {
+  item.querySelector('summary')?.addEventListener('click', event => {
+    if (reduced.matches) return;
+    if (closingService) { event.preventDefault(); return; }
+    const current = serviceMenu.querySelector('.service-item[open]');
+    if (item.open) { event.preventDefault(); closeServiceItem(item); }
+    else if (current && current !== item) { event.preventDefault(); closeServiceItem(current, () => { item.open = true; }); }
+  });
+}
+
 for (const group of document.querySelectorAll('[data-audience]')) {
   group.addEventListener('click', event => {
     const button = event.target.closest('[data-audience-choice]');
