@@ -69,6 +69,7 @@ Decisión de Diego: la persona envía la solicitud, ZÉROK recibe el aviso (corr
 - En pantallas bajo 1024 px, las siete láminas de servicios se convierten en un índice nativo `<details>`: todos los títulos quedan visibles de inmediato, una lámina se expande a la vez y cada detalle conserva foto, fallas y acciones.
 - La entrada cambia de láminas apiladas a filas que se escriben desde la izquierda; la apertura despliega el contenido, el cierre usa la misma transición con JavaScript y la foto aparece con el mismo revelado diagonal. Escritorio conserva el mazo sticky.
 - El diagnóstico se viste como ticket de terreno: tres pasos numerados, riel técnico sobre trama, tarjetas fotográficas con selección visible y solicitud en panel nocturno con burbuja.
+- La solicitud se lee como conversación compacta: burbuja del cliente a la derecha, respuesta de ZÉROK a la izquierda, altura por contenido y acciones de «Trabajo real» con Agendar primero en móvil.
 
 ## 1. Lectura del diseño
 
