@@ -213,7 +213,8 @@ $('#editor').addEventListener('click', async event => {
 
 function validarAntesDeGuardar() {
   const origen = section;
-  const destinos = [...new Set([...seccionesConCambios(), origen])].filter(s => schemas[s]);
+  // The mounted form goes first: re-rendering it would turn an empty number into 0 before it is checked.
+  const destinos = [...new Set([origen, ...seccionesConCambios()])].filter(s => schemas[s]);
   for (const sec of destinos) {
     if (sec !== section) { section = sec; render(); }
     const invalido = $('#editor').querySelector('input:invalid, textarea:invalid, select:invalid');
