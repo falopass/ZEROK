@@ -25,6 +25,10 @@ Pedido de Diego: «demasiado plana y cuadrada, le falta vida». Cambios que reem
   encienden con el scroll, pasos del recorrido que se marcan al pasar la línea, escritura antes de la
   burbuja del mensaje, CTA magnético y fotos que se descubren al entrar. Todo con alternativa reducida.
 
+### Revisión 9 (09-11-2026): selector como recorrido y ficha de visita
+- El diagnóstico es un recorrido de tres pasos: cada número se enciende en ámbar al completarse y la línea hacia el siguiente se llena de calor a frío. Las fotos de equipos no elegidos se atenúan para que destaque la elegida.
+- La vista previa deja de ser un chat simulado: es una **ficha de visita** (Equipo, Falla, Sector) que se llena en vivo, con la foto del equipo y un **termómetro** que avanza de «Falla» a «Visita» según los pasos listos. Con los tres pasos, el estado pasa a «Lista para enviar». WhatsApp queda como enlace secundario.
+
 ### Revisión 4 (06-11-2026): logo y fotos reales
 - **Logo del cliente**: copo con Z y aguja de manómetro, azul marino `#042C56` y celestes `#65BED7`,
   `#2381A9`, `#0C426C`. Vectorizado en `sitio/img/logo.svg`; se usa en header, hero (símbolo que entra

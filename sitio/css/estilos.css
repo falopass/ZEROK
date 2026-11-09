@@ -146,24 +146,44 @@ input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0
 .message-result{position:relative;isolation:isolate;overflow:hidden;padding:24px 16px 20px;border:1px solid var(--linea);border-radius:24px;display:flex;flex-direction:column;align-items:flex-start;background:var(--fondo);box-shadow:var(--sombra)}
 .message-result::before{content:'';position:absolute;inset:0 0 auto;height:4px;background:var(--termico)}
 .message-result>.mono{color:var(--texto-2);margin-bottom:20px}
-.message-thread{display:grid;gap:10px;width:100%;margin-bottom:14px}
-.message-typing,.message-bubble{position:relative;justify-self:end;max-width:88%;background:#eef3f5;color:#0f1d26;border-radius:18px 18px 4px 18px;box-shadow:0 16px 32px -20px rgb(0 0 0 / .8)}
-.message-bubble::before{content:'';position:absolute;right:-7px;top:16px;width:14px;height:14px;background:inherit;clip-path:polygon(0 0,100% 50%,0 100%)}
-.message-typing{display:none;gap:6px;padding:16px 18px}
-.message-typing i{width:7px;height:7px;border-radius:50%;background:#4a5f6b;animation:typing 900ms ease-in-out infinite}
-.message-typing i:nth-child(2){animation-delay:150ms}
-.message-typing i:nth-child(3){animation-delay:300ms}
-.is-typing .message-typing{display:flex}
-.is-typing .message-bubble,.is-typing .message-reply{display:none}
-.message-bubble{padding:12px 14px}
-.message-preview{font-size:1.125rem;line-height:1.5;margin:0;overflow-wrap:anywhere}
-.message-meta{display:block;margin-top:8px;color:#5c7180;font-size:.6875rem;line-height:1.2}
-.message-reply{position:relative;justify-self:start;max-width:88%;padding:12px 14px;border:1px solid var(--linea);border-radius:4px 18px 18px 18px;background:var(--superficie-2);color:var(--texto)}
-.message-reply::before{content:'';position:absolute;left:-7px;top:16px;width:14px;height:14px;background:inherit;clip-path:polygon(100% 0,0 50%,100% 100%)}
-.message-author{display:block;margin-bottom:4px;color:#8fd3ee;font-size:.6875rem;letter-spacing:.08em;text-transform:uppercase}
-.message-reply p{margin:0;font-size:.9375rem;line-height:1.45}
 .message-note{margin:0 0 14px}
-.message-bubble.updating{animation:bubble-in 450ms var(--resorte)}
+/* Ficha de visita: espejo del formulario que se llena en vivo; el termómetro pasa de la falla a la visita. */
+.ficha-head{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-bottom:16px}
+.ficha-head>.mono{color:var(--texto-2);font-size:.6875rem;letter-spacing:.08em;text-transform:uppercase}
+.ficha-estado{padding:4px 10px;border:1px solid var(--linea);border-radius:999px;font-size:.6875rem;color:var(--texto-2);transition:background 300ms,color 300ms,border-color 300ms}
+.ficha[data-lista] .ficha-estado{background:var(--acento);border-color:var(--acento);color:var(--sobre-acento)}
+.ficha-foto{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--superficie-2);margin-bottom:6px}
+.ficha-foto img{width:100%;height:100%;object-fit:cover;aspect-ratio:auto}
+.ficha-datos{width:100%;margin:0 0 20px;display:grid}
+.ficha-datos>div{display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;align-items:baseline;padding:14px 0;border-bottom:1px dashed var(--linea)}
+.ficha-datos dt{font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
+.ficha-datos dd{margin:0;font-size:1.0625rem;font-weight:600;line-height:1.35;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.ficha-datos dd:empty::before{content:attr(data-vacio);font-weight:400;font-size:.9375rem;color:var(--texto-2)}
+.ficha-datos dd.cambia{animation:ficha-dato 420ms var(--resorte)}
+@keyframes ficha-dato{from{opacity:.2;transform:translateY(6px)}to{opacity:1;transform:none}}
+.ficha-termo{width:100%;margin-bottom:18px}
+.ficha-termo-barra{position:relative;height:8px;border-radius:999px;background:var(--superficie-2);overflow:hidden}
+.ficha-termo-barra i{position:absolute;inset:0;border-radius:inherit;background:linear-gradient(90deg,#e4ac4b,#bd541c 50%,#65bed7);clip-path:inset(0 calc((1 - var(--avance,0)) * 100%) 0 0);transition:clip-path 700ms var(--ease)}
+.ficha-termo-ejes{display:flex;justify-content:space-between;margin-top:8px;font-size:.625rem;letter-spacing:.08em;text-transform:uppercase;color:var(--texto-2)}
+.ficha .message-note{margin:0 0 16px}
+.button.ficha-wa{margin-top:4px;color:var(--texto-2);gap:8px}
+.button.ficha-wa:hover{color:var(--texto)}
+/* Diagnóstico como recorrido: cada paso completo enciende su número y enfría la línea hacia el siguiente. */
+.message-form .form-fields{gap:28px}
+.message-form .paso{position:relative;padding-left:44px}
+.message-form .paso legend,.message-form .paso .step-heading{min-height:28px;margin-bottom:12px;font-size:1rem;font-weight:650}
+/* Floated legend sits inside the fieldset box, so the rail line can start right under its number. */
+.message-form .paso legend{float:left;width:100%}
+.message-form .paso legend+*{clear:left}
+.message-form .paso .step-number{position:absolute;left:0;top:0;background:var(--superficie);color:var(--texto-2);border:1.5px solid var(--linea);transition:background 300ms,border-color 300ms,color 300ms}
+.message-form .paso[data-ok] .step-number{background:var(--acento);border-color:var(--acento);color:var(--sobre-acento)}
+.message-form .paso:not(:last-child)::before,.message-form .paso:not(:last-child)::after{content:'';position:absolute;left:13px;top:34px;bottom:-22px;width:2px;border-radius:2px;background:var(--linea)}
+.message-form .paso:not(:last-child)::after{background:linear-gradient(#e4ac4b,#65bed7);transform:scaleY(0);transform-origin:top;transition:transform 600ms var(--ease)}
+.message-form .paso[data-ok]:not(:last-child)::after{transform:scaleY(1)}
+.message-form .equipment-option img{opacity:.62;transition:opacity 300ms,transform 700ms var(--ease)}
+.message-form .equipment-option:hover img{opacity:.8}
+.message-form .equipment-option input:checked+span img{opacity:1}
+.sintoma-chip>span{border-radius:var(--radio)}
 .message-result>.button{margin-top:0}
 .form-error{color:var(--error);font-size:.875rem;margin-top:16px}
 @media(max-width:767px){.message-result .button{width:100%}
@@ -613,12 +633,6 @@ to{opacity:0;transform:scale(5)}
 @keyframes chip-in{from{opacity:0;transform:translateY(10px) scale(.94)}to{opacity:1;transform:none}}
 
 /* Tarjeta «Tu solicitud» con foto elegida */
-.message-result-head{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-bottom:20px}
-.message-result-head>.mono{color:var(--texto-2);margin:0}
-.message-foto{width:52px;height:52px;flex:none;border-radius:12px;overflow:hidden}
-.message-foto:empty{display:none}
-.message-foto img{width:100%;height:100%;aspect-ratio:auto}
-.message-result .outline{margin-top:12px}
 
 /* Mazo de Trabajo real y diálogo de foto */
 .trabajo{transition:transform 900ms var(--ease);transition-delay:calc(var(--i) * 90ms)}

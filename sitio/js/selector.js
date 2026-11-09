@@ -16,15 +16,16 @@ export function setupMessages() {
     const sintomas = JSON.parse(form.dataset.sintomas || '{}');
     const lista = form.querySelector('[data-sintomas-lista]');
     const fotoTarget = form.querySelector('[data-message-foto]');
-    const preview = form.querySelector('.message-preview');
-    const bubble = form.querySelector('.message-bubble');
+    const ficha = campo => form.querySelector(`[data-ficha="${campo}"]`);
+    const estado = form.querySelector('[data-ficha-estado]');
+    const termo = form.querySelector('[data-ficha-termo]');
     const result = form.querySelector('.message-result');
     const waLink = form.querySelector('[data-message-wa]');
     const anuncio = form.querySelector('[data-anuncio]');
     const error = form.querySelector('.form-error');
     const problema = form.querySelector('[name=problema]');
     form.querySelector('[name=sector]').required = true;
-    let typing, timer;
+    let timer;
     const message = () => {
       const values = new FormData(form);
       const equipo = String(values.get('equipo') || 'equipo').toLowerCase();
@@ -35,33 +36,39 @@ export function setupMessages() {
       const sector = limpia(values.get('sector')).replace(/^en\s+/i, '');
       return `Mi ${equipo} ${falla}${/[.!?]$/.test(falla) ? '' : '.'}${sector ? ` Estoy en ${sector}.` : ''}`;
     };
+    // The visit card mirrors the form; each finished step cools the bar from fault to visit.
     const update = () => {
-      preview.textContent = message();
-      bubble.classList.remove('updating');
-      requestAnimationFrame(() => bubble.classList.add('updating'));
+      const values = new FormData(form);
+      const texto = s => String(s || '').trim();
+      const datos = { equipo: texto(values.get('equipo')), falla: texto(values.get('problema')), sector: texto(values.get('sector')) };
+      let listos = 0;
+      for (const [campo, valor] of Object.entries(datos)) {
+        const dd = ficha(campo);
+        const visible = valor.replace(/^\p{Ll}/u, c => c.toUpperCase());
+        if (dd && dd.textContent !== visible) { dd.textContent = visible; dd.classList.remove('cambia'); requestAnimationFrame(() => dd.classList.add('cambia')); }
+        form.querySelector(`[data-paso="${campo}"]`)?.toggleAttribute('data-ok', !!valor);
+        if (valor) listos++;
+      }
+      if (termo) termo.style.setProperty('--avance', listos / 3);
+      if (estado) estado.textContent = listos === 3 ? 'Lista para enviar' : `${listos} de 3`;
+      result.toggleAttribute('data-lista', listos === 3);
       if (waLink) {
         const url = new URL(`https://wa.me/${form.dataset.whatsapp}`);
         url.searchParams.set('text', message());
         waLink.href = url.href;
       }
     };
-    // Choosing an option shows a short typing state before the request text appears.
-    const typeThen = () => {
-      if (reduced.matches) return update();
-      clearTimeout(typing);
-      result.classList.add('is-typing');
-      typing = setTimeout(() => { result.classList.remove('is-typing'); update(); }, 600);
-    };
     // The chosen equipment photo flies into the request card (FLIP, 280 ms).
     const fly = option => {
       const img = option?.querySelector('img');
       if (!img || !fotoTarget) return;
-      const place = () => fotoTarget.replaceChildren(img.cloneNode());
+      const place = () => { const copia = img.cloneNode(); copia.loading = 'eager'; fotoTarget.replaceChildren(copia); };
       if (reduced.matches || typeof img.animate !== 'function') return place();
       const s = img.getBoundingClientRect();
       const t = fotoTarget.getBoundingClientRect();
       if (!s.width || !t.width) return place();
       const ghost = img.cloneNode();
+      ghost.loading = 'eager';
       ghost.style.cssText = `position:fixed;left:${s.left}px;top:${s.top}px;width:${s.width}px;height:${s.height}px;object-fit:cover;border-radius:14px;z-index:60;pointer-events:none;margin:0`;
       ghost.style.transformOrigin = 'top left';
       document.body.append(ghost);
@@ -113,7 +120,6 @@ export function setupMessages() {
         fly(target.closest('.equipment-option'));
         buildSintomas();
         update();
-        typeThen();
       } else if (target.name === 'sintoma') {
         if (anuncio) anuncio.textContent = target.nextElementSibling?.textContent || '';
         if (target.value) {
@@ -122,7 +128,7 @@ export function setupMessages() {
         } else {
           problema.focus();
         }
-        typeThen();
+        update();
       } else {
         update();
       }
