@@ -48,6 +48,19 @@ No se habilita el workflow automáticamente sin cuenta, recursos y destino concr
 
 Antes de indexar: confirmar horario, sectores y fotografías; conectar `zerok.cl`; conservar `SITE_URL=https://zerok.cl` y cambiar `PUBLIC_INDEXING` a `true`. Workers.dev continúa con `noindex` aunque esté activada la indexación del dominio final.
 
+### Dominio zerok.cl
+
+La checklist completa del lanzamiento está en `LANZAMIENTO.md`. Con `zerok.cl` registrado y su DNS en Cloudflare, se descomenta el bloque ya preparado en `wrangler.jsonc`:
+
+```jsonc
+"routes": [
+  { "pattern": "zerok.cl", "custom_domain": true },
+  { "pattern": "www.zerok.cl", "custom_domain": true }
+],
+```
+
+Las URLs absolutas (canonical, Open Graph, sitemap y datos estructurados) usan `SITE_URL` solo cuando la petición llega a su host; en workers.dev y previews usan el origen propio, así las vistas previas de WhatsApp funcionan antes del dominio. El Worker redirige `www.zerok.cl` a `zerok.cl` cuando el host `www` está activo.
+
 ## Uso del panel
 
 1. En **Textos y cobertura**, editar bajada y presentación. Confirmar horario solo con el dato del cliente; un sector por línea.

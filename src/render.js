@@ -29,7 +29,7 @@ const library = name => name && fotos.some(f => f.file === `/img/fotos/${name}.w
 const credit = src => fotos.find(f => f.file === src);
 const sourceOf = src => src.startsWith('/img/fotos/') ? 'library-commons' : src.startsWith('/media/') || src.startsWith('/img/trabajos/') ? 'client' : 'generated';
 const photo = (src, alt, cls = '', source = '', eager = false) => imagePath(src) ? `<img class="${cls}" src="${esc(src)}" alt="${esc(alt)}" width="1440" height="960"${credit(src)?.focus ? ` style="object-position:${esc(credit(src).focus)}"` : ''} ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async" data-source="${source || sourceOf(src)}">` : '';
-const altOf = (src, fallback) => reales[src] || credit(src)?.subject || fallback;
+export const altOf = (src, fallback) => reales[src] || credit(src)?.subject || fallback;
 const heading = (title, intro = '', img = '') => `<div class="page-heading wrap${img ? ' has-photo' : ''}"><div><a class="backlink" href="/">ZÉROK / Osorno</a><h1>${esc(title)}</h1>${intro ? `<p>${esc(intro)}</p>` : ''}</div>${img}</div>`;
 const agendarVisita = (data, type) => data.agenda ? link('/agendar/', 'Agendar visita', type) : link(wa(data.general), 'Agendar visita', type);
 const hours = g => g.horarioConfirmado ? `Lunes a sábado, ${esc(g.abre)} a ${esc(g.cierra)}` : 'Atención de lunes a sábado';
