@@ -53,7 +53,11 @@ const rutasWorker = new Set(['/', '/servicios/', '/agendar/', '/contacto/', '/pr
 for (const html of ['sitio/index.html', 'sitio/admin/index.html']) {
   const texto = readFileSync(join(raiz, html), 'utf8');
   for (const m of texto.matchAll(/(?:href|src)\s*=\s*["']([^"']+)["']/gi)) {
-    if (!m[1].startsWith('/')) continue;
+    // Externos, anclas y esquemas (mailto:, tel:, data:) no son archivos locales.
+    if (/^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(m[1])) continue;
+    // La plantilla pública se sirve en muchas rutas: una referencia relativa se
+    // resolvería contra cada página, así que se exige ruta absoluta.
+    if (!m[1].startsWith('/')) { errores.push(`enlace relativo en ${html}: ${m[1]} (usa una ruta que empiece con /)`); continue; }
     const p = m[1].split(/[?#]/)[0];
     if (rutasWorker.has(p) || p.startsWith('/agendar/') || p.startsWith('/media/')) continue;
     if (!existsSync(join(raiz, 'sitio', p))) errores.push(`enlace local sin archivo: ${html} -> ${m[1]}`);
@@ -123,6 +127,16 @@ function* cadenasJS(codigo) {
     if (!/\s/.test(c)) prev = c;
     i++;
   }
+}
+
+// Texto de los HTML estáticos, sin comentarios, scripts ni estilos.
+for (const html of ['sitio/index.html', 'sitio/admin/index.html']) {
+  const limpio = readFileSync(join(raiz, html), 'utf8')
+    .replace(/<!--[\s\S]*?-->/g, m => m.replace(/[^\n]/g, ''))
+    .replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, m => m.replace(/[^\n]/g, ''));
+  limpio.split('\n').forEach((l, i) => {
+    if (rayas.test(l)) errores.push(`raya larga en ${html}:${i + 1}`);
+  });
 }
 
 for (const { linea, texto } of cadenasJS(readFileSync(join(raiz, 'src/render.js'), 'utf8'))) {
