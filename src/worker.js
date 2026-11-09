@@ -1,6 +1,6 @@
 import { Admin, json } from './admin.js';
 import { readContent, published } from './content.js';
-import { header, footer, page, structured, agendar, agendaLista } from './render.js';
+import { header, footer, page, structured, agendar, agendaLista, altOf } from './render.js';
 import { equipos, limpiar } from './agenda.js';
 
 export { Admin };
@@ -44,6 +44,11 @@ async function upload(request, env) {
   await env.MEDIA.put(key, bytes, { httpMetadata: { contentType: 'image/webp' } });
   return json({ url: `/media/${key}` }, 201);
 }
+
+// SITE_URL solo aplica cuando la petición llega a su host. En workers.dev y previews las
+// URLs absolutas (canonical, OG, sitemap, JSON-LD) usan el origen propio, para que las
+// vistas previas de WhatsApp resuelvan antes de conectar el dominio.
+const apex = env => { try { return env.SITE_URL ? new URL(env.SITE_URL) : null; } catch { return null; } };
 
 const objeto = env => env.ADMIN.get(env.ADMIN.idFromName('zerok-admin'));
 const interno = (env, path, init) => objeto(env).fetch(new Request(`https://zerok.internal/interno/${path}`, init));
@@ -106,6 +111,9 @@ async function preparar(request, env, url, data) {
 async function handle(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
+  const site = apex(env);
+  // www se pliega al dominio raíz; sin dominio configurado esta rama no se alcanza.
+  if (site && url.hostname === `www.${site.hostname}`) return Response.redirect(`${site.origin}${url.pathname}${url.search}`, 301);
   const admin = () => objeto(env);
   if (/^\/interno(?:\/|$)/.test(path)) return json({ error: 'Ruta no encontrada.' }, 404);
   if (path.startsWith('/admin/api/')) {
@@ -131,6 +139,7 @@ async function handle(request, env) {
     return Response.redirect(new URL(`/agendar/${url.search}`, url), 303);
   }
   if (!['GET', 'HEAD'].includes(request.method)) return new Response('Método no permitido.', { status: 405, headers: { allow: 'GET, HEAD' } });
+  if (path === '/favicon.ico') return Response.redirect(new URL('/img/favicon.svg', url), 301);
   if (path.startsWith('/media/')) {
     if (!/^\/media\/[a-f0-9-]{36}\.webp$/.test(path) || !env.MEDIA) return new Response('No encontrado.', { status: 404 });
     const object = await env.MEDIA.get(path.slice(7));
@@ -141,8 +150,8 @@ async function handle(request, env) {
   if (path.startsWith('/admin/')) return env.ASSETS.fetch(path === '/admin/' ? new URL('/admin/index.html', url) : request);
   if (/^\/(css|js|fonts|img)\//.test(path)) return env.ASSETS.fetch(request);
   const data = await siteData(env);
-  const origin = env.SITE_URL || url.origin;
-  const indexing = env.PUBLIC_INDEXING === 'true' && url.origin === new URL(origin).origin;
+  const origin = site && url.origin === site.origin ? site.origin : url.origin;
+  const indexing = env.PUBLIC_INDEXING === 'true' && !!site && url.origin === site.origin;
   if (path === '/robots.txt') return new Response(indexing ? `User-agent: *\nDisallow: /admin/\nDisallow: /api/\nSitemap: ${origin}/sitemap.xml\n` : 'User-agent: *\nDisallow: /\n', { headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-cache' } });
   if (path === '/sitemap.xml') {
     const paths = ['/', '/servicios/', ...(data.agenda ? ['/agendar/'] : []), '/contacto/', ...(data.productos.length ? ['/precios/'] : []), ...(data.blog.length ? ['/blog/', ...data.blog.map(p => `/blog/${p.slug}/`)] : [])];
@@ -165,9 +174,13 @@ async function siteData(env) {
 }
 
 async function render(request, env, url, data, path, rendered) {
-  const origin = env.SITE_URL || url.origin;
-  const indexing = env.PUBLIC_INDEXING === 'true' && url.origin === new URL(origin).origin && !rendered.noindex;
+  const site = apex(env);
+  const origin = site && url.origin === site.origin ? site.origin : url.origin;
+  const indexing = env.PUBLIC_INDEXING === 'true' && !!site && url.origin === site.origin && !rendered.noindex;
   const canonical = new URL(path, origin).href;
+  const ogSrc = rendered.post?.foto || data.general.hero || '/img/refrigeracion.webp';
+  const ogImage = new URL(ogSrc, origin).href;
+  const ogAlt = altOf(ogSrc, rendered.post?.titulo || data.general.heroAlt || 'Servicio técnico ZÉROK en Osorno');
   const template = await env.ASSETS.fetch(new URL('/index.html', url));
   const replace = html => ({ element(element) { element.setInnerContent(html, { html: true }); } });
   const attribute = (name, value) => ({ element(element) { element.setAttribute(name, value); } });
@@ -180,7 +193,9 @@ async function render(request, env, url, data, path, rendered) {
     .on('meta[property="og:description"]', attribute('content', rendered.description))
     .on('meta[property="og:url"]', attribute('content', canonical))
     .on('meta[property="og:type"]', attribute('content', rendered.post ? 'article' : 'website'))
-    .on('meta[property="og:image"]', attribute('content', new URL(rendered.post?.foto || data.general.hero || '/img/refrigeracion.webp', origin).href))
+    .on('meta[property="og:image"]', attribute('content', ogImage))
+    .on('meta[property="og:image:alt"]', attribute('content', ogAlt))
+    .on('meta[name="twitter:image"]', attribute('content', ogImage))
     .on('#header', replace(header(data, path)))
     .on('#contenido', replace(rendered.html))
     .on('#footer', replace(footer(data)))
