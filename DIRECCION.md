@@ -74,10 +74,10 @@ components:
 **Estado: borrador vivo.** Este fichero describe lo que hay hoy en `ZEROK`, no un diseño cerrado. **Nada es final y todo puede modificarse**: paleta, tipografía, composición y movimiento se pueden cambiar en el próximo encargo. Su única función es que el agente no invente y que la próxima sesión sepa de dónde parte.
 
 **Concepto:** del calor de la falla al frío que vuelve (`DISENO.md` §2).
-**Ancla:** la lente térmica del hero y la escarcha del wordmark; no hay logo entregado, solo wordmark tipográfico (`DISENO.md` §3.3 y §7.2).
+**Ancla:** la lente térmica del hero y el logo del cliente: un copo con Z y aguja de manómetro, vectorizado en `sitio/img/logo.svg` con símbolos `#simbolo` y `#palabra` (`DISENO.md`, revisión 4).
 **Portabilidad:** no medida; la identidad vive en el repositorio, no en el nombre.
 
-Paleta medida de `sitio/css/estilos.css`: hielo, tinta noche y ámbar de acción. El cian no existe en el CSS y el copo de nieve está prohibido en `DISENO.md`.
+Paleta medida de `sitio/css/estilos.css`: hielo, tinta noche en azul marino y ámbar de acción. Los celestes existen, pero solo en el logo y sus tintas (`--marca`, `--logo-*`): fuera del logo el cian no es color de interfaz y el copo no se usa como decoración (`DISENO.md`, revisión 4).
 
 ## Colors
 
@@ -93,7 +93,7 @@ Display y cuerpo en **Archivo** variable (400-800, ancho 100-125); cuerpo a 17 p
 
 ## Layout
 
-Contenedor declarado de 1240 px (`20/32 px` laterales); `.wrap` actual mide 1304 px. Retícula 4/12 columnas, breakpoints 640/768/1024 en el CSS (`DISENO.md` añade 1280), escala base 4 de 4 a 96 px, secciones de 64/96 px, botones de 48 px y áreas táctiles de 44 px. `min-height: 100dvh`, nunca `100vh`.
+Contenedor `.wrap` de 1200 px (`20/32 px` laterales), bajado en la revisión 5 de `DISENO.md`. Retícula 4/12 columnas, breakpoints 640/768/1024 en el CSS (`DISENO.md` añade 1280), escala base 4 de 4 a 96 px, secciones de 72/80 px, botones de 48 px y áreas táctiles de 44 px. `min-height: 100dvh`, nunca `100vh`.
 
 ## Elevation & Depth
 
@@ -110,7 +110,7 @@ Botón primario ámbar con texto tinta; secundario de borde sobre superficie; ta
 ## Do's and Don'ts
 
 - **Sí:** conservar los tokens y la identidad que ya están en el repositorio.
-- **No:** cambiar paleta, tipografía o composición sin un encargo explícito; usar cian, copos de nieve o íconos decorativos.
+- **No:** cambiar paleta, tipografía o composición sin un encargo explícito; usar cian fuera del logo, copos de nieve decorativos ni íconos decorativos.
 - **Nunca:** inventar datos, testimonios, precios ni cifras; usar marcas o copy de terceros.
 
 ## Decisiones abiertas
