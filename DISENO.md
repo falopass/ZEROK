@@ -11,7 +11,7 @@ cargan después (la página Precios queda oculta hasta tener ítems).
 Pedido de Diego: «demasiado plana y cuadrada, le falta vida». Cambios que reemplazan reglas de abajo:
 - **Radios en escala**, no radio único: `--radio 10px` (botones, inputs), `--radio-l 20px` (fotos,
   láminas, paneles), `--radio-xl 32px` (hero, bloque de servicios y cierre, insertos a 8-16 px del borde).
-  Etiquetas de fallas, sectores e índice de servicios van en píldora.
+  Etiquetas de fallas y sectores van en píldora. El índice de servicios y los equipos del hero no: el índice es texto numerado con subrayado ámbar en la sección activa, y los equipos del hero son una línea de nombres cortos con separadores finos (revisión 8, 08-11-2026).
 - **Tinta noche en más de un bloque**: franja en movimiento, vista previa del mensaje, servicios
   apilados y cierre (clase `.noche`, que reutiliza los tokens oscuros). En el resto manda el tema automático.
 - **Sombras teñidas** también en láminas, menú, barra de contacto y elementos elegidos (`--sombra`).

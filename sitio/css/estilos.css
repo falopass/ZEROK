@@ -322,13 +322,18 @@ input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0
 .page-heading p{font-size:1.125rem;color:var(--texto-2);max-width:56ch;margin:0}
 .page-photo{border-radius:var(--radio-l);aspect-ratio:4/3}
 .service-index{position:sticky;top:var(--header);z-index:9;background:color-mix(in srgb,var(--fondo) 88%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-block:1px solid var(--linea)}
-.service-index>.wrap{display:flex;gap:8px;overflow:auto;padding-block:12px;scrollbar-width:none}
+.service-index>.wrap{display:flex;overflow:auto;scrollbar-width:none}
 /* Rieles con desplazamiento lateral: el borde se desvanece mientras quede contenido a la derecha. */
 [data-riel]{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent)}
 [data-riel].al-final{-webkit-mask-image:none;mask-image:none}
-.service-index a{display:inline-flex;align-items:center;min-height:44px;font-size:.8125rem;text-decoration:none;white-space:nowrap;padding:6px 14px;border-radius:999px;border:1px solid var(--linea);transition:background 280ms,border-color 280ms,color 280ms}
-.service-index a:hover{border-color:var(--texto-2)}
-.service-index a[aria-current]{background:var(--acento);color:var(--sobre-acento);border-color:var(--acento)}
+.service-index a{position:relative;flex:none;display:inline-flex;align-items:center;gap:8px;min-height:56px;padding:0 14px;font-size:.875rem;font-weight:600;white-space:nowrap;text-decoration:none;color:var(--texto-2);transition:color 240ms}
+.service-index a:first-child{padding-left:0}
+.service-index a span{font-family:'IBM Plex Mono',monospace;font-size:.6875rem;font-weight:400;transition:color 240ms}
+.service-index a::after{content:'';position:absolute;left:14px;right:14px;bottom:-1px;height:2px;background:var(--acento);transform:scaleX(0);transform-origin:left;transition:transform 360ms var(--ease)}
+.service-index a:first-child::after{left:0}
+.service-index a:hover,.service-index a[aria-current]{color:var(--texto)}
+.service-index a[aria-current] span{color:var(--acento)}
+.service-index a[aria-current]::after{transform:scaleX(1)}
 .service-detail{scroll-margin-top:150px;display:grid;gap:32px;padding-block:64px;border-bottom:1px solid var(--linea)}
 .service-detail h2{margin-bottom:32px}
 .service-detail h3{font-family:'IBM Plex Mono',monospace;font-size:.75rem;font-weight:400;letter-spacing:.04em;text-transform:uppercase;color:var(--texto-2);margin:24px 0 8px}
@@ -415,11 +420,11 @@ to{opacity:0;transform:scale(5)}
 }
 .motion-on .hero-brand{animation:brand-frost 1200ms var(--ease) 200ms both}
 .motion-on .hero-simbolo{animation:simbolo-in 1400ms var(--resorte) both}
-.motion-on .hero-trade,.motion-on .hero-copy>p,.motion-on .hero-actions,.motion-on .hero-chips,.motion-on .hero-next{animation:rise 700ms var(--resorte) both}
+.motion-on .hero-trade,.motion-on .hero-copy>p,.motion-on .hero-actions,.motion-on .hero-equipos,.motion-on .hero-next{animation:rise 700ms var(--resorte) both}
 .motion-on .hero-trade{animation-delay:480ms}
 .motion-on .hero-copy>p{animation-delay:540ms}
 .motion-on .hero-actions{animation-delay:600ms}
-.motion-on .hero-chips{animation-delay:660ms}
+.motion-on .hero-equipos{animation-delay:660ms}
 .motion-on .hero-next{animation-delay:720ms}
 .motion-on .hero-photo{animation:hero-zoom 1600ms var(--ease) both}
 @keyframes hero-zoom{from{transform:scale(1.08)}
@@ -489,7 +494,6 @@ to{opacity:0;transform:scale(5)}
 .hero-brand{width:clamp(290px,24vw,360px)}
 .hero-trade{margin-top:10px;font-size:.8125rem}
 .hero-copy>p{max-width:38ch;font-size:1.0625rem;margin-bottom:28px}
-.hero-chips{flex-wrap:wrap;overflow:visible;max-width:640px}
 .hero-next{display:inline-flex;align-items:center;gap:8px;min-height:44px;margin:28px 0 0;text-decoration:none;font-size:.875rem;font-weight:600;color:var(--texto-2);transition:color 200ms}
 .hero-next:hover{color:var(--texto)}
 .hero-next .icono{width:18px;height:18px;animation:bob 1.8s ease-in-out infinite}
@@ -572,9 +576,13 @@ to{opacity:0;transform:scale(5)}
 }
 
 /* Chips de equipos en el hero */
-.hero-chips{display:flex;gap:8px;overflow-x:auto;margin-top:20px;padding-block:4px 10px;scrollbar-width:none;scroll-snap-type:x proximity}
-.hero-chip{flex:none;scroll-snap-align:start;display:inline-flex;align-items:center;min-height:44px;font-size:.8125rem;font-weight:550;padding:6px 16px;border:1px solid var(--linea);border-radius:999px;text-decoration:none;background:color-mix(in srgb,var(--superficie) 82%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:border-color 200ms,transform 300ms var(--resorte)}
-.hero-chip:hover{border-color:var(--texto-2);transform:translateY(-1px)}
+.hero-equipos{margin-top:28px;max-width:720px}
+.hero-equipos p{margin:0 0 2px;font-family:'IBM Plex Mono',monospace;font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2)}
+/* Each name carries its divider on the left; the list is pulled left and clipped so no line starts with one. */
+.hero-chips{display:flex;flex-wrap:wrap;align-items:center;margin-left:-11px;overflow-x:clip}
+.hero-chip{position:relative;display:inline-flex;align-items:center;min-height:44px;padding:0 11px;font-size:.875rem;font-weight:600;text-decoration:none;color:var(--texto);transition:color 200ms}
+.hero-chip::before{content:'';position:absolute;left:-1px;top:50%;width:1px;height:14px;margin-top:-7px;background:var(--linea)}
+.hero-chip:hover{color:var(--acento);text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:1.5px}
 
 /* Síntomas por equipo en el selector */
 .sintomas{min-width:0}

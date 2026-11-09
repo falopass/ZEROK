@@ -67,7 +67,7 @@ if (canReveal) {
     document.querySelectorAll('.service-detail').forEach(section => active.observe(section));
   }
   // Side-scrolling rails fade at the right edge only while more content remains there.
-  document.querySelectorAll('.service-index>.wrap, .equipment-rail, .hero-chips').forEach(rail => {
+  document.querySelectorAll('.service-index>.wrap, .equipment-rail').forEach(rail => {
     rail.dataset.riel = '';
     const edge = () => rail.classList.toggle('al-final', rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 4);
     rail.addEventListener('scroll', edge, { passive: true });
