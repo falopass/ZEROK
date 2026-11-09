@@ -1,7 +1,7 @@
 import { Admin, json } from './admin.js';
 import { readContent, published } from './content.js';
 import { header, footer, page, structured, agendar, agendaLista, altOf } from './render.js';
-import { equipos, limpiar } from './agenda.js';
+import { equipos, limpiar, validarReserva } from './agenda.js';
 
 export { Admin };
 
@@ -72,7 +72,7 @@ async function leer(request, max) {
 // A human form submit always gets the styled page back, never bare text or JSON.
 async function reservar(request, env, url, data) {
   const oferta = await dias(env);
-  const pagina = (v, error, status) => render(request, env, url, data, '/agendar/', agendar(data, oferta, v, error, status));
+  const pagina = (v, error, status, errores) => render(request, env, url, data, '/agendar/', agendar(data, oferta, v, error, status, errores));
   const origin = request.headers.get('origin');
   if (origin !== url.origin) return pagina({}, 'No se pudo comprobar el origen del formulario. Vuelve a intentarlo desde esta página.', 403);
   if (!request.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) return pagina({}, 'El formulario no se pudo leer. Vuelve a intentarlo.', 415);
@@ -81,6 +81,9 @@ async function reservar(request, env, url, data) {
   const input = Object.fromEntries(new URLSearchParams(raw));
   // Honeypot: bots that fill the hidden field see the usual confirmation and nothing is stored.
   if (input.empresa) return Response.redirect(new URL('/agendar/listo/', url), 303);
+  // Field errors are answered here so the page can link each one back to its input.
+  const { errores } = validarReserva(input, oferta);
+  if (errores.length) return pagina(input, '', 400, errores);
   const response = await interno(env, 'reserva', { method: 'POST', headers: { 'content-type': 'application/json', 'x-zerok-ip': request.headers.get('cf-connecting-ip') || 'local' }, body: JSON.stringify(input) });
   const result = await response.json();
   if (response.ok) {
@@ -202,7 +205,7 @@ async function render(request, env, url, data, path, rendered) {
     .on('meta[name="twitter:image"]', attribute('content', ogImage))
     .on('#header', replace(header(data, path)))
     .on('#contenido', replace(rendered.html))
-    .on('#footer', replace(footer(data)))
+    .on('#footer', replace(footer(data, path)))
     .on('#structured-data', replace(structured(data, rendered, canonical)));
   if (path === '/') transform = transform.on('head', { element(element) { element.append(`<link rel="preload" as="image" href="${data.general.hero}">`, { html: true }); } });
   const response = transform.transform(template);

@@ -321,7 +321,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0
 .page-photo{border-radius:var(--radio-l);aspect-ratio:4/3}
 .service-index{position:sticky;top:var(--header);z-index:9;background:color-mix(in srgb,var(--fondo) 88%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-block:1px solid var(--linea)}
 .service-index>.wrap{display:flex;gap:8px;overflow:auto;padding-block:12px;scrollbar-width:none}
-.service-index a{font-size:.8125rem;text-decoration:none;white-space:nowrap;padding:9px 14px;border-radius:999px;border:1px solid var(--linea);transition:background 280ms,border-color 280ms,color 280ms}
+.service-index a{display:inline-flex;align-items:center;min-height:44px;font-size:.8125rem;text-decoration:none;white-space:nowrap;padding:6px 14px;border-radius:999px;border:1px solid var(--linea);transition:background 280ms,border-color 280ms,color 280ms}
 .service-index a:hover{border-color:var(--texto-2)}
 .service-index a[aria-current]{background:var(--acento);color:var(--sobre-acento);border-color:var(--acento)}
 .service-detail{scroll-margin-top:150px;display:grid;gap:32px;padding-block:64px;border-bottom:1px solid var(--linea)}
@@ -556,7 +556,7 @@ to{opacity:0;transform:scale(5)}
 
 /* Chips de equipos en el hero */
 .hero-chips{display:flex;gap:8px;overflow-x:auto;margin-top:20px;padding-block:4px 10px;scrollbar-width:none;scroll-snap-type:x proximity}
-.hero-chip{flex:none;scroll-snap-align:start;font-size:.8125rem;font-weight:550;padding:9px 14px;border:1px solid var(--linea);border-radius:999px;text-decoration:none;transition:border-color 200ms,transform 300ms var(--resorte)}
+.hero-chip{flex:none;scroll-snap-align:start;display:inline-flex;align-items:center;min-height:44px;font-size:.8125rem;font-weight:550;padding:6px 16px;border:1px solid var(--linea);border-radius:999px;text-decoration:none;background:color-mix(in srgb,var(--superficie) 82%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:border-color 200ms,transform 300ms var(--resorte)}
 .hero-chip:hover{border-color:var(--texto-2);transform:translateY(-1px)}
 
 /* Síntomas por equipo en el selector */
@@ -650,7 +650,7 @@ to{opacity:0;transform:scale(5)}
 .agenda-resumen dd{margin:0;font-size:.9375rem;line-height:1.5}
 .agenda-resumen-nota{font-size:.75rem;color:var(--texto-2);border-top:1px solid var(--linea);padding-top:16px;margin:20px 0 0}
 .agenda-urgencia{font-size:.75rem;color:var(--texto-2);margin:20px 0 0}
-.agenda-urgencia a{display:inline-flex;gap:4px;align-items:center;color:var(--texto);font-weight:600}
+.agenda-urgencia a{display:inline-flex;gap:4px;align-items:center;min-height:44px;color:var(--texto);font-weight:600}
 .agenda-urgencia .icono{width:14px;height:14px}
 .agenda-encabezado{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px}
 .agenda-encabezado p{font-size:.625rem;color:var(--texto-2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
@@ -695,6 +695,12 @@ to{opacity:0;transform:scale(5)}
 .agenda-enviar p span{font-size:.75rem;color:var(--texto-2);font-weight:400}
 .agenda-enviar .button{justify-content:space-between}
 .agenda-error{padding:20px;border:1px solid var(--error);border-radius:var(--radio);margin:0}
+.agenda-error p{margin:0}
+.agenda-error ul{margin:10px 0 0;padding-left:20px;display:grid;gap:4px}
+.agenda-error a{color:inherit}
+.field-error{margin:0;color:var(--error);font-size:.8125rem;font-weight:400}
+input[aria-invalid=true],textarea[aria-invalid=true]{border-color:var(--error)}
+.agenda-equipo input[aria-invalid=true]+span,.day-option input[aria-invalid=true]+span{border-color:var(--error)}
 @media(min-width:600px){
 .agenda-campos{grid-template-columns:1fr 1fr}
 .agenda-ancho{grid-column:1/-1}
