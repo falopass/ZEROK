@@ -197,7 +197,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0
 .service-media{order:-1;overflow:hidden;border-radius:14px;aspect-ratio:16/10;background:var(--superficie-2)}
 .service-photo{width:100%;height:100%;aspect-ratio:auto;transition:transform 900ms var(--ease)}
 .service-sheet:hover .service-photo{transform:scale(1.03)}
-.service-label{display:block;color:var(--acento);font-size:.75rem;margin-bottom:16px}
+.service-label{display:flex;align-items:baseline;gap:6px;color:var(--acento);font-size:.75rem;margin-bottom:16px}
+.service-label b{font-weight:inherit}
 .service-sheet h3{font-size:clamp(1.9rem,3vw,2.75rem);font-stretch:118%;max-width:16ch;margin-bottom:16px}
 .service-sheet h3 a{text-decoration:none}
 .service-sheet p{max-width:46ch;color:var(--texto-2);font-size:1rem;margin-bottom:16px}
@@ -607,8 +608,11 @@ to{opacity:0;transform:scale(5)}
 .motion-on .service-sheet .service-tags li{opacity:0;transform:translateY(8px);transition:opacity 450ms,transform 550ms var(--resorte);transition-delay:calc(220ms + var(--i) * 50ms)}
 .motion-on .service-sheet.is-visible .service-tags li{opacity:1;transform:none}
 @media(min-width:1024px){
-.service-label{position:absolute;top:-34px;left:26px;z-index:3;margin:0;font-size:clamp(4rem,7vw,5.5rem);font-weight:800;letter-spacing:-.04em;color:transparent;-webkit-text-stroke:1.5px var(--texto-2)}
-.service-copy{position:relative}
+/* Índice en contorno sobre el título, en el flujo: nunca cruza las letras y se alinea con el texto. */
+.service-label{align-items:flex-end;gap:12px;margin:0 0 20px;color:var(--texto-2);line-height:1}
+.service-label b{font-family:Archivo,sans-serif;font-size:clamp(3.5rem,5vw,4.5rem);font-weight:800;font-stretch:125%;letter-spacing:-.02em;line-height:.78;color:transparent;-webkit-text-stroke:1.5px var(--texto-2)}
+.service-label span{padding-bottom:2px}
+.service-sheet:not(.has-photo) .service-copy{max-width:760px}
 }
 
 /* Sectores en secuencia */
