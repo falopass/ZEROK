@@ -54,14 +54,26 @@ if (canReveal) {
   if (first) new IntersectionObserver(entries => document.querySelector('.site-header')?.classList.toggle('is-compact', !entries[0].isIntersecting)).observe(first);
   const index = document.querySelector('.service-index');
   if (index) {
+    const rail = index.querySelector('.wrap');
     const active = new IntersectionObserver(entries => {
       for (const entry of entries) if (entry.isIntersecting) {
         index.querySelectorAll('a').forEach(a => a.removeAttribute('aria-current'));
-        index.querySelector(`a[href="#${CSS.escape(entry.target.id)}"]`)?.setAttribute('aria-current', 'location');
+        const link = index.querySelector(`a[href="#${CSS.escape(entry.target.id)}"]`);
+        link?.setAttribute('aria-current', 'location');
+        // Keep the active chip visible inside the rail without moving the page.
+        if (link) rail.scrollTo({ left: link.offsetLeft - rail.offsetLeft - parseFloat(getComputedStyle(rail).paddingLeft), behavior: reduced.matches ? 'auto' : 'smooth' });
       }
     }, { rootMargin: '-180px 0px -45% 0px', threshold: 0 });
     document.querySelectorAll('.service-detail').forEach(section => active.observe(section));
   }
+  // Side-scrolling rails fade at the right edge only while more content remains there.
+  document.querySelectorAll('.service-index>.wrap, .equipment-rail, .hero-chips').forEach(rail => {
+    rail.dataset.riel = '';
+    const edge = () => rail.classList.toggle('al-final', rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 4);
+    rail.addEventListener('scroll', edge, { passive: true });
+    addEventListener('resize', edge);
+    edge();
+  });
   if (!reduced.matches) document.documentElement.classList.add('motion-on');
 }
 reduced.addEventListener('change', () => document.documentElement.classList.toggle('motion-on', !reduced.matches && canReveal));
