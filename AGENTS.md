@@ -8,10 +8,11 @@ Cloudflare Workers + Static Assets. HTML/CSS/JS vanilla en `sitio/`, contenido e
 
 ## Comandos
 ```
+npm run check            # comprobaciones del repo: scripts/comprobar.mjs
 npx wrangler deploy      # script "deploy" de package.json
 npx wrangler dev         # no usado por decisión: no hay build ni dev local
 ```
-No hay `test`, `lint` ni `build` configurados. Es deliberado, no un olvido.
+`npm run check` valida sintaxis JS, JSON de sitio/, enlaces locales y rayas largas, sin dependencias. El workflow `.github/workflows/comprobar.yml` lo corre en cada PR y push a main, más `wrangler deploy --dry-run`. No hay `test`, `lint` ni `build` configurados. Es deliberado, no un olvido.
 
 ## Despliegue
 Cloudflare, worker **`zerok`** (`wrangler.jsonc`). Comando: `wrangler deploy`. Remoto `github.com/falopass/ZEROK`, rama `main`. Tras cada deploy, la única comprobación exigida es HTTP 200.

@@ -24,6 +24,8 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --no-audit --no-fund
+      - name: Comprobar antes de publicar
+        run: npm run check
       - name: Publicar Worker y archivos
         run: npm run deploy
         env:

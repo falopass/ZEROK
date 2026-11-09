@@ -121,6 +121,8 @@ Referencias: [API de envío](https://developers.cloudflare.com/email-service/api
 
 ## Comprobaciones y límites
 
+`npm run check` (`scripts/comprobar.mjs`, Node 22 sin dependencias) revisa la sintaxis de todos los `.js`/`.mjs`, que el JSON y los manifests de `sitio/` parseen, que los `href`/`src` locales de los HTML apunten a archivos existentes y que no haya rayas largas en `contenido.json` ni en las cadenas de `src/render.js`. El workflow «Comprobar ZÉROK» corre esa revisión y un `wrangler deploy --dry-run` en cada PR y push a `main`, sin credenciales de Cloudflare.
+
 Evidencia previa al PR #4: agenda comprobada en Preview local con Wrangler usando datos ficticios, con validación, confirmación manual, visita realizada, seguimiento a 14 días y cierre del llamado. Ese pase no verifica el rediseño y las interacciones incorporadas por el PR #4.
 
 Entrega del 08-11-2026: revisión del diff y `node --check` de los JavaScript modificados, sin errores de sintaxis. Tras el deploy autorizado se comprobó HTTP 200 en Inicio, Servicios, Contacto y Admin. El 08-11-2026 se configuró el acceso y se activaron las solicitudes; `/agendar/` responde 200. Producción mantiene la fecha de compatibilidad `2026-11-05`. No se ejecutaron tests, lint, build de aplicación, navegador ni Lighthouse para esta entrega. El render a 390/1440, FLIP, mazo, diálogo, View Transitions, sesiones y recepción real de correos no se observaron en ejecución. Notificaciones, dominio e indexación siguen desactivados.
