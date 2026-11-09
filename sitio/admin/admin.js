@@ -3,10 +3,11 @@ import { MAX_CONTENT_BYTES, CONTENT_SIZE_ERROR } from '../js/limites.js';
 
 const $ = selector => document.querySelector(selector);
 const esc = (value = '') => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-let documentData, revision, section = 'agenda', dirty = false, setup = false, saving = false, autenticado = false;
+let documentData, revision, section = 'agenda', dirty = false, setup = false, saving = false, autenticado = false, savedSnapshot;
 const badge = n => {
   $('#agenda-badge').hidden = !n;
   $('#agenda-badge').textContent = n;
+  $('#agenda-badge').setAttribute('aria-label', `${n} pendiente${n === 1 ? '' : 's'}`);
   document.title = n ? `(${n}) Administración | ZÉROK` : 'Administración | ZÉROK';
 };
 const visitas = agendaPanel($('#editor'), api, status, () => section === 'agenda', badge, () => autenticado);
@@ -33,12 +34,24 @@ const titles = { agenda: 'Agenda de visitas', general: 'Textos y cobertura', ser
 const field = (key, label, type = 'text', options = {}) => ({ key, label, type, ...options });
 const schemas = {
   general: [field('bajada', 'Bajada de la portada', 'textarea', { max: 350, required: true }), field('presentacion', 'Presentación', 'textarea', { max: 2000, required: true }), field('hero', 'Imagen de portada', 'image'), field('heroAlt', 'Descripción de la imagen', 'text', { max: 200, required: true }), field('heroReal', 'La portada es una foto real del cliente', 'checkbox'), field('cobertura', 'Sectores confirmados', 'lines', { help: 'Un sector por línea. No agregues sectores sin confirmar.' }), field('horarioConfirmado', 'El cliente confirmó este horario de lunes a sábado', 'checkbox'), field('abre', 'Apertura', 'time'), field('cierra', 'Cierre', 'time'), field('casaFoto', 'Foto del bloque En tu casa', 'image'), field('negocioFoto', 'Foto del bloque En tu negocio', 'image'), field('aviso', 'Aviso temporal', 'textarea', { max: 250, help: 'Déjalo vacío para ocultarlo.' })],
-  servicios: [field('id', 'Identificador del enlace', 'text', { required: true, max: 100, help: 'Conserva este valor para mantener los enlaces existentes.' }), field('titulo', 'Título', 'text', { required: true, max: 100 }), field('resumen', 'Qué hacemos', 'textarea', { required: true, max: 1000 }), field('equipos', 'Equipos', 'text', { max: 250 }), field('fallas', 'Fallas confirmadas', 'lines', { help: 'Una falla por línea.' }), field('foto', 'Foto real del servicio', 'image'), field('visible', 'Visible en el sitio', 'checkbox')],
-  productos: [field('id', 'Identificador', 'text', { required: true, max: 100 }), field('nombre', 'Nombre', 'text', { required: true, max: 120 }), field('categoria', 'Categoría', 'text', { required: true, max: 60 }), field('descripcion', 'Descripción', 'textarea', { max: 500 }), field('precio', 'Precio en pesos chilenos', 'number', { required: true }), field('foto', 'Foto del producto', 'image'), field('desde', 'Mostrar precio desde', 'checkbox'), field('disponible', 'Disponible', 'checkbox'), field('destacado', 'Destacado en Inicio', 'checkbox'), field('visible', 'Visible en el sitio', 'checkbox')],
+  servicios: [field('titulo', 'Título', 'text', { required: true, max: 100 }), field('resumen', 'Qué hacemos', 'textarea', { required: true, max: 1000 }), field('equipos', 'Equipos', 'text', { max: 250 }), field('fallas', 'Fallas confirmadas', 'lines', { help: 'Una falla por línea.' }), field('foto', 'Foto real del servicio', 'image'), field('visible', 'Visible en el sitio', 'checkbox'), field('id', 'Identificador del enlace', 'text', { required: true, max: 100, avanzada: true, help: 'Consérvalo para no romper los enlaces.' })],
+  productos: [field('nombre', 'Nombre', 'text', { required: true, max: 120 }), field('categoria', 'Categoría', 'text', { required: true, max: 60 }), field('descripcion', 'Descripción', 'textarea', { max: 500 }), field('precio', 'Precio en pesos chilenos', 'number', { required: true }), field('foto', 'Foto del producto', 'image'), field('desde', 'Mostrar precio desde', 'checkbox'), field('disponible', 'Disponible', 'checkbox'), field('destacado', 'Destacado en Inicio', 'checkbox'), field('visible', 'Visible en el sitio', 'checkbox'), field('id', 'Identificador', 'text', { required: true, max: 100, avanzada: true, help: 'Consérvalo para no romper los enlaces.' })],
   trabajos: [field('foto', 'Foto real del trabajo', 'image'), field('texto', 'Frase que acompaña la foto (por ejemplo: Acá estoy arreglando una vitrina de pasteles.)', 'text', { required: true, max: 200 }), field('fecha', 'Fecha', 'date')],
-  blog: [field('slug', 'Dirección de la entrada', 'text', { required: true, max: 100, help: 'Minúsculas y guiones. Conserva el valor después de publicar.' }), field('titulo', 'Título', 'text', { required: true, max: 150 }), field('extracto', 'Extracto', 'textarea', { required: true, max: 350 }), field('cuerpo', 'Artículo', 'textarea', { required: true, max: 25000, help: 'Separa párrafos con una línea vacía. Para un subtítulo, empieza con ## seguido de un espacio. No se admite HTML.' }), field('foto', 'Imagen', 'image'), field('fecha', 'Fecha de publicación', 'date', { required: true }), field('servicio', 'Servicio relacionado', 'service'), field('publicado', 'Publicar: contenido revisado por el técnico', 'checkbox')],
+  blog: [field('titulo', 'Título', 'text', { required: true, max: 150 }), field('extracto', 'Extracto', 'textarea', { required: true, max: 350 }), field('cuerpo', 'Artículo', 'textarea', { required: true, max: 25000, help: 'Línea vacía entre párrafos. Subtítulo: ## y un espacio. Sin HTML.' }), field('foto', 'Imagen', 'image'), field('fecha', 'Fecha de publicación', 'date', { required: true }), field('servicio', 'Servicio relacionado', 'service'), field('publicado', 'Publicar: contenido revisado por el técnico', 'checkbox'), field('slug', 'Dirección de la entrada', 'text', { required: true, max: 100, avanzada: true, help: 'Minúsculas y guiones. No lo cambies tras publicar.' })],
   faq: [field('pregunta', 'Pregunta', 'text', { required: true, max: 200 }), field('respuesta', 'Respuesta confirmada por el cliente', 'textarea', { required: true, max: 1500 })]
 };
+const seccionesEditables = ['general', 'servicios', 'productos', 'trabajos', 'blog', 'faq'];
+const seccionesConCambios = () => {
+  if (!documentData || !savedSnapshot) return [];
+  const base = JSON.parse(savedSnapshot);
+  return seccionesEditables.filter(s => JSON.stringify(documentData[s]) !== JSON.stringify(base[s]));
+};
+function actualizarBarra() {
+  const secciones = seccionesConCambios();
+  $('#save-bar').hidden = !secciones.length;
+  document.body.classList.toggle('con-save-bar', !!secciones.length);
+  if (secciones.length) $('#save-bar-resumen').textContent = `Cambios sin guardar en: ${secciones.map(s => titles[s]).join(', ')}.`;
+}
 
 async function api(path, options = {}) {
   const response = await fetch(`/admin/api/${path}`, { credentials: 'same-origin', ...options, headers: { ...(options.body && !(options.body instanceof Blob) ? { 'content-type': 'application/json' } : {}), ...options.headers } });
@@ -57,7 +70,7 @@ async function api(path, options = {}) {
 }
 
 function status(text, error = false) { $('#save-status').textContent = text; $('#save-status').classList.toggle('error', error); }
-function changed() { dirty = true; status('Tienes cambios sin guardar.'); }
+function changed() { dirty = true; status('Tienes cambios sin guardar.'); actualizarBarra(); }
 function itemAt(index) { return section === 'general' ? documentData.general : documentData[section][index]; }
 
 function renderField(definition, item, index) {
@@ -90,7 +103,7 @@ function render() {
     return;
   }
   if (section === 'seguridad') {
-    editor.innerHTML = `<section class="editor-group"><h2>Respaldo del contenido</h2><p>Descarga una copia con los cambios de esta pestaña. Guárdala antes de recargar si hay un conflicto de versiones.</p><div class="security-actions"><button class="editor-action" type="button" data-export>Descargar respaldo JSON</button><button class="editor-action" type="button" data-publish>Publicar de nuevo</button><button class="editor-action" type="button" data-reload>Cargar última versión</button></div></section><section class="editor-group"><h2>Cambiar contraseña</h2><div class="password-fields"><label class="admin-field">Contraseña actual<input type="password" name="current" autocomplete="current-password" maxlength="200"></label><label class="admin-field">Nueva contraseña<input type="password" name="new-password" autocomplete="new-password" minlength="12" maxlength="200"></label><label class="admin-field">Repite la nueva contraseña<input type="password" name="new-repeat" autocomplete="new-password" minlength="12" maxlength="200"></label><button class="button outline" type="button" data-password>Cambiar contraseña</button></div></section><p class="editor-note">No hay contador de visitas activado. El formulario de WhatsApp no guarda datos. La agenda de visitas sí almacena datos personales; puedes borrarlos desde Agenda.</p>`;
+    editor.innerHTML = `<section class="editor-group"><h2>Respaldo del contenido</h2><p>Guarda una copia de seguridad y controla qué versión queda publicada.</p><div class="security-actions"><div class="respaldo-op"><button class="editor-action" type="button" data-export>Descargar respaldo JSON</button><p>Copia de lo que ves en esta pestaña, incluidos los cambios sin guardar.</p></div><div class="respaldo-op"><button class="editor-action" type="button" data-publish>Publicar de nuevo</button><p>Reenvía lo último guardado al sitio. No cambia tu edición.</p></div><div class="respaldo-op"><button class="editor-action" type="button" data-reload>Cargar última versión</button><p>Puede descartar tus cambios sin guardar: descarga un respaldo antes.</p></div></div></section><section class="editor-group"><h2>Cambiar contraseña</h2><div class="password-fields"><label class="admin-field">Contraseña actual<input type="password" name="current" autocomplete="current-password" maxlength="200"></label><label class="admin-field">Nueva contraseña<input type="password" name="new-password" autocomplete="new-password" minlength="12" maxlength="200"></label><label class="admin-field">Repite la nueva contraseña<input type="password" name="new-repeat" autocomplete="new-password" minlength="12" maxlength="200"></label><button class="button outline" type="button" data-password>Cambiar contraseña</button></div></section><p class="editor-note">No hay contador de visitas activado. El formulario de WhatsApp no guarda datos. La agenda de visitas sí almacena datos personales; puedes borrarlos desde Agenda.</p>`;
     return;
   }
   if (section === 'general') {
@@ -98,17 +111,25 @@ function render() {
     return;
   }
   const items = documentData[section];
-  const notes = { servicios: 'Los servicios aparecen en este orden. Sube una fotografía real para acompañar cada uno.', productos: 'Sin productos visibles, la página Precios permanece oculta. Los pedidos se coordinan por WhatsApp.', trabajos: 'Esta galería es solo para fotografías reales de trabajos del cliente. Nunca subas imágenes generadas como prueba de trabajo.', blog: 'Cada entrada empieza como borrador. Marca Publicar solo después de la revisión del técnico. Una fecha futura programa su aparición a partir de ese día UTC.', faq: 'Publica solo respuestas confirmadas por el cliente.' };
-  editor.innerHTML = `<p class="editor-note">${notes[section]}</p>${!items.length ? `<div class="empty-editor"><h2>Aún no hay contenido.</h2><p>Agrega el primer elemento cuando tengas la información confirmada. Mientras tanto, este bloque no aparece en el sitio.</p></div>` : ''}${items.map((item, index) => `<details class="editor-group" ${items.length === 1 || !item.titulo && !item.nombre && !item.pregunta && !item.texto ? 'open' : ''}><summary>${esc(item.titulo || item.nombre || item.pregunta || item.texto || 'Nuevo elemento')}${section === 'blog' && !item.publicado ? ' (borrador)' : ''}</summary><div class="field-grid">${schemas[section].map(f => renderField(f, item, index)).join('')}</div><div class="row-tools"><button type="button" data-move="-1" data-index="${index}" ${index === 0 ? 'disabled' : ''}>Subir ↑</button><button type="button" data-move="1" data-index="${index}" ${index === items.length - 1 ? 'disabled' : ''}>Bajar ↓</button><button type="button" data-remove="${index}">Eliminar</button></div></details>`).join('')}<button class="editor-action" data-add type="button">Agregar elemento +</button>`;
+  const notes = { servicios: 'Los servicios aparecen en este orden. Sube una foto real para acompañar cada uno.', productos: 'Sin productos visibles, la página Precios queda oculta. Los pedidos se coordinan por WhatsApp.', trabajos: 'Solo fotos reales de trabajos del cliente: nunca imágenes generadas como prueba.', blog: 'Cada entrada empieza como borrador. Una fecha futura la programa desde ese día UTC.', faq: 'Publica solo respuestas confirmadas por el cliente.' };
+  const hoy = new Date().toISOString().slice(0, 10);
+  const estadoItem = item => {
+    if (section === 'blog') return item.publicado ? (item.fecha > hoy ? '<span class="item-estado">programada</span>' : '') : '<span class="item-estado">borrador</span>';
+    if (['servicios', 'productos'].includes(section)) return item.visible ? '' : '<span class="item-estado">oculto</span>';
+    return '';
+  };
+  const camposDe = (item, index, avanzada) => schemas[section].filter(f => !!f.avanzada === avanzada).map(f => renderField(f, item, index)).join('');
+  editor.innerHTML = `<p class="editor-note">${notes[section]}</p>${!items.length ? `<div class="empty-editor"><h2>Aún no hay contenido.</h2><p>Agrega el primer elemento cuando tengas la información confirmada. Mientras tanto, este bloque no aparece en el sitio.</p></div>` : ''}${items.map((item, index) => `<details class="editor-group" ${items.length === 1 || !item.titulo && !item.nombre && !item.pregunta && !item.texto ? 'open' : ''}><summary>${esc(item.titulo || item.nombre || item.pregunta || item.texto || 'Nuevo elemento')}${estadoItem(item)}</summary><div class="field-grid">${camposDe(item, index, false)}</div>${schemas[section].some(f => f.avanzada) ? `<details class="editor-avanzadas"><summary>Opciones avanzadas</summary><div class="field-grid">${camposDe(item, index, true)}</div></details>` : ''}<div class="row-tools"><button type="button" data-move="-1" data-index="${index}" ${index === 0 ? 'disabled' : ''}>Subir ↑</button><button type="button" data-move="1" data-index="${index}" ${index === items.length - 1 ? 'disabled' : ''}>Bajar ↓</button><button type="button" data-remove="${index}">Eliminar</button></div></details>`).join('')}<button class="editor-action" data-add type="button">Agregar elemento +</button>`;
 }
 
 async function load(preserve = false) {
   const record = await api('content');
   const conflict = preserve && dirty && documentData && revision !== record.revision;
   // Local edits keep their base revision: adopting the new one would bypass the conflict guard.
-  if (!preserve || !dirty || !documentData) { documentData = record.data; revision = record.revision; dirty = false; }
+  if (!preserve || !dirty || !documentData) { documentData = record.data; revision = record.revision; dirty = false; savedSnapshot = JSON.stringify(documentData); }
   $('#access').hidden = true; $('#workspace').hidden = false;
   render();
+  actualizarBarra();
   status(conflict ? 'Conservamos tus cambios, pero otra sesión publicó una versión más reciente. Descarga un respaldo en Seguridad y respaldo antes de cargar la última versión.' : dirty ? 'Recuperamos tus cambios de esta pestaña. Aún no están guardados.' : record.updated ? `Último guardado: ${new Date(record.updated).toLocaleString('es-CL')}.` : 'Contenido inicial. Todavía no hay cambios publicados desde el panel.', !!conflict);
 }
 
@@ -139,6 +160,7 @@ document.querySelectorAll('[data-section]').forEach(button => button.addEventLis
   }
   section = destino;
   render();
+  button.scrollIntoView({ block: 'nearest', inline: 'nearest' });
 }));
 $('#editor').addEventListener('submit', event => event.preventDefault());
 $('#editor').addEventListener('input', event => {
@@ -189,20 +211,47 @@ $('#editor').addEventListener('click', async event => {
   }
 });
 
-$('#save').addEventListener('click', async () => {
-  if (saving || !$('#editor').reportValidity()) return;
+function validarAntesDeGuardar() {
+  const origen = section;
+  const destinos = [...new Set([...seccionesConCambios(), origen])].filter(s => schemas[s]);
+  for (const sec of destinos) {
+    if (sec !== section) { section = sec; render(); }
+    const invalido = $('#editor').querySelector('input:invalid, textarea:invalid, select:invalid');
+    if (!invalido) continue;
+    for (let d = invalido.closest('details'); d; d = d.parentElement.closest('details')) d.open = true;
+    const etiqueta = invalido.closest('.admin-field')?.querySelector('label')?.textContent || invalido.getAttribute('aria-label') || 'un campo obligatorio';
+    status(`Revisa «${etiqueta}» en ${titles[sec]} antes de publicar.`, true);
+    invalido.focus();
+    invalido.reportValidity();
+    return false;
+  }
+  if (section !== origen) { section = origen; render(); }
+  return true;
+}
+
+async function guardar() {
+  if (saving) return;
+  if (section === 'agenda' && visitas.dirty() && seccionesConCambios().length) {
+    if (!confirm('Tienes cambios sin guardar en la agenda. ¿Guardar el contenido y descartarlos?')) return;
+    visitas.discard();
+  }
+  if (!validarAntesDeGuardar()) return;
   const snapshot = JSON.stringify(documentData);
   if (new TextEncoder().encode(snapshot).byteLength > MAX_CONTENT_BYTES) { status(CONTENT_SIZE_ERROR, true); return; }
-  saving = true; $('#save').disabled = true;
+  saving = true; $('#save').disabled = $('#save-bar-save').disabled = true;
   status('Guardando y publicando...');
   try {
     const record = await api('content', { method: 'PUT', body: JSON.stringify({ data: JSON.parse(snapshot), revision }) });
     revision = record.revision;
     dirty = JSON.stringify(documentData) !== snapshot;
+    savedSnapshot = snapshot;
+    actualizarBarra();
     status(record.warning || (dirty ? 'Guardado. Tienes nuevos cambios pendientes.' : 'Guardado y publicado. Los cambios pueden tardar un minuto en aparecer.'), !!record.warning);
   } catch (error) { status(error.message, true); }
-  finally { saving = false; $('#save').disabled = false; }
-});
+  finally { saving = false; $('#save').disabled = $('#save-bar-save').disabled = false; }
+}
+$('#save').addEventListener('click', guardar);
+$('#save-bar-save').addEventListener('click', guardar);
 
 async function compress(file) {
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 20000000) throw new Error('Elige un JPG, PNG o WebP de hasta 20 MB.');
