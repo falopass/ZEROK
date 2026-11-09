@@ -37,17 +37,20 @@ export const telefonoVisible = t => /^\+569\d{8}$/.test(t) ? `+56 9 ${t.slice(4,
 
 export function validarReserva(input, dias, opciones = equipos) {
   const limites = { equipo: 60, problema: 600, dia: 10, direccion: 150, sector: 80, referencia: 150, nombre: 80, telefono: 30 };
-  if (Object.entries(limites).some(([k, max]) => input[k] !== undefined && (typeof input[k] !== 'string' || input[k].length > max))) return { error: 'Revisa los datos: hay un campo demasiado largo o con formato incorrecto.' };
+  if (Object.entries(limites).some(([k, max]) => input[k] !== undefined && (typeof input[k] !== 'string' || input[k].length > max))) return { error: 'Revisa los datos: hay un campo demasiado largo o con formato incorrecto.', errores: [] };
   const linea = (k, max) => limpiar(input[k], max).replace(/\s+/g, ' ');
   const visita = { equipo: linea('equipo', 60), problema: limpiar(input.problema, 600), dia: linea('dia', 10), direccion: linea('direccion', 150), sector: linea('sector', 80), referencia: linea('referencia', 150), nombre: linea('nombre', 80), telefono: telefono(input.telefono) };
-  const error = !opciones.includes(visita.equipo) ? 'Elige el equipo que necesitas revisar.'
-    : !visita.problema ? 'Cuéntanos qué le pasa a tu equipo.'
-    : !dias.includes(visita.dia) ? 'Elige uno de los días disponibles.'
-    : !visita.direccion || !visita.sector ? 'Indica la dirección y el sector donde está el equipo.'
-    : !visita.nombre ? 'Escribe tu nombre.'
-    : !visita.telefono ? 'Revisa tu teléfono. Usa 9 dígitos, por ejemplo 9 1234 5678.'
-    : input.consentimiento !== 'si' ? 'Para agendar necesitamos tu autorización para guardar estos datos.' : '';
-  return { error, visita };
+  // Every missing or invalid field gets its own message, linked back to the input.
+  const errores = [];
+  if (!opciones.includes(visita.equipo)) errores.push({ campo: 'equipo', mensaje: 'Elige el equipo que necesitas revisar.' });
+  if (!visita.problema) errores.push({ campo: 'problema', mensaje: 'Cuéntanos qué le pasa a tu equipo.' });
+  if (!dias.includes(visita.dia)) errores.push({ campo: 'dia', mensaje: 'Elige uno de los días disponibles.' });
+  if (!visita.direccion) errores.push({ campo: 'direccion', mensaje: 'Indica la dirección donde está el equipo.' });
+  if (!visita.sector) errores.push({ campo: 'sector', mensaje: 'Indica el sector o comuna donde está el equipo.' });
+  if (!visita.nombre) errores.push({ campo: 'nombre', mensaje: 'Escribe tu nombre.' });
+  if (!visita.telefono) errores.push({ campo: 'telefono', mensaje: 'Revisa tu teléfono. Usa 9 dígitos, por ejemplo 9 1234 5678.' });
+  if (input.consentimiento !== 'si') errores.push({ campo: 'consentimiento', mensaje: 'Para agendar necesitamos tu autorización para guardar estos datos.' });
+  return { error: errores[0]?.mensaje || '', errores, visita };
 }
 
 // The alias forwards privately; enabling delivery is a separate, explicit deployment choice.

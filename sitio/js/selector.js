@@ -20,6 +20,7 @@ export function setupMessages() {
     const bubble = form.querySelector('.message-bubble');
     const result = form.querySelector('.message-result');
     const waLink = form.querySelector('[data-message-wa]');
+    const anuncio = form.querySelector('[data-anuncio]');
     const error = form.querySelector('.form-error');
     const problema = form.querySelector('[name=problema]');
     form.querySelector('[name=sector]').required = true;
@@ -104,14 +105,17 @@ export function setupMessages() {
     });
     form.addEventListener('change', event => {
       const target = event.target;
+      // Discrete picks get announced; the free-text preview never does.
       if (target.name === 'equipo') {
         const anterior = lista.querySelector('[name=sintoma]:checked');
         if (anterior?.value && problema.value === anterior.value) problema.value = '';
+        if (anuncio) anuncio.textContent = `Equipo: ${target.value}`;
         fly(target.closest('.equipment-option'));
         buildSintomas();
         update();
         typeThen();
       } else if (target.name === 'sintoma') {
+        if (anuncio) anuncio.textContent = target.nextElementSibling?.textContent || '';
         if (target.value) {
           problema.value = target.value;
           problema.dispatchEvent(new Event('input', { bubbles: true }));

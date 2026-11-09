@@ -14,9 +14,21 @@ document.addEventListener('click', event => {
 
 // Observers leave the content readable if JS, motion, or a vendor script fails.
 if (canReveal) {
+  // Each block type enters with its own move: titles rise less, form steps slide in.
+  const entrada = element => {
+    if (element.matches('.agenda-paso')) {
+      const pasos = [...element.parentElement.querySelectorAll('.agenda-paso')];
+      return { frames: [{ opacity: .3, transform: 'translateX(18px)' }, { opacity: 1, transform: 'none' }], options: { duration: 620, delay: Math.max(0, pasos.indexOf(element)) * 90, fill: 'backwards' } };
+    }
+    if (element.matches('h1, h2')) return { frames: [{ opacity: .3, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }], options: { duration: 560 } };
+    return { frames: [{ opacity: .3, transform: 'translateY(24px)' }, { opacity: 1, transform: 'none' }], options: { duration: 700 } };
+  };
   const reveal = new IntersectionObserver(entries => {
     for (const entry of entries) if (entry.isIntersecting) {
-      if (!reduced.matches) entry.target.animate([{ opacity: .3, transform: 'translateY(24px)' }, { opacity: 1, transform: 'none' }], { duration: 700, easing: 'cubic-bezier(.16,1,.3,1)' });
+      if (!reduced.matches) {
+        const { frames, options } = entrada(entry.target);
+        entry.target.animate(frames, { easing: 'cubic-bezier(.16,1,.3,1)', ...options });
+      }
       reveal.unobserve(entry.target);
     }
   }, { threshold: .12 });
@@ -262,8 +274,11 @@ if (agenda) {
     const actual = pasos.indexOf(event.target.closest('.agenda-paso'));
     if (actual !== -1) document.querySelector('.agenda-etiqueta').textContent = `0${actual + 1} / 04`;
   });
-  // With a completed request, the day step gets keyboard focus.
-  if (agenda.dataset.prefill !== undefined && !agenda.querySelector('.agenda-error')) {
+  // With a completed request, the day step gets keyboard focus; with server
+  // errors the summary takes it instead, so each linked field stays reachable.
+  const errorBox = agenda.querySelector('.agenda-error');
+  if (errorBox) errorBox.focus();
+  else if (agenda.dataset.prefill !== undefined) {
     const detalle = agenda.querySelector('.agenda-detalle');
     if (detalle) detalle.open = false;
     agenda.querySelector('[name=dia]')?.focus();
