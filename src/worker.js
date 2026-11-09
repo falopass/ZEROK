@@ -180,7 +180,9 @@ async function render(request, env, url, data, path, rendered) {
   const canonical = new URL(path, origin).href;
   const ogSrc = rendered.post?.foto || data.general.hero || '/img/refrigeracion.webp';
   const ogImage = new URL(ogSrc, origin).href;
-  const ogAlt = altOf(ogSrc, rendered.post?.titulo || data.general.heroAlt || 'Servicio técnico ZÉROK en Osorno');
+  const ogAlt = altOf(ogSrc, (rendered.post?.foto && rendered.post.titulo) || data.general.heroAlt || 'Servicio técnico ZÉROK en Osorno');
+  // 1440×960 solo es seguro para la portada original; las fotos subidas tienen proporciones variables.
+  const ogSize = ogSrc === '/img/refrigeracion.webp';
   const template = await env.ASSETS.fetch(new URL('/index.html', url));
   const replace = html => ({ element(element) { element.setInnerContent(html, { html: true }); } });
   const attribute = (name, value) => ({ element(element) { element.setAttribute(name, value); } });
@@ -195,6 +197,7 @@ async function render(request, env, url, data, path, rendered) {
     .on('meta[property="og:type"]', attribute('content', rendered.post ? 'article' : 'website'))
     .on('meta[property="og:image"]', attribute('content', ogImage))
     .on('meta[property="og:image:alt"]', attribute('content', ogAlt))
+    .on('meta[property="og:image:width"], meta[property="og:image:height"]', { element(element) { if (!ogSize) element.remove(); } })
     .on('meta[name="twitter:image"]', attribute('content', ogImage))
     .on('#header', replace(header(data, path)))
     .on('#contenido', replace(rendered.html))

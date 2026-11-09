@@ -71,8 +71,9 @@ Nada de esto se publica sin confirmación (PLAN.md §9 detalla la lista completa
     Verificación: la lista de sectores publicada coincide y `areaServed` la refleja.
 13. **Fotos y videos reales** — Cliente entrega 10 a 20 fotos de trabajos y videos
     verticales cortos. Diego reemplaza las fotos de apoyo de Wikimedia Commons.
-    Verificación: las fotos nuevas aparecen con su frase en «Trabajo real» y los
-    créditos dejan de listar fotos de apoyo retiradas.
+    Verificación: las fotos nuevas aparecen con su frase en «Trabajo real». La página
+    Créditos lista siempre las fotos registradas en `src/creditos.js`: al retirar una
+    foto de apoyo del sitio, borrarla también de ese archivo.
 14. **Precios, garantía, marcas, pagos y credenciales** — Cliente confirma.
     Solo si vende productos o planes: precios CLP. Garantía con plazo y cobertura,
     medios de pago, boleta o factura, marcas reales y registro SEC para gas.
