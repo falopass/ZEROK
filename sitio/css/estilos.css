@@ -205,7 +205,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0
 .trabajos-pie{display:grid;gap:12px;margin-top:24px}
 
 /* Servicios apilados */
-.services-home{margin:24px 8px 0;border-radius:var(--radio-xl)}
+.services-home{position:relative;isolation:isolate;margin:24px 8px 0;border-radius:var(--radio-xl);background:linear-gradient(180deg,#0d2b4b 0%,var(--fondo) 40%,#040d18 100%)}
+/* Fondo de plano técnico: trama milimetrada que se aclara hacia el centro, donde va el contenido. */
+.services-home::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;background:linear-gradient(rgb(140 200 234 / .13) 1px,transparent 1px) 0 0/170px 170px,linear-gradient(90deg,rgb(140 200 234 / .13) 1px,transparent 1px) 0 0/170px 170px,linear-gradient(rgb(140 200 234 / .06) 1px,transparent 1px) 0 0/34px 34px,linear-gradient(90deg,rgb(140 200 234 / .06) 1px,transparent 1px) 0 0/34px 34px;-webkit-mask-image:linear-gradient(90deg,#000,rgb(0 0 0 / .3) 28%,rgb(0 0 0 / .3) 72%,#000);mask-image:linear-gradient(90deg,#000,rgb(0 0 0 / .3) 28%,rgb(0 0 0 / .3) 72%,#000)}
+/* Escala graduada en el borde: baja del calor de la falla al frío, como el termómetro del header. */
+.services-home::after{content:'';position:absolute;top:72px;bottom:56px;left:10px;z-index:-1;width:16px;display:none;pointer-events:none;background:linear-gradient(180deg,#e4ac4b 0%,#bd541c 30%,#2381a9 66%,#65bed7 100%);-webkit-mask:repeating-linear-gradient(180deg,#000 0 1px,transparent 1px 10px) 0 0/8px 100% no-repeat,repeating-linear-gradient(180deg,#000 0 1px,transparent 1px 50px) 0 0/16px 100% no-repeat;mask:repeating-linear-gradient(180deg,#000 0 1px,transparent 1px 10px) 0 0/8px 100% no-repeat,repeating-linear-gradient(180deg,#000 0 1px,transparent 1px 50px) 0 0/16px 100% no-repeat}
 .section-title{padding-block:64px 40px}
 .section-title h2{max-width:900px}
 .section-title p{color:var(--texto-2);margin:0}
@@ -532,6 +536,7 @@ to{opacity:0;transform:scale(5)}
 .hero-next .icono{width:18px;height:18px;animation:bob 1.8s ease-in-out infinite}
 .franja{margin-top:-8px}
 .services-home{margin:32px 16px 0}
+.services-home::after{display:block}
 .trabajos-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:end;gap:64px;margin-bottom:40px}
 .trabajos-head h2{margin:0}
 .trabajos-rail{display:grid;grid-template-columns:repeat(3,minmax(0,320px));gap:24px;overflow:visible;padding-bottom:72px}
