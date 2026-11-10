@@ -58,6 +58,25 @@ export const correoActivo = env => env.AVISOS_HABILITADOS === 'true' && typeof e
 const mapa = v => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${v.direccion}, ${v.sector}, Región de Los Lagos, Chile`)}`;
 const panel = env => new URL('/admin/', env.SITE_URL || 'https://zerok.cl').href;
 
+// Email layout: 600 px tables with inline styles, the only form Gmail, Outlook and Apple Mail render alike.
+const C = { marino: '#042c56', tinta: '#0c2340', gris: '#4a5f75', fondo: '#eef3f5', linea: '#c6d4de', ambar: '#e09a1f', hielo: '#2381a9' };
+const mono = `700 12px/1.3 'Courier New',monospace;letter-spacing:.1em;text-transform:uppercase`;
+const boton = (href, texto, fondo, color = '#ffffff') => `<td style="padding:0 8px 8px 0"><a href="${esc(href)}" style="display:inline-block;background:${fondo};color:${color};font:700 15px/1 Arial,sans-serif;text-decoration:none;padding:14px 22px;border-radius:999px">${texto}</a></td>`;
+function marco(env, { aviso, titulo, previa, cuerpo }) {
+  const sitio = new URL('/', env.SITE_URL || 'https://zerok.cl').href;
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${esc(titulo)}</title></head>`
+    + `<body style="margin:0;padding:0;background:${C.fondo}"><div style="display:none;max-height:0;overflow:hidden;opacity:0">${esc(previa)}</div>`
+    + `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.fondo}"><tr><td align="center" style="padding:24px 12px">`
+    + `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:20px;overflow:hidden;font-family:Arial,Helvetica,sans-serif;color:${C.tinta}">`
+    + `<tr><td style="padding:18px 28px"><a href="${esc(sitio)}"><img src="${esc(new URL('/img/logo.png', sitio).href)}" width="64" height="64" alt="ZÉROK" style="display:block;border:0"></a></td></tr>`
+    + `<tr><td style="padding:0;font-size:0;line-height:0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td height="5" style="background:${C.hielo}"></td><td height="5" style="background:#bd541c"></td><td height="5" style="background:#e4ac4b"></td></tr></table></td></tr>`
+    + `<tr><td style="background:${C.marino};padding:26px 28px 28px;color:#ffffff"><p style="margin:0 0 10px;font:${mono};color:#9fc6d8">${esc(aviso)}</p><h1 style="margin:0;font:800 26px/1.2 Arial,Helvetica,sans-serif;color:#ffffff">${esc(titulo)}</h1></td></tr>`
+    + `<tr><td style="padding:28px">${cuerpo}</td></tr>`
+    + `<tr><td style="padding:18px 28px 24px;border-top:1px solid ${C.linea};font:13px/1.5 Arial,sans-serif;color:${C.gris}">Aviso automático de la agenda de <a href="${esc(sitio)}" style="color:${C.gris}">zerok.cl</a>. Los datos del cliente son privados: úsalos solo para esta visita.</td></tr>`
+    + `</table></td></tr></table></body></html>`;
+}
+const filas = datos => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">${datos.map(([k, x]) => `<tr><td style="padding:12px 12px 12px 0;border-bottom:1px solid ${C.linea};width:32%;vertical-align:top;font:${mono};color:${C.gris}">${esc(k)}</td><td style="padding:12px 0;border-bottom:1px solid ${C.linea};vertical-align:top;font:16px/1.45 Arial,sans-serif;color:${C.tinta}">${x}</td></tr>`).join('')}</table>`;
+
 async function enviar(env, subject, text, html) {
   if (!correoActivo(env)) throw new Error('Correo no habilitado.');
   await env.AVISOS.send({
@@ -65,7 +84,7 @@ async function enviar(env, subject, text, html) {
     to: 'avisos@zerok.cl',
     subject: subject.replace(/\s+/g, ' ').slice(0, 200),
     text,
-    html: `<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.5;color:#0c2340">${html}</div>`
+    html
   });
 }
 
@@ -77,7 +96,14 @@ export async function avisoReserva(env, v) {
   const datos = [[atrasada ? 'Día pedido (ya pasó)' : 'Día preferido', etiqueta(v.dia)], ...(atrasada && recibida ? [['Recibida', etiqueta(recibida)]] : []), ['Nombre', v.nombre], ['Teléfono', telefonoVisible(v.telefono)], ['Dirección', `${v.direccion}, ${v.sector}`], ...(v.referencia ? [['Referencia', v.referencia]] : []), ['Equipo', v.equipo], ['Problema', v.problema]];
   const titulo = atrasada ? 'Solicitud pendiente de visita' : 'Nueva solicitud de visita';
   const text = `${titulo}\n\n${datos.map(([k, x]) => `${k}: ${x}`).join('\n')}\n\nLlamar: tel:${v.telefono}\n${wsp ? `WhatsApp: https://wa.me/${wsp}\n` : ''}Mapa: ${mapa(v)}\nConfirmar en el panel: ${panel(env)}\n`;
-  const html = `<h1 style="font-size:20px">${titulo}</h1><table cellpadding="6" style="border-collapse:collapse">${datos.map(([k, x]) => `<tr><th align="left" valign="top">${esc(k)}</th><td>${esc(x).replace(/\n/g, '<br>')}</td></tr>`).join('')}</table><p><a href="tel:${v.telefono}">Llamar a ${esc(v.nombre)}</a>${wsp ? ` · <a href="https://wa.me/${wsp}">Escribir por WhatsApp</a>` : ''}</p><p><a href="${esc(mapa(v))}">Ver la dirección en el mapa</a></p><p><a href="${esc(panel(env))}">Confirmar en el panel</a></p>`;
+  const dia = etiqueta(v.dia);
+  const cuerpo = `<p style="margin:0 0 6px;font:${mono};color:${C.gris}">${atrasada ? 'Día pedido, ya pasó' : 'Día preferido'}</p>`
+    + `<p style="margin:0 0 22px;font:800 26px/1.15 Arial,sans-serif;color:${C.marino}">${esc(dia.charAt(0).toUpperCase() + dia.slice(1))}</p>`
+    + `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.fondo};border-left:5px solid ${C.ambar};margin:0 0 22px"><tr><td style="padding:18px 20px"><p style="margin:0 0 8px;font:${mono};color:${C.gris}">${esc(v.equipo)}</p><p style="margin:0;font:17px/1.5 Arial,sans-serif;color:${C.tinta}">${esc(v.problema).replace(/\n/g, '<br>')}</p></td></tr></table>`
+    + filas([...(atrasada && recibida ? [['Recibida', esc(etiqueta(recibida))]] : []), ['Cliente', `<strong>${esc(v.nombre)}</strong>`], ['Teléfono', `<a href="tel:${esc(v.telefono)}" style="color:${C.tinta};font-weight:700">${esc(telefonoVisible(v.telefono))}</a>`], ['Dirección', `<a href="${esc(mapa(v))}" style="color:${C.tinta}">${esc(`${v.direccion}, ${v.sector}`)}</a>`], ...(v.referencia ? [['Referencia', esc(v.referencia)]] : [])])
+    + `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:26px 0 4px"><tr>${boton(`tel:${v.telefono}`, 'Llamar', C.ambar, C.tinta)}${wsp ? boton(`https://wa.me/${wsp}`, 'WhatsApp', '#1f7a45') : ''}${boton(mapa(v), 'Ver mapa', C.hielo)}</tr></table>`
+    + `<p style="margin:18px 0 0;font:15px/1.5 Arial,sans-serif;color:${C.gris}">Cuando acuerdes la hora con el cliente, <a href="${esc(panel(env))}" style="color:${C.marino};font-weight:700">confírmala en el panel</a>.</p>`;
+  const html = marco(env, { aviso: atrasada ? 'Solicitud pendiente' : 'Nueva solicitud', titulo: `${v.nombre} pide visita: ${v.equipo.toLowerCase()}`, previa: `${dia} · ${v.sector} · ${v.problema.slice(0, 90)}`, cuerpo });
   const corto = etiqueta(v.dia, { weekday: 'short', day: 'numeric', month: 'short' });
   await enviar(env, atrasada ? `Solicitud pendiente: ${v.nombre}, ${v.equipo.toLowerCase()}, día pedido ${corto}` : `Nueva visita: ${v.nombre}, ${v.equipo.toLowerCase()}, ${corto}`, text, html);
 }
@@ -85,6 +111,8 @@ export async function avisoReserva(env, v) {
 export async function avisoSeguimiento(env, visitas) {
   const fila = v => `${v.nombre}, ${v.equipo.toLowerCase()}, visita realizada el ${etiqueta(v.realizada, { day: 'numeric', month: 'long' })}`;
   const text = `Llamados de seguimiento pendientes\n\n${visitas.map(v => `- ${fila(v)}\n  Teléfono: ${telefonoVisible(v.telefono)} (tel:${v.telefono})${v.nota ? `\n  Se hizo: ${v.nota}` : ''}`).join('\n\n')}\n\nCuando llames, márcalo en el panel: ${panel(env)}\n`;
-  const html = `<h1 style="font-size:20px">Llamados de seguimiento pendientes</h1>${visitas.map(v => `<p><strong>${esc(fila(v))}</strong><br><a href="tel:${v.telefono}">Llamar al ${esc(telefonoVisible(v.telefono))}</a>${v.nota ? `<br>Se hizo: ${esc(v.nota)}` : ''}</p>`).join('')}<p><a href="${esc(panel(env))}">Marcar los llamados en el panel</a></p>`;
+  const cuerpo = filas(visitas.map(v => [etiqueta(v.realizada, { day: 'numeric', month: 'short' }), `<strong>${esc(v.nombre)}</strong>, ${esc(v.equipo.toLowerCase())}<br><a href="tel:${esc(v.telefono)}" style="color:${C.tinta};font-weight:700">${esc(telefonoVisible(v.telefono))}</a>${v.nota ? `<br><span style="color:${C.gris}">Se hizo: ${esc(v.nota)}</span>` : ''}`]))
+    + `<p style="margin:22px 0 0;font:15px/1.5 Arial,sans-serif;color:${C.gris}">Cuando llames, <a href="${esc(panel(env))}" style="color:${C.marino};font-weight:700">márcalo en el panel</a>.</p>`;
+  const html = marco(env, { aviso: 'Seguimiento', titulo: 'Llamados de seguimiento pendientes', previa: visitas.map(v => v.nombre).join(', '), cuerpo });
   await enviar(env, visitas.length === 1 ? `Hoy toca llamar a ${visitas[0].nombre}` : `Hoy toca llamar a ${visitas.length} clientes`, text, html);
 }
