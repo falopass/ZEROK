@@ -107,6 +107,32 @@ for (const item of serviceMenu?.querySelectorAll('.service-item') ?? []) {
   });
 }
 
+// Stage beside the service index: the row under the pointer, in focus or open sets the photo.
+const stage = serviceMenu?.querySelector('[data-stage]');
+if (stage) {
+  const slides = [...stage.children];
+  const items = [...serviceMenu.querySelectorAll('.service-item')];
+  let leaving;
+  const show = index => {
+    const next = slides[index];
+    const prev = stage.querySelector('.is-active');
+    if (!next || next === prev) return;
+    for (const slide of slides) slide.classList.remove('is-leaving');
+    prev?.classList.replace('is-active', 'is-leaving');
+    next.classList.add('is-active');
+    stage.style.setProperty('--p', (index + 1) / slides.length);
+    clearTimeout(leaving);
+    leaving = setTimeout(() => prev?.classList.remove('is-leaving'), 900);
+  };
+  const settle = () => { const open = items.findIndex(item => item.open && !item.classList.contains('is-closing')); if (open >= 0) show(open); };
+  items.forEach((item, index) => {
+    item.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') show(index); });
+    item.querySelector('summary')?.addEventListener('focus', () => show(index));
+    item.addEventListener('toggle', () => { if (item.open) show(index); setTimeout(() => window.ScrollTrigger?.refresh(), 600); });
+  });
+  serviceMenu.querySelector('.service-list')?.addEventListener('pointerleave', settle);
+}
+
 for (const group of document.querySelectorAll('[data-audience]')) {
   group.addEventListener('click', event => {
     const button = event.target.closest('[data-audience-choice]');
@@ -264,11 +290,7 @@ async function motion() {
       const palabras = gsap.utils.toArray('.closing-hero .palabra');
       if (palabras.length) gsap.fromTo(palabras, { opacity: .12, y: 16 }, { opacity: 1, y: 0, stagger: .07, duration: .55, ease: 'power2.out', scrollTrigger: { trigger: '.closing-hero h2', start: 'top 85%', once: true } });
     });
-    media.add('(min-width: 1024px) and (min-height: 800px) and (prefers-reduced-motion: no-preference)', () => {
-      const sheets = gsap.utils.toArray('.service-sheet');
-      for (const sheet of sheets.slice(0, -1)) gsap.to(sheet, { scale: .93, '--dim': .6, ease: 'none', scrollTrigger: { trigger: sheet, start: 'top 96px', end: 'bottom 120px', scrub: true } });
-    });
-  } catch { /* Native sticky sheets and observer reveals remain available. */ }
+  } catch { /* Observer reveals remain available. */ }
 }
 if ('requestIdleCallback' in window) requestIdleCallback(motion, { timeout: 2000 });
 else setTimeout(motion, 1200);
