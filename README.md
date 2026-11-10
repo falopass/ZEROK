@@ -46,7 +46,7 @@ Primer deploy hecho el 06-11-2026 en https://zerok.ddiegosebastianbb.workers.dev
 
 No se habilita el workflow automáticamente sin cuenta, recursos y destino concretos. No se registró ni compró `zerok.cl`.
 
-Antes de indexar: confirmar horario, sectores y fotografías; conectar `zerok.cl`; conservar `SITE_URL=https://zerok.cl` y cambiar `PUBLIC_INDEXING` a `true`. Workers.dev continúa con `noindex` aunque esté activada la indexación del dominio final.
+Indexación activa en `zerok.cl` desde el 09-11-2026 (`PUBLIC_INDEXING=true`). IndexNow: la clave pública `INDEXNOW_KEY` de `wrangler.jsonc` se sirve en `/<clave>.txt`; tras cambios de contenido se avisa a Bing y otros con un POST a `https://api.indexnow.org/indexnow`. Workers.dev continúa con `noindex` aunque esté activada la indexación del dominio final.
 
 ### Dominio zerok.cl
 

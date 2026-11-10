@@ -5,7 +5,7 @@
   "compatibility_date": "2026-11-05",
   "workers_dev": true,
   "assets": { "directory": "sitio", "binding": "ASSETS", "run_worker_first": true, "html_handling": "none" },
-  "vars": { "SITE_URL": "https://zerok.cl", "PUBLIC_INDEXING": "false", "AVISOS_HABILITADOS": "false" },
+  "vars": { "SITE_URL": "https://zerok.cl", "PUBLIC_INDEXING": "true", "AVISOS_HABILITADOS": "false", "INDEXNOW_KEY": "bc5abfd87a89e7d43e33a87931bcd959" },
   "routes": [
     { "pattern": "zerok.cl", "custom_domain": true },
     { "pattern": "www.zerok.cl", "custom_domain": true }

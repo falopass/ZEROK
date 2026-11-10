@@ -116,6 +116,8 @@ async function handle(request, env) {
   const path = url.pathname;
   const site = apex(env);
   // www se pliega al dominio raíz; sin dominio configurado esta rama no se alcanza.
+  // http y www se pliegan a https://zerok.cl en un solo salto.
+  if (site && url.protocol === 'http:' && (url.hostname === site.hostname || url.hostname === `www.${site.hostname}`)) return Response.redirect(`${site.origin}${url.pathname}${url.search}`, 301);
   if (site && url.hostname === `www.${site.hostname}`) return Response.redirect(`${site.origin}${url.pathname}${url.search}`, 301);
   const admin = () => objeto(env);
   if (/^\/interno(?:\/|$)/.test(path)) return json({ error: 'Ruta no encontrada.' }, 404);
@@ -155,6 +157,8 @@ async function handle(request, env) {
   const data = await siteData(env);
   const origin = site && url.origin === site.origin ? site.origin : url.origin;
   const indexing = env.PUBLIC_INDEXING === 'true' && !!site && url.origin === site.origin;
+  // IndexNow (Bing, Yandex y otros): la clave es pública y se sirve en la raíz para probar la propiedad del dominio.
+  if (env.INDEXNOW_KEY && path === `/${env.INDEXNOW_KEY}.txt`) return new Response(env.INDEXNOW_KEY, { headers: { 'content-type': 'text/plain; charset=utf-8' } });
   if (path === '/robots.txt') return new Response(indexing ? `User-agent: *\nDisallow: /admin/\nDisallow: /api/\nSitemap: ${origin}/sitemap.xml\n` : 'User-agent: *\nDisallow: /\n', { headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-cache' } });
   if (path === '/sitemap.xml') {
     const paths = ['/', '/servicios/', ...(data.agenda ? ['/agendar/'] : []), '/contacto/', ...(data.productos.length ? ['/precios/'] : []), ...(data.blog.length ? ['/blog/', ...data.blog.map(p => `/blog/${p.slug}/`)] : [])];
