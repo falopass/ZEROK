@@ -154,18 +154,6 @@ for (const chip of document.querySelectorAll('.hero-chip')) {
   });
 }
 
-// A case picked on a service card marks equipment and symptom in the selector it jumps to.
-for (const caso of document.querySelectorAll('a[data-sintoma]')) {
-  caso.addEventListener('click', () => {
-    const form = document.querySelector('[data-message]');
-    const radio = form?.querySelector(`[name=equipo][value="${CSS.escape(caso.dataset.equipo)}"]`);
-    if (!radio) return;
-    if (!radio.checked) { radio.checked = true; radio.dispatchEvent(new Event('change', { bubbles: true })); }
-    const chip = [...form.querySelectorAll('[name=sintoma]')].find(c => c.nextElementSibling?.textContent === caso.dataset.sintoma);
-    if (chip && !chip.checked) { chip.checked = true; chip.dispatchEvent(new Event('change', { bubbles: true })); }
-  });
-}
-
 // A deliberate submit disables its button until the page navigates; bfcache restores it.
 for (const form of document.querySelectorAll('[data-native-submit]')) {
   const button = form.querySelector('[type=submit]');

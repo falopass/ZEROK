@@ -43,17 +43,6 @@ const corto = { 'Vitrina o conservador': 'Vitrina', 'Aire acondicionado de auto'
 // The equipment line is hidden when every word in it is already in the title or summary.
 const raices = t => (t.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().match(/\p{L}{4,}/gu) || []).map(w => w.slice(0, 5));
 const repite = s => { const base = new Set(raices(`${s.titulo} ${s.resumen}`)); return raices(s.equipos).every(w => base.has(w)); };
-// Service cards teach with labelled rows: what it covers, the faults the client names, and the
-// selector's own cases as links that open the diagnosis with equipment and case already marked.
-const ficha = s => {
-  const equipo = servicioEquipo[s.id];
-  const filas = [
-    s.equipos && !repite(s) ? `<div><dt class="mono">Equipos</dt><dd>${esc(s.equipos)}</dd></div>` : '',
-    s.fallas.length ? `<div><dt class="mono">Fallas que atendemos</dt><dd><ul class="service-tags">${s.fallas.map((f, i) => `<li style="--i:${i}">${esc(f)}</li>`).join('')}</ul></dd></div>` : '',
-    sintomas[equipo] ? `<div><dt class="mono">Elige tu caso</dt><dd><ul class="service-sintomas">${sintomas[equipo].map((t, i) => `<li style="--i:${i}"><a href="/#diagnostico" data-equipo="${esc(equipo)}" data-sintoma="${esc(t)}">${esc(t)}</a></li>`).join('')}</ul></dd></div>` : ''
-  ].filter(Boolean);
-  return filas.length ? `<dl class="service-ficha">${filas.join('')}</dl>` : '';
-};
 
 export function navigation(data, path) {
   const items = [['/servicios/', 'Servicios'], ...(data.productos.length ? [['/precios/', 'Precios']] : []), ...(data.blog.length ? [['/blog/', 'Blog']] : []), ['/contacto/', 'Contacto']];
@@ -95,7 +84,7 @@ const blogList = posts => `<div class="blog-list">${posts.map(p => `<article><a 
 // One index for every width: rows open in place; from 1024 px a sticky stage beside the list shows the photo of the row in use.
 const serviceMenu = data => {
   const inicial = Math.max(0, data.servicios.findIndex(s => s.foto));
-  return `<div class="service-menu wrap" data-visible><div class="service-list">${data.servicios.map((s, i) => `<details class="service-item" name="servicios-movil" style="--i:${i}"><summary><span class="service-item-num mono">${pad(i + 1)}</span><h3 class="service-item-title">${esc(s.titulo)}</h3><span class="service-item-plus" aria-hidden="true"></span></summary><div class="service-item-body"><div class="service-item-content">${s.foto ? `<figure class="service-item-media">${photo(s.foto, altOf(s.foto, s.titulo), 'service-photo')}</figure>` : ''}<div><p>${esc(s.resumen)}</p>${ficha(s)}<div class="service-actions">${link(serviceMessage(data, s), 'Agendar visita')}${link(`/servicios/#${s.id}`, 'Ver servicio', 'text-button')}</div></div></div></div></details>`).join('')}</div><div class="service-stage" data-stage style="--p:${(inicial + 1) / Math.max(1, data.servicios.length)}">${data.servicios.map((s, i) => `<figure class="stage-slide${s.foto ? '' : ' is-plate'}${i === inicial ? ' is-active' : ''}">${s.foto ? photo(s.foto, altOf(s.foto, s.titulo), 'stage-photo') : ''}<figcaption class="mono" aria-hidden="true"><b>${pad(i + 1)}</b><span>/ ${pad(data.servicios.length)}</span></figcaption></figure>`).join('')}</div></div>`;
+  return `<div class="service-menu wrap" data-visible><div class="service-list">${data.servicios.map((s, i) => `<details class="service-item" name="servicios-movil" style="--i:${i}"><summary><span class="service-item-num mono">${pad(i + 1)}</span><h3 class="service-item-title">${esc(s.titulo)}</h3><span class="service-item-plus" aria-hidden="true"></span></summary><div class="service-item-body"><div class="service-item-content">${s.foto ? `<figure class="service-item-media">${photo(s.foto, altOf(s.foto, s.titulo), 'service-photo')}</figure>` : ''}<div><p>${esc(s.resumen)}</p><div class="service-actions">${link(serviceMessage(data, s), 'Agendar visita')}${link(`/servicios/#${s.id}`, 'Ver servicio', 'text-button')}</div></div></div></div></details>`).join('')}</div><div class="service-stage" data-stage style="--p:${(inicial + 1) / Math.max(1, data.servicios.length)}">${data.servicios.map((s, i) => `<figure class="stage-slide${s.foto ? '' : ' is-plate'}${i === inicial ? ' is-active' : ''}">${s.foto ? photo(s.foto, altOf(s.foto, s.titulo), 'stage-photo') : ''}<figcaption class="mono" aria-hidden="true"><b>${pad(i + 1)}</b><span>/ ${pad(data.servicios.length)}</span></figcaption></figure>`).join('')}</div></div>`;
 };
 
 export function home(data) {
