@@ -34,6 +34,9 @@ Pedido de Diego: «demasiado plana y cuadrada, le falta vida». Cambios que reem
 - **Servicios de Inicio sin láminas apiladas** (pedido de Diego: molestaban el porte, los bordes y el movimiento de las tarjetas). Reemplaza al momento firma 4 de §7.2: ya no hay cajas grandes con borde que se fijan y se encogen. Un solo índice en todos los anchos: filas finas separadas por una línea, que se abren en su lugar. Desde 1024 px, a la derecha queda un **escenario** fijo con la foto de la fila en uso (bajo el puntero, con foco o abierta): la foto nueva sube como cortina sobre la anterior, con el número en contorno abajo y una barra térmica lateral que marca el avance. Los servicios sin foto muestran una placa de trama con el número grande. La fila abierta dibuja una línea térmica sobre su borde y las demás se atenúan; al pasar el puntero el título se desplaza. El bloque bajó de unos 4.200 a unos 1.100 px de alto a 1440.
 - Cada fila abierta muestra solo el resumen y las acciones (Agendar visita, Ver servicio). La ficha con «Fallas que atendemos» y «Elige tu caso» se retiró el mismo día por decisión de Diego; equipos y fallas siguen en `/servicios/`.
 
+### Revisión 11 (09-11-2026): nevada con el copo del logo
+Pedido de Diego. Levanta para este único caso la prohibición de «copos de nieve» de §2: no es un copo genérico sino el símbolo del logo. Capa fija sobre el contenido y bajo el header (`z-index 8`), sin recibir toques: 18 copos en escritorio y 9 en móvil, de 12 a 30 px y opacidad de 0,22 a 0,6, que caen en 14 a 30 s con vaivén y giro. La crea `sitio.js`; sin JavaScript o con movimiento reducido no existe.
+
 ### Revisión 4 (06-11-2026): logo y fotos reales
 - **Logo del cliente**: copo con Z y aguja de manómetro, azul marino `#042C56` y celestes `#65BED7`,
   `#2381A9`, `#0C426C`. Vectorizado en `sitio/img/logo.svg`; se usa en header, hero (símbolo que entra

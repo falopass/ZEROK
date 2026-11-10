@@ -781,3 +781,13 @@ input[aria-invalid=true],textarea[aria-invalid=true]{border-color:var(--error)}
 .agenda-presentacion .backlink{margin-bottom:24px}
 .agenda-intro{margin-bottom:12px}
 }
+
+/* Nevada: el copo del logo cae por toda la página, bajo el header y sin recibir toques. */
+.nevada{position:fixed;inset:0;z-index:8;overflow:hidden;pointer-events:none;contain:strict}
+.copo{position:absolute;top:-40px;left:var(--x);width:var(--s);height:var(--s);opacity:var(--o);animation:copo-cae var(--d) linear var(--r) infinite;will-change:transform}
+.copo i{display:block;width:100%;height:100%;animation:copo-vaiven var(--b) ease-in-out infinite alternate}
+.copo svg{display:block;width:100%;height:100%;animation:copo-gira var(--d) linear infinite}
+@keyframes copo-cae{to{transform:translate3d(0,calc(100vh + 80px),0)}}
+@keyframes copo-vaiven{from{transform:translateX(calc(var(--v) * -1))}to{transform:translateX(var(--v))}}
+@keyframes copo-gira{to{transform:rotate(var(--g))}}
+@media print{.nevada{display:none}}

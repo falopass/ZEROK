@@ -4,6 +4,28 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const canReveal = 'IntersectionObserver' in window;
 setupMessages();
 
+// Snowfall with the logo's own flake. Decorative only: skipped with reduced motion.
+const nevar = () => {
+  document.querySelector('.nevada')?.remove();
+  if (reduced.matches) return;
+  const capa = document.createElement('div');
+  capa.className = 'nevada';
+  capa.setAttribute('aria-hidden', 'true');
+  const azar = (min, max) => min + Math.random() * (max - min);
+  const total = innerWidth < 768 ? 9 : 18;
+  for (let i = 0; i < total; i++) {
+    const caida = azar(14, 30);
+    const copo = document.createElement('span');
+    copo.className = 'copo';
+    copo.style.cssText = `--x:${((i + Math.random()) / total * 100).toFixed(1)}%;--s:${azar(12, 30).toFixed(0)}px;--o:${azar(.22, .6).toFixed(2)};--d:${caida.toFixed(1)}s;--r:${(-Math.random() * caida).toFixed(1)}s;--v:${azar(18, 60).toFixed(0)}px;--b:${azar(3, 7).toFixed(1)}s;--g:${(Math.random() < .5 ? -1 : 1) * azar(120, 420).toFixed(0)}deg`;
+    copo.innerHTML = '<i><svg focusable="false"><use href="/img/logo.svg#simbolo"/></svg></i>';
+    capa.append(copo);
+  }
+  document.body.append(capa);
+};
+nevar();
+reduced.addEventListener('change', nevar);
+
 const menu = document.querySelector('.mobile-menu');
 menu?.addEventListener('keydown', event => {
   if (event.key === 'Escape') { menu.open = false; menu.querySelector('summary').focus(); }
