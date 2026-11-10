@@ -155,21 +155,8 @@ if (stage) {
   serviceMenu.querySelector('.service-list')?.addEventListener('pointerleave', settle);
 }
 
-for (const group of document.querySelectorAll('[data-audience]')) {
-  group.addEventListener('click', event => {
-    const button = event.target.closest('[data-audience-choice]');
-    if (!button) return;
-    group.querySelectorAll('[data-audience-choice]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
-    group.querySelectorAll('[data-audience-panel]').forEach(panel => {
-      panel.hidden = panel.dataset.audiencePanel !== button.dataset.audienceChoice;
-      panel.classList.toggle('switching', !panel.hidden && !reduced.matches);
-    });
-    window.ScrollTrigger?.refresh();
-  });
-}
-
-// Hero equipment chips mark the matching option in the selector below.
-for (const chip of document.querySelectorAll('.hero-chip')) {
+// Equipment links (hero chips, home and business lists) mark the matching option in the selector.
+for (const chip of document.querySelectorAll('a[data-equipo]')) {
   chip.addEventListener('click', () => {
     const radio = document.querySelector(`[data-message] [name=equipo][value="${CSS.escape(chip.dataset.equipo)}"]`);
     if (radio && !radio.checked) { radio.checked = true; radio.dispatchEvent(new Event('change', { bubbles: true })); }

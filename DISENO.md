@@ -37,6 +37,9 @@ Pedido de Diego: «demasiado plana y cuadrada, le falta vida». Cambios que reem
 ### Revisión 11 (09-11-2026): nevada con el copo del logo
 Pedido de Diego. Levanta para este único caso la prohibición de «copos de nieve» de §2: no es un copo genérico sino el símbolo del logo. Capa fija sobre el contenido y bajo el header (`z-index 8`), sin recibir toques: 18 copos en escritorio y 9 en móvil, de 12 a 30 px y opacidad de 0,22 a 0,6, que caen en 14 a 30 s con vaivén y giro. La crea `sitio.js`; sin JavaScript o con movimiento reducido no existe.
 
+### Revisión 12 (09-11-2026): «Donde lo necesitas» tipográfica
+Reemplaza al control Casa/Negocio con foto y barrido (§7.3 y §9.1 bloque 6). Ya no hay pestañas ni fotos de banco: dos columnas a la vista, «En tu casa» y «En tu negocio», con los equipos escritos en grande y una línea entre filas. Cada nombre lleva al diagnóstico con ese equipo marcado. En escritorio, al pasar el puntero el nombre se desplaza, los demás se atenúan, la flecha se llena de ámbar y asoma inclinada la foto del equipo (la misma del selector). En móvil es una lista sin fotos. Se retiró la foto de la cocina y su crédito.
+
 ### Revisión 4 (06-11-2026): logo y fotos reales
 - **Logo del cliente**: copo con Z y aguja de manómetro, azul marino `#042C56` y celestes `#65BED7`,
   `#2381A9`, `#0C426C`. Vectorizado en `sitio/img/logo.svg`; se usa en header, hero (símbolo que entra
