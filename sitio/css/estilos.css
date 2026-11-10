@@ -227,10 +227,21 @@ input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0
 .service-sheet h3{font-size:clamp(1.9rem,3vw,2.75rem);font-stretch:118%;max-width:16ch;margin-bottom:16px}
 .service-sheet h3 a{text-decoration:none}
 .service-sheet p{max-width:46ch;color:var(--texto-2);font-size:1rem;margin-bottom:16px}
-.service-equipment{display:block;color:var(--texto-2);margin:0 0 20px}
 .service-tags{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:0 0 24px}
 .service-tags li{font-size:.8125rem;padding:6px 12px;border:1px solid var(--linea);border-radius:999px}
 .service-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 24px}
+/* Ficha didáctica: filas rotuladas y casos que abren el diagnóstico ya marcado. */
+.service-ficha{margin:0 0 24px;border-top:1px solid var(--linea)}
+.service-ficha>div{display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--linea)}
+.service-ficha dt{font-size:.6875rem;letter-spacing:.08em;text-transform:uppercase;color:var(--texto-2)}
+.service-ficha dd{margin:0;font-size:.9375rem;line-height:1.45}
+.service-ficha .service-tags{margin:0}
+.service-sintomas{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0 20px;list-style:none;margin:-6px 0;padding:0}
+.service-sintomas a{display:flex;align-items:center;gap:10px;min-height:44px;font-weight:550;text-decoration:none;color:var(--texto)}
+.service-sintomas a::before{content:'';flex:none;width:14px;height:14px;border:1.5px solid var(--texto-2);border-radius:4px;transition:background 200ms,border-color 200ms,transform 300ms var(--resorte)}
+.service-sintomas a::after{content:'';flex:none;width:7px;height:7px;margin-left:auto;border-top:1.5px solid var(--acento);border-right:1.5px solid var(--acento);rotate:45deg;opacity:0;translate:-8px 0;transition:opacity 200ms,translate 300ms var(--ease)}
+.service-sintomas a:hover::before,.service-sintomas a:focus-visible::before,.service-sintomas a:active::before{background:var(--acento);border-color:var(--acento);transform:scale(1.1)}
+.service-sintomas a:hover::after,.service-sintomas a:focus-visible::after{opacity:1;translate:-2px 0}
 .service-menu{display:none}
 @media(max-width:1023px){
 .service-stack{display:none}
@@ -257,7 +268,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0
 .service-item[open] .service-item-media{animation:service-media-in 620ms var(--ease) both}
 .service-item-content p{margin:0 0 16px;color:var(--texto-2)}
 .service-item-content .service-tags{margin-bottom:20px}
-.service-item-content .service-equipment{margin-bottom:20px}
+.service-item-content .service-ficha{margin-bottom:20px}
 .service-item-content .service-actions{gap:8px 20px}
 }
 @keyframes service-media-in{from{clip-path:polygon(0 0,0 0,0 100%,0 100%)}to{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}}
@@ -661,8 +672,8 @@ to{opacity:0;transform:scale(5)}
 .motion-on .service-menu:not(.is-visible) .service-item{opacity:0;transform:translateX(-18px)}
 .motion-on .service-sheet .service-media{clip-path:polygon(0 0,0 0,0 100%,0 100%);transition:clip-path 1000ms var(--ease) 120ms}
 .motion-on .service-sheet.is-visible .service-media{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
-.motion-on .service-sheet .service-tags li{opacity:0;transform:translateY(8px);transition:opacity 450ms,transform 550ms var(--resorte);transition-delay:calc(220ms + var(--i) * 50ms)}
-.motion-on .service-sheet.is-visible .service-tags li{opacity:1;transform:none}
+.motion-on .service-sheet :is(.service-tags,.service-sintomas) li{opacity:0;transform:translateY(8px);transition:opacity 450ms,transform 550ms var(--resorte);transition-delay:calc(220ms + var(--i) * 50ms)}
+.motion-on .service-sheet.is-visible :is(.service-tags,.service-sintomas) li{opacity:1;transform:none}
 @media(min-width:1024px){
 /* Índice en contorno sobre el título, en el flujo: nunca cruza las letras y se alinea con el texto. */
 .service-label{align-items:flex-end;gap:12px;margin:0 0 20px;color:var(--texto-2);line-height:1}
@@ -674,7 +685,8 @@ to{opacity:0;transform:scale(5)}
 .service-sheet:not(.has-photo) .service-label b{font-size:clamp(6rem,10vw,9rem)}
 .service-sheet:not(.has-photo) h3{grid-area:2/1;align-self:end;margin:0}
 .service-sheet:not(.has-photo) .service-copy>p{grid-area:1/2/3/3;align-self:end}
-.service-sheet:not(.has-photo) .service-equipment,.service-sheet:not(.has-photo) .service-tags{grid-area:3/2}
+.service-sintomas a{min-height:34px}
+.service-sheet:not(.has-photo) .service-ficha{grid-area:3/2}
 .service-sheet:not(.has-photo) .service-actions{grid-area:4/2}
 }
 

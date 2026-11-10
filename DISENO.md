@@ -31,6 +31,7 @@ Pedido de Diego: «demasiado plana y cuadrada, le falta vida». Cambios que reem
 
 ### Revisión 10 (09-11-2026): fondo del bloque de servicios
 - El bloque de servicios de Inicio deja el azul plano: tinta noche en degradado de azules marinos (más claro arriba, más profundo abajo), **trama milimetrada** de plano técnico (34 px con líneas mayores cada 170 px, la misma del riel del diagnóstico) que se aclara hacia el centro, y en escritorio una **escala graduada** en el borde izquierdo que baja de ámbar a celeste, como el termómetro del header. Solo CSS, sin imágenes ni animación propia: se mueve contra las láminas fijas al hacer scroll.
+- **Tarjetas de servicio como ficha didáctica** (láminas de escritorio e índice móvil): filas rotuladas en mono con línea fina entre ellas. «Equipos» (si no repite el título), «Fallas que atendemos» (las que nombra el cliente, en píldoras) y «Elige tu caso»: los mismos síntomas del selector, como lista con casilla que se enciende en ámbar. Tocar un caso lleva al diagnóstico con equipo y falla ya marcados; sin JavaScript solo baja al selector. No se escribe ningún dato nuevo: todo sale de `servicios` y de `sintomas`. Referencia de composición: listas rotuladas y fichas de orden de trabajo vistas en recent.design.
 
 ### Revisión 4 (06-11-2026): logo y fotos reales
 - **Logo del cliente**: copo con Z y aguja de manómetro, azul marino `#042C56` y celestes `#65BED7`,
