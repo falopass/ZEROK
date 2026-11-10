@@ -40,6 +40,12 @@ Pedido de Diego. Levanta para este único caso la prohibición de «copos de nie
 ### Revisión 12 (09-11-2026): «Donde lo necesitas» tipográfica
 Reemplaza al control Casa/Negocio con foto y barrido (§7.3 y §9.1 bloque 6). Ya no hay pestañas ni fotos de banco: dos columnas a la vista, «En tu casa» y «En tu negocio», con los equipos escritos en grande y una línea entre filas. Cada nombre lleva al diagnóstico con ese equipo marcado. En escritorio, al pasar el puntero el nombre se desplaza, los demás se atenúan, la flecha se llena de ámbar y asoma inclinada la foto del equipo (la misma del selector). En móvil es una lista sin fotos. Se retiró la foto de la cocina y su crédito.
 
+### Revisión 13 (09-11-2026): «Antes y después» con fotos del cliente
+Seis fotos enviadas por el cliente, en tres pares, dentro de «Trabajo real»: serpentín de aletas, sierra de cinta de carnicería y serpentín dentro de un gabinete. Cada par va lado a lado con etiquetas «Antes» y «Después» y la línea de calor a frío abajo; la foto de después se descubre con un barrido al entrar. Riel deslizable en móvil y tres columnas en escritorio.
+- **Tratamiento de las fotos**: solo recorte y ajuste convencional de contraste, luz y enfoque (hecho con Codex y Pillow). Nada generado ni redibujado: son prueba de trabajo. La foto movida del serpentín sucio se dejó movida. Originales y versiones mejoradas en `output/fotos-cliente/` (local, sin subir).
+- La foto de la sierra limpia se recortó para dejar fuera un adhesivo con el nombre de otro servicio técnico y la marca de la máquina.
+- La foto de la sierra limpia reemplaza a la foto de banco de «Equipo comercial» en el selector.
+
 ### Revisión 4 (06-11-2026): logo y fotos reales
 - **Logo del cliente**: copo con Z y aguja de manómetro, azul marino `#042C56` y celestes `#65BED7`,
   `#2381A9`, `#0C426C`. Vectorizado en `sitio/img/logo.svg`; se usa en header, hero (símbolo que entra

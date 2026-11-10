@@ -203,6 +203,21 @@ input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0
 .trabajo .mono{color:#8fd3ee}
 .trabajo blockquote{margin:8px 0 0;font-size:clamp(1.125rem,1.5vw,1.3125rem);font-weight:620;font-stretch:108%;line-height:1.22;letter-spacing:-.02em;text-wrap:balance}
 .trabajos-pie{display:grid;gap:12px;margin-top:24px}
+/* Antes y después: pares del cliente, lado a lado, con la línea que va del calor al frío. */
+.antes{margin-block:32px 40px}
+.antes>h3{margin:0 0 16px;padding-bottom:12px;border-bottom:1px solid var(--linea);font-weight:400;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--texto-2)}
+.antes-grid{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:8px}
+.antes-par{flex:0 0 min(88%,420px);margin:0;scroll-snap-align:center}
+.antes-fotos{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:3px;overflow:hidden;border-radius:var(--radio-l);box-shadow:var(--sombra)}
+.antes-fotos::after{content:'';position:absolute;inset:auto 0 0;height:4px;background:linear-gradient(90deg,#e4ac4b,#bd541c 35%,#2381a9 70%,#65bed7)}
+.antes-foto{position:relative;overflow:hidden;aspect-ratio:4/5;background:var(--superficie-2)}
+.antes-foto img{width:100%;height:100%;aspect-ratio:auto;object-fit:cover;transition:scale 900ms var(--ease)}
+.antes-par:hover .antes-foto img{scale:1.04}
+.antes-foto b{position:absolute;left:10px;top:10px;padding:5px 9px;border-radius:6px;background:rgb(5 15 28 / .78);color:#eef3f5;font-weight:400;font-size:.6875rem;letter-spacing:.08em;text-transform:uppercase}
+.antes-foto.es-despues b{background:var(--acento);color:var(--sobre-acento)}
+.antes-par figcaption{margin-top:12px;font-size:1.0625rem;font-weight:650;font-stretch:110%;letter-spacing:-.02em}
+.motion-on .antes .es-despues{clip-path:inset(0 100% 0 0);transition:clip-path 1000ms var(--ease);transition-delay:calc(300ms + var(--i) * 180ms)}
+.motion-on .antes.is-visible .es-despues{clip-path:inset(0)}
 
 /* Servicios apilados */
 .services-home{position:relative;isolation:isolate;margin:24px 8px 0;border-radius:var(--radio-xl);background:linear-gradient(180deg,#0d2b4b 0%,var(--fondo) 40%,#040d18 100%)}
@@ -551,6 +566,8 @@ to{opacity:0;transform:scale(5)}
 .trabajo:nth-child(3n){translate:0 72px}
 .trabajo figcaption{padding:20px}
 .trabajos-pie{margin-top:0}
+.antes{margin-block:0 48px}
+.antes-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;overflow:visible;padding:0}
 .logo-simbolo{width:38px;height:38px}
 .logo-palabra{width:124px;height:34px}
 .logo-grande .logo-simbolo{width:64px;height:64px}
