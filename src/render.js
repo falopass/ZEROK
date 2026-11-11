@@ -34,7 +34,7 @@ const heading = (title, intro = '', img = '') => `<div class="page-heading wrap$
 // On the agenda page the primary action anchors to the form itself instead of reloading it.
 const agendarVisita = (data, path, type) => data.agenda ? link(path === '/agendar/' ? '#solicitud' : '/agendar/', 'Agendar visita', type) : link(wa(data.general), 'Agendar visita', type);
 const hours = g => g.horarioConfirmado ? `Lunes a sábado, ${esc(g.abre)} a ${esc(g.cierra)}` : 'Atención de lunes a sábado';
-const servicioEquipo = { 'refrigeradores-y-vitrinas': 'Refrigerador', 'aire-acondicionado': 'Aire acondicionado', 'aire-acondicionado-automotriz': 'Aire acondicionado de auto', 'lavadoras-y-secadoras': 'Lavadora o secadora', 'calefones-y-calefaccion': 'Calefón o calefacción', 'equipos-comerciales': 'Equipo comercial' };
+const servicioEquipo = { 'emergencias': 'Otro equipo', 'refrigeradores-y-vitrinas': 'Refrigerador', 'aire-acondicionado': 'Aire acondicionado', 'aire-acondicionado-automotriz': 'Aire acondicionado de auto', 'lavadoras-y-secadoras': 'Lavadora o secadora', 'calefones-y-calefaccion': 'Calefón o calefacción', 'equipos-comerciales': 'Equipo comercial' };
 const serviceMessage = (data, s) => data.agenda ? `/agendar/${servicioEquipo[s.id] ? `?equipo=${encodeURIComponent(servicioEquipo[s.id])}` : ''}` : wa(data.general, `Hola ZÉROK, quisiera agendar una visita para ${s.titulo.toLowerCase()}.`);
 const money = value => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(value);
 const pad = n => String(n).padStart(2, '0');
@@ -43,6 +43,19 @@ const corto = { 'Vitrina o conservador': 'Vitrina', 'Aire acondicionado de auto'
 // The equipment line is hidden when every word in it is already in the title or summary.
 const raices = t => (t.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().match(/\p{L}{4,}/gu) || []).map(w => w.slice(0, 5));
 const repite = s => { const base = new Set(raices(`${s.titulo} ${s.resumen}`)); return raices(s.equipos).every(w => base.has(w)); };
+// Defaults cover only what the panel leaves empty: a photo or a fault list stored in the content wins.
+const servicioFoto = { 'emergencias': 'refrigerador', 'equipos-comerciales': 'comercial' };
+// "Fallas que atendemos" lists faults, not errands: maintenance, installs and checkups stay out.
+const tramites = new Set(['Mantención', 'Mantención o limpieza', 'Instalación', 'Desinstalación', 'Revisión', 'Instalar termostato']);
+const fotoDe = s => s.foto || library(servicioFoto[s.id]) || '';
+const fallasDe = s => s.fallas.length ? s.fallas : s.id === 'emergencias'
+  ? ['Fugas de gas', 'Cambio de motores', 'Problemas de enfriamiento', 'Ruidos extraños']
+  : (sintomas[servicioEquipo[s.id]] || []).filter(f => !tramites.has(f));
+const serviceSection = (data, s) => {
+  const foto = fotoDe(s);
+  const fallas = fallasDe(s);
+  return `<section id="${s.id}" class="service-detail section"><div><h2 data-reveal>${esc(s.titulo)}</h2><p>${esc(s.resumen)}</p>${s.equipos && !repite(s) ? `<h3>Equipos</h3><p>${esc(s.equipos)}</p>` : ''}${fallas.length ? `<h3>Fallas que atendemos</h3><ul>${fallas.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : ''}${link(serviceMessage(data, s), 'Agendar visita')}</div>${photo(foto, altOf(foto, s.titulo), 'foto-revela')}</section>`;
+};
 
 export function navigation(data, path) {
   const items = [['/servicios/', 'Servicios'], ...(data.productos.length ? [['/precios/', 'Precios']] : []), ...(data.blog.length ? [['/blog/', 'Blog']] : []), ['/contacto/', 'Contacto']];
@@ -61,7 +74,7 @@ export function footer(data, path) {
   return `<section class="closing noche">${path === '/agendar/' ? '' : `<div class="closing-hero">${cierre ? `<img class="closing-photo parallax" src="${cierre}" alt="" width="1440" height="960" loading="lazy" decoding="async" data-source="library-commons">` : ''}<div class="wrap"><h2 data-reveal>¿Tu equipo falló?<br>Vamos a revisarlo.</h2><div class="closing-actions">${agendarVisita(data, path)}${link(`tel:${g.telefono}`, 'Llamar', 'outline')}</div></div></div>`}<div class="wrap"><footer class="footer"><a class="logo logo-grande" href="/" aria-label="ZÉROK, inicio">${logo()}</a><p>Refrigeración &amp;<br>Climatización Profesional</p><div><a href="tel:${g.telefono}">${g.telefonoVisible}</a><p>${hours(g)}<br>Osorno y sectores de Los Lagos</p></div><div><a href="${g.instagram}" rel="noopener noreferrer" target="_blank">Instagram</a><a href="/contacto/">Contacto</a><a href="/privacidad/">Privacidad</a><a href="/creditos/">Créditos</a></div></footer><div class="footer-bottom"><span>© ${new Date().getFullYear()} ZÉROK</span><span>${note}</span><a href="/admin/">Administración</a></div></div></section><aside class="contact-bar" aria-label="Contacto rápido">${agendarVisita(data, path)}${link(`tel:${g.telefono}`, 'Llamar', 'outline')}</aside>`;
 }
 
-export const equipment = [['Refrigerador', 'refrigerador'], ['Vitrina o conservador', '/img/trabajos/servicio-vitrinas.webp'], ['Aire acondicionado', 'aire'], ['Aire acondicionado de auto', '/img/trabajos/selector-auto.webp'], ['Lavadora o secadora', 'lavadora'], ['Calefón o calefacción', 'calefon'], ['Equipo comercial', '/img/trabajos/antes/sierra-despues.webp']];
+export const equipment = [['Refrigerador', 'refrigerador'], ['Vitrina o conservador', '/img/trabajos/servicio-vitrinas.webp'], ['Aire acondicionado', 'aire'], ['Aire acondicionado de auto', '/img/trabajos/selector-auto.webp'], ['Lavadora o secadora', 'lavadora'], ['Calefón o calefacción', 'calefon'], ['Equipo comercial', '/img/trabajos/antes/sierra-despues.webp'], ['Otro equipo', 'manometros']];
 // Before and after pairs sent by the client: cropped, with exposure and sharpness adjusted. Never generated.
 const pares = [
   ['serpentin', 'Serpentín de un equipo de frío', 'Serpentín cubierto de pelusa y polvo', 'El mismo serpentín con las aletas limpias y brillantes'],
@@ -96,8 +109,8 @@ const blogList = posts => `<div class="blog-list">${posts.map(p => `<article><a 
 
 // One index for every width: rows open in place; from 1024 px a sticky stage beside the list shows the photo of the row in use.
 const serviceMenu = data => {
-  const inicial = Math.max(0, data.servicios.findIndex(s => s.foto));
-  return `<div class="service-menu wrap" data-visible><div class="service-list">${data.servicios.map((s, i) => `<details class="service-item" name="servicios-movil" style="--i:${i}"><summary><span class="service-item-num mono">${pad(i + 1)}</span><h3 class="service-item-title">${esc(s.titulo)}</h3><span class="service-item-plus" aria-hidden="true"></span></summary><div class="service-item-body"><div class="service-item-content">${s.foto ? `<figure class="service-item-media">${photo(s.foto, altOf(s.foto, s.titulo), 'service-photo')}</figure>` : ''}<div><p>${esc(s.resumen)}</p><div class="service-actions">${link(serviceMessage(data, s), 'Agendar visita')}${link(`/servicios/#${s.id}`, 'Ver servicio', 'text-button')}</div></div></div></div></details>`).join('')}</div><div class="service-stage" data-stage style="--p:${(inicial + 1) / Math.max(1, data.servicios.length)}">${data.servicios.map((s, i) => `<figure class="stage-slide${s.foto ? '' : ' is-plate'}${i === inicial ? ' is-active' : ''}">${s.foto ? photo(s.foto, altOf(s.foto, s.titulo), 'stage-photo') : ''}<figcaption class="mono" aria-hidden="true"><b>${pad(i + 1)}</b><span>/ ${pad(data.servicios.length)}</span></figcaption></figure>`).join('')}</div></div>`;
+  const inicial = Math.max(0, data.servicios.findIndex(s => fotoDe(s)));
+  return `<div class="service-menu wrap" data-visible><div class="service-list">${data.servicios.map((s, i) => `<details class="service-item" name="servicios-movil" style="--i:${i}"><summary><span class="service-item-num mono">${pad(i + 1)}</span><h3 class="service-item-title">${esc(s.titulo)}</h3><span class="service-item-plus" aria-hidden="true"></span></summary><div class="service-item-body"><div class="service-item-content">${fotoDe(s) ? `<figure class="service-item-media">${photo(fotoDe(s), altOf(fotoDe(s), s.titulo), 'service-photo')}</figure>` : ''}<div><p>${esc(s.resumen)}</p><div class="service-actions">${link(serviceMessage(data, s), 'Agendar visita')}${link(`/servicios/#${s.id}`, 'Ver servicio', 'text-button')}</div></div></div></div></details>`).join('')}</div><div class="service-stage" data-stage style="--p:${(inicial + 1) / Math.max(1, data.servicios.length)}">${data.servicios.map((s, i) => `<figure class="stage-slide${fotoDe(s) ? '' : ' is-plate'}${i === inicial ? ' is-active' : ''}">${fotoDe(s) ? photo(fotoDe(s), altOf(fotoDe(s), s.titulo), 'stage-photo') : ''}<figcaption class="mono" aria-hidden="true"><b>${pad(i + 1)}</b><span>/ ${pad(data.servicios.length)}</span></figcaption></figure>`).join('')}</div></div>`;
 };
 
 export function home(data) {
@@ -132,7 +145,7 @@ export function agendar(data, dias, v = {}, error = '', status, errores = []) {
     const corta = s => String(s || '').trim().replace(/^[¿¡]+/, '').replace(/[.\s]+$/, '');
     const punto = s => (/[.!?]$/.test(s) ? s : `${s}.`);
     const sector = corta(v.sector).replace(/^en\s+/i, '');
-    const mensaje = `Hola ZÉROK, necesito una visita para mi ${elegido.toLowerCase()}.${v.problema ? ` Le pasa lo siguiente: ${punto(corta(v.problema))}` : ''}${sector ? ` Estoy en ${sector}.` : ''}`;
+    const mensaje = `Hola ZÉROK, necesito una visita para ${elegido === 'Otro equipo' ? 'un equipo' : `mi ${elegido.toLowerCase()}`}.${v.problema ? ` Le pasa lo siguiente: ${punto(corta(v.problema))}` : ''}${sector ? ` Estoy en ${sector}.` : ''}`;
     return { ...meta, html: `${heading('Agenda tu visita.', 'Por ahora no hay días disponibles para agendar en línea. Llámanos o escríbenos y coordinamos la visita.')}<div class="wrap section hero-actions" id="solicitud">${link(`tel:${g.telefono}`, 'Llamar')}${link(wa(g, mensaje), 'Escribir por WhatsApp', 'outline')}</div>` };
   }
   const legend = (n, text) => `<legend><span class="mono">${n}</span>${text}</legend>`;
@@ -162,7 +175,7 @@ export function page(data, path) {
   if (path === '/') return { title: 'Servicio técnico de refrigeración en Osorno | ZÉROK', description: 'Refrigeración, aire acondicionado y línea blanca a domicilio en Osorno y Los Lagos. Agenda tu visita con ZÉROK.', html: home(data) };
   if (path === '/servicios/') return {
     title: 'Servicios de refrigeración y climatización en Osorno | ZÉROK', description: 'Refrigeradores, aire acondicionado, lavadoras, calefones y equipos comerciales. Servicio técnico a domicilio en Osorno.',
-    html: `${heading('Un servicio para cada equipo.', 'Revisión, mantención y reparación a domicilio en Osorno y sectores de Los Lagos.', photo(library('manometros'), altOf(library('manometros'), ''), 'page-photo foto-revela'))}<nav class="service-index" aria-label="Índice de servicios"><div class="wrap">${data.servicios.map((s, i) => `<a href="#${s.id}"><span aria-hidden="true">${pad(i + 1)}</span>${esc(corto[s.id] || s.titulo)}</a>`).join('')}</div></nav><div class="wrap service-details">${data.servicios.map(s => `<section id="${s.id}" class="service-detail section"><div><h2 data-reveal>${esc(s.titulo)}</h2><p>${esc(s.resumen)}</p>${s.equipos && !repite(s) ? `<h3>Equipos</h3><p>${esc(s.equipos)}</p>` : ''}${s.fallas.length ? `<h3>Fallas que atendemos</h3><ul>${s.fallas.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : ''}${link(serviceMessage(data, s), 'Agendar visita')}</div>${photo(s.foto, altOf(s.foto, s.titulo), 'foto-revela')}</section>`).join('')}</div>`
+    html: `${heading('Un servicio para cada equipo.', 'Revisión, mantención y reparación a domicilio en Osorno y sectores de Los Lagos.', photo(library('manometros'), altOf(library('manometros'), ''), 'page-photo foto-revela'))}<nav class="service-index" aria-label="Índice de servicios"><div class="wrap">${data.servicios.map((s, i) => `<a href="#${s.id}"><span aria-hidden="true">${pad(i + 1)}</span>${esc(corto[s.id] || s.titulo)}</a>`).join('')}</div></nav><div class="wrap service-details">${data.servicios.map(s => serviceSection(data, s)).join('')}</div>`
   };
   if (path === '/contacto/') return {
     title: 'Contacto y cobertura en Osorno y Los Lagos | ZÉROK', description: 'Escribe a ZÉROK por WhatsApp o llama al +56 9 7789 6895. Servicio técnico a domicilio en Osorno y Los Lagos.',

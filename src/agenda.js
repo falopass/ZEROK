@@ -1,6 +1,6 @@
 import { esc } from './content.js';
 
-export const equipos = ['Refrigerador', 'Vitrina o conservador', 'Aire acondicionado', 'Aire acondicionado de auto', 'Lavadora o secadora', 'Calefón o calefacción', 'Equipo comercial'];
+export const equipos = ['Refrigerador', 'Vitrina o conservador', 'Aire acondicionado', 'Aire acondicionado de auto', 'Lavadora o secadora', 'Calefón o calefacción', 'Equipo comercial', 'Otro equipo'];
 
 // Symptoms describe what the customer observes, never a promised service.
 export const sintomas = {
@@ -10,7 +10,9 @@ export const sintomas = {
   'Aire acondicionado de auto': ['No enfría', 'Fuga de gas', 'Hace un ruido', 'Revisión'],
   'Lavadora o secadora': ['No enciende', 'No desagua', 'No centrifuga o no seca', 'Ruido o vibración', 'Bota agua'],
   'Calefón o calefacción': ['No enciende', 'Se apaga', 'No calienta bien', 'Instalar termostato', 'Mantención'],
-  'Equipo comercial': ['No enfría bien', 'Se escarcha', 'Hace un ruido', 'No enciende', 'Mantención']
+  'Equipo comercial': ['No enfría bien', 'Se escarcha', 'Hace un ruido', 'No enciende', 'Mantención'],
+  // Sin síntomas predefinidos: quien elige «Otro equipo» escribe qué aparato es y qué le pasa.
+  'Otro equipo': []
 };
 
 // Visits are scheduled by Chilean calendar day; the Worker clock runs in UTC.
@@ -44,6 +46,7 @@ export function validarReserva(input, dias, opciones = equipos) {
   const errores = [];
   if (!opciones.includes(visita.equipo)) errores.push({ campo: 'equipo', mensaje: 'Elige el equipo que necesitas revisar.' });
   if (!visita.problema) errores.push({ campo: 'problema', mensaje: 'Cuéntanos qué le pasa a tu equipo.' });
+  else if (visita.equipo === 'Otro equipo' && visita.problema.length < 12) errores.push({ campo: 'problema', mensaje: 'Cuéntanos qué equipo es y qué le pasa.' });
   if (!dias.includes(visita.dia)) errores.push({ campo: 'dia', mensaje: 'Elige uno de los días disponibles.' });
   if (!visita.direccion) errores.push({ campo: 'direccion', mensaje: 'Indica la dirección donde está el equipo.' });
   if (!visita.sector) errores.push({ campo: 'sector', mensaje: 'Indica el sector o comuna donde está el equipo.' });
