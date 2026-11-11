@@ -363,19 +363,33 @@ input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0
 .page-heading h1{font-size:clamp(2.5rem,4.4vw,4rem);font-stretch:118%;max-width:14ch}
 .page-heading p{font-size:1.125rem;color:var(--texto-2);max-width:56ch;margin:0}
 .page-photo{border-radius:var(--radio-l);aspect-ratio:4/3}
+/* Índice de servicios: los 7 enlaces siempre completos a la vista, sin riel lateral.
+   En móvil ocupa 2 columnas (4 filas cortas), 3 columnas desde 640 px y una sola
+   fila repartida en 7 columnas desde 1024 px. Sigue pegado al header; el margen
+   de ancla de .service-detail baja solo donde el índice crece en altura. */
 .service-index{position:sticky;top:var(--header);z-index:9;background:color-mix(in srgb,var(--fondo) 88%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-block:1px solid var(--linea)}
-.service-index>.wrap{display:flex;overflow:auto;scrollbar-width:none}
-/* Rieles con desplazamiento lateral: el borde se desvanece mientras quede contenido a la derecha. */
-[data-riel]{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent)}
-[data-riel].al-final{-webkit-mask-image:none;mask-image:none}
-.service-index a{position:relative;flex:none;display:inline-flex;align-items:center;gap:8px;min-height:56px;padding:0 14px;font-size:.875rem;font-weight:600;white-space:nowrap;text-decoration:none;color:var(--texto-2);transition:color 240ms}
-.service-index a:first-child{padding-left:0}
+.service-index>.wrap{display:flex;flex-wrap:wrap}
+.service-index a{position:relative;flex:1 1 45%;display:flex;align-items:center;gap:8px;min-width:0;min-height:44px;padding:6px 12px;font-size:.8125rem;font-weight:600;line-height:1.35;overflow-wrap:break-word;text-decoration:none;color:var(--texto-2);transition:color 240ms}
+.service-index a:nth-child(n+3){border-top:1px solid var(--linea)}
 .service-index a span{font-family:'IBM Plex Mono',monospace;font-size:.6875rem;font-weight:400;transition:color 240ms}
-.service-index a::after{content:'';position:absolute;left:14px;right:14px;bottom:-1px;height:2px;background:var(--acento);transform:scaleX(0);transform-origin:left;transition:transform 360ms var(--ease)}
-.service-index a:first-child::after{left:0}
+.service-index a::after{content:'';position:absolute;left:12px;right:12px;bottom:-1px;height:2px;background:var(--acento);transform:scaleX(0);transform-origin:left;transition:transform 360ms var(--ease)}
 .service-index a:hover,.service-index a[aria-current]{color:var(--texto)}
 .service-index a[aria-current] span{color:var(--acento)}
 .service-index a[aria-current]::after{transform:scaleX(1)}
+/* Rieles con desplazamiento lateral: el borde se desvanece mientras quede contenido a la derecha. */
+[data-riel]{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 48px),transparent)}
+[data-riel].al-final{-webkit-mask-image:none;mask-image:none}
+@media(min-width:640px){
+.service-index a{flex-basis:30%}
+.service-index a:nth-child(n+3){border-top:0}
+.service-index a:nth-child(n+4){border-top:1px solid var(--linea)}
+}
+@media(min-width:640px) and (max-width:1023px){.service-details .service-detail{scroll-margin-top:calc(var(--header) + 160px)}}
+@media(min-width:1024px){
+.service-index a{flex:1 1 0;justify-content:center;min-height:56px;padding:8px;font-size:.875rem;text-align:center;border-top:0}
+.service-index a::after{left:8px;right:8px}
+}
+@media(max-width:639px){.service-details .service-detail{scroll-margin-top:calc(var(--header) + 210px)}}
 .service-detail{scroll-margin-top:150px;display:grid;gap:32px;padding-block:64px;border-bottom:1px solid var(--linea)}
 .service-detail h2{margin-bottom:32px}
 .service-detail h3{font-family:'IBM Plex Mono',monospace;font-size:.75rem;font-weight:400;letter-spacing:.04em;text-transform:uppercase;color:var(--texto-2);margin:24px 0 8px}
