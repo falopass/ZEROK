@@ -1,6 +1,6 @@
 import { esc } from './content.js';
 
-export const equipos = ['Refrigerador', 'Vitrina o conservador', 'Aire acondicionado', 'Aire acondicionado de auto', 'Lavadora o secadora', 'Calefón o calefacción', 'Equipo comercial'];
+export const equipos = ['Refrigerador', 'Vitrina o conservador', 'Aire acondicionado', 'Aire acondicionado de auto', 'Lavadora o secadora', 'Calefón o calefacción', 'Equipo comercial', 'Otro equipo'];
 
 // Symptoms describe what the customer observes, never a promised service.
 export const sintomas = {
@@ -10,7 +10,8 @@ export const sintomas = {
   'Aire acondicionado de auto': ['No enfría', 'Fuga de gas', 'Hace un ruido', 'Revisión'],
   'Lavadora o secadora': ['No enciende', 'No desagua', 'No centrifuga o no seca', 'Ruido o vibración', 'Bota agua'],
   'Calefón o calefacción': ['No enciende', 'Se apaga', 'No calienta bien', 'Instalar termostato', 'Mantención'],
-  'Equipo comercial': ['No enfría bien', 'Se escarcha', 'Hace un ruido', 'No enciende', 'Mantención']
+  'Equipo comercial': ['No enfría bien', 'Se escarcha', 'Hace un ruido', 'No enciende', 'Mantención'],
+  'Otro equipo': ['No enciende', 'Dejó de funcionar', 'Hace un ruido', 'Bota agua o gas']
 };
 
 // Visits are scheduled by Chilean calendar day; the Worker clock runs in UTC.
