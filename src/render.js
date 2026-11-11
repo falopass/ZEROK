@@ -47,11 +47,12 @@ const repite = s => { const base = new Set(raices(`${s.titulo} ${s.resumen}`)); 
 const servicioFoto = { 'emergencias': 'refrigerador', 'equipos-comerciales': 'comercial' };
 // "Fallas que atendemos" lists faults, not errands: maintenance, installs and checkups stay out.
 const tramites = new Set(['Mantención', 'Mantención o limpieza', 'Instalación', 'Desinstalación', 'Revisión', 'Instalar termostato']);
+const fotoDe = s => s.foto || library(servicioFoto[s.id]) || '';
 const fallasDe = s => s.fallas.length ? s.fallas : s.id === 'emergencias'
   ? ['Fugas de gas', 'Cambio de motores', 'Problemas de enfriamiento', 'Ruidos extraños']
   : (sintomas[servicioEquipo[s.id]] || []).filter(f => !tramites.has(f));
 const serviceSection = (data, s) => {
-  const foto = s.foto || library(servicioFoto[s.id]);
+  const foto = fotoDe(s);
   const fallas = fallasDe(s);
   return `<section id="${s.id}" class="service-detail section"><div><h2 data-reveal>${esc(s.titulo)}</h2><p>${esc(s.resumen)}</p>${s.equipos && !repite(s) ? `<h3>Equipos</h3><p>${esc(s.equipos)}</p>` : ''}${fallas.length ? `<h3>Fallas que atendemos</h3><ul>${fallas.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : ''}${link(serviceMessage(data, s), 'Agendar visita')}</div>${photo(foto, altOf(foto, s.titulo), 'foto-revela')}</section>`;
 };
@@ -108,8 +109,8 @@ const blogList = posts => `<div class="blog-list">${posts.map(p => `<article><a 
 
 // One index for every width: rows open in place; from 1024 px a sticky stage beside the list shows the photo of the row in use.
 const serviceMenu = data => {
-  const inicial = Math.max(0, data.servicios.findIndex(s => s.foto));
-  return `<div class="service-menu wrap" data-visible><div class="service-list">${data.servicios.map((s, i) => `<details class="service-item" name="servicios-movil" style="--i:${i}"><summary><span class="service-item-num mono">${pad(i + 1)}</span><h3 class="service-item-title">${esc(s.titulo)}</h3><span class="service-item-plus" aria-hidden="true"></span></summary><div class="service-item-body"><div class="service-item-content">${s.foto ? `<figure class="service-item-media">${photo(s.foto, altOf(s.foto, s.titulo), 'service-photo')}</figure>` : ''}<div><p>${esc(s.resumen)}</p><div class="service-actions">${link(serviceMessage(data, s), 'Agendar visita')}${link(`/servicios/#${s.id}`, 'Ver servicio', 'text-button')}</div></div></div></div></details>`).join('')}</div><div class="service-stage" data-stage style="--p:${(inicial + 1) / Math.max(1, data.servicios.length)}">${data.servicios.map((s, i) => `<figure class="stage-slide${s.foto ? '' : ' is-plate'}${i === inicial ? ' is-active' : ''}">${s.foto ? photo(s.foto, altOf(s.foto, s.titulo), 'stage-photo') : ''}<figcaption class="mono" aria-hidden="true"><b>${pad(i + 1)}</b><span>/ ${pad(data.servicios.length)}</span></figcaption></figure>`).join('')}</div></div>`;
+  const inicial = Math.max(0, data.servicios.findIndex(s => fotoDe(s)));
+  return `<div class="service-menu wrap" data-visible><div class="service-list">${data.servicios.map((s, i) => `<details class="service-item" name="servicios-movil" style="--i:${i}"><summary><span class="service-item-num mono">${pad(i + 1)}</span><h3 class="service-item-title">${esc(s.titulo)}</h3><span class="service-item-plus" aria-hidden="true"></span></summary><div class="service-item-body"><div class="service-item-content">${fotoDe(s) ? `<figure class="service-item-media">${photo(fotoDe(s), altOf(fotoDe(s), s.titulo), 'service-photo')}</figure>` : ''}<div><p>${esc(s.resumen)}</p><div class="service-actions">${link(serviceMessage(data, s), 'Agendar visita')}${link(`/servicios/#${s.id}`, 'Ver servicio', 'text-button')}</div></div></div></div></details>`).join('')}</div><div class="service-stage" data-stage style="--p:${(inicial + 1) / Math.max(1, data.servicios.length)}">${data.servicios.map((s, i) => `<figure class="stage-slide${fotoDe(s) ? '' : ' is-plate'}${i === inicial ? ' is-active' : ''}">${fotoDe(s) ? photo(fotoDe(s), altOf(fotoDe(s), s.titulo), 'stage-photo') : ''}<figcaption class="mono" aria-hidden="true"><b>${pad(i + 1)}</b><span>/ ${pad(data.servicios.length)}</span></figcaption></figure>`).join('')}</div></div>`;
 };
 
 export function home(data) {
@@ -144,7 +145,7 @@ export function agendar(data, dias, v = {}, error = '', status, errores = []) {
     const corta = s => String(s || '').trim().replace(/^[¿¡]+/, '').replace(/[.\s]+$/, '');
     const punto = s => (/[.!?]$/.test(s) ? s : `${s}.`);
     const sector = corta(v.sector).replace(/^en\s+/i, '');
-    const mensaje = `Hola ZÉROK, necesito una visita para mi ${elegido.toLowerCase()}.${v.problema ? ` Le pasa lo siguiente: ${punto(corta(v.problema))}` : ''}${sector ? ` Estoy en ${sector}.` : ''}`;
+    const mensaje = `Hola ZÉROK, necesito una visita para ${elegido === 'Otro equipo' ? 'un equipo' : `mi ${elegido.toLowerCase()}`}.${v.problema ? ` Le pasa lo siguiente: ${punto(corta(v.problema))}` : ''}${sector ? ` Estoy en ${sector}.` : ''}`;
     return { ...meta, html: `${heading('Agenda tu visita.', 'Por ahora no hay días disponibles para agendar en línea. Llámanos o escríbenos y coordinamos la visita.')}<div class="wrap section hero-actions" id="solicitud">${link(`tel:${g.telefono}`, 'Llamar')}${link(wa(g, mensaje), 'Escribir por WhatsApp', 'outline')}</div>` };
   }
   const legend = (n, text) => `<legend><span class="mono">${n}</span>${text}</legend>`;

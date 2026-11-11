@@ -34,7 +34,10 @@ export function setupMessages() {
       const primera = f => f.replace(/^[A-ZÁÉÍÓÚÑ](?=[a-záéíóúñ])/, c => c.toLowerCase());
       const falla = primera(limpia(values.get('problema'))) || 'tiene una falla';
       const sector = limpia(values.get('sector')).replace(/^en\s+/i, '');
-      return `Mi ${equipo} ${falla}${/[.!?]$/.test(falla) ? '' : '.'}${sector ? ` Estoy en ${sector}.` : ''}`;
+      const fin = /[.!?]$/.test(falla) ? '' : '.';
+      // «Otro equipo» lleva el aparato en el texto libre: «Mi otro equipo…» no se lee bien.
+      const inicio = equipo === 'otro equipo' ? `Tengo un equipo con una falla: ${falla}` : `Mi ${equipo} ${falla}`;
+      return `${inicio}${fin}${sector ? ` Estoy en ${sector}.` : ''}`;
     };
     // The visit card mirrors the form; each finished step cools the bar from fault to visit.
     const update = () => {
