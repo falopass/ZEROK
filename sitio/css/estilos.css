@@ -387,6 +387,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--texto);box-shadow:0 0
 @media(min-width:640px) and (max-width:1023px){.service-details .service-detail{scroll-margin-top:calc(var(--header) + 160px)}}
 @media(min-width:1024px){
 .service-index a{flex:1 1 0;justify-content:center;min-height:56px;padding:8px;font-size:.875rem;text-align:center;border-top:0}
+.service-index a:nth-child(n){border-top:0}
 .service-index a::after{left:8px;right:8px}
 }
 @media(max-width:639px){.service-details .service-detail{scroll-margin-top:calc(var(--header) + 210px)}}
