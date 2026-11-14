@@ -51,10 +51,10 @@ const fotoDe = s => s.foto || library(servicioFoto[s.id]) || '';
 const fallasDe = s => s.fallas.length ? s.fallas : s.id === 'emergencias'
   ? ['Fugas de gas', 'Cambio de motores', 'Problemas de enfriamiento', 'Ruidos extraños']
   : (sintomas[servicioEquipo[s.id]] || []).filter(f => !tramites.has(f));
-const serviceSection = (data, s) => {
+const serviceSection = (data, s, detalle = false) => {
   const foto = fotoDe(s);
   const fallas = fallasDe(s);
-  return `<section id="${s.id}" class="service-detail section"><div><h2 data-reveal>${esc(s.titulo)}</h2><p>${esc(s.resumen)}</p>${s.equipos && !repite(s) ? `<h3>Equipos</h3><p>${esc(s.equipos)}</p>` : ''}${fallas.length ? `<h3>Fallas que atendemos</h3><ul>${fallas.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : ''}${link(serviceMessage(data, s), 'Agendar visita')}</div>${photo(foto, altOf(foto, s.titulo), 'foto-revela')}</section>`;
+  return `<section id="${s.id}" class="service-detail section"><div><h2 data-reveal>${esc(s.titulo)}</h2><p>${esc(s.resumen)}</p>${s.equipos && !repite(s) ? `<h3>Equipos</h3><p>${esc(s.equipos)}</p>` : ''}${fallas.length ? `<h3>Fallas que atendemos</h3><ul>${fallas.map(f => `<li>${esc(f)}</li>`).join('')}</ul>` : ''}${link(serviceMessage(data, s), 'Agendar visita')}${detalle ? '' : link(`/servicios/${s.id}/`, 'Más sobre este servicio', 'text-button')}</div>${photo(foto, altOf(foto, s.titulo), 'foto-revela')}</section>`;
 };
 
 export function navigation(data, path) {
@@ -177,6 +177,15 @@ export function page(data, path) {
     title: 'Servicios de refrigeración y climatización en Osorno | ZÉROK', description: 'Refrigeradores, aire acondicionado, lavadoras, calefones y equipos comerciales. Servicio técnico a domicilio en Osorno.',
     html: `${heading('Un servicio para cada equipo.', 'Revisión, mantención y reparación a domicilio en Osorno y sectores de Los Lagos.', photo(library('manometros'), altOf(library('manometros'), ''), 'page-photo foto-revela'))}<nav class="service-index" aria-label="Índice de servicios"><div class="wrap">${data.servicios.map((s, i) => `<a href="#${s.id}"><span aria-hidden="true">${pad(i + 1)}</span>${esc(corto[s.id] || s.titulo)}</a>`).join('')}</div></nav><div class="wrap service-details">${data.servicios.map(s => serviceSection(data, s)).join('')}</div>`
   };
+  // Página propia por servicio (SEO local): cada una posiciona su título, descripción y schema Service.
+  const servicio = data.servicios.find(s => path === `/servicios/${s.id}/`);
+  if (servicio) {
+    const otros = data.servicios.filter(s => s !== servicio);
+    return {
+      title: `${servicio.titulo} en Osorno | ZÉROK`, description: `${servicio.resumen} Servicio técnico a domicilio en Osorno y Los Lagos. Agenda tu visita con ZÉROK.`, servicio,
+      html: `${heading(`${servicio.titulo}.`, 'A domicilio en Osorno y sectores de Los Lagos.', photo(fotoDe(servicio), altOf(fotoDe(servicio), servicio.titulo), 'page-photo foto-revela'))}<div class="wrap service-details">${serviceSection(data, servicio, true)}</div><nav class="service-index" aria-label="Otros servicios"><div class="wrap">${otros.map(s => `<a href="/servicios/${s.id}/">${esc(corto[s.id] || s.titulo)}</a>`).join('')}</div></nav>`
+    };
+  }
   if (path === '/contacto/') return {
     title: 'Contacto y cobertura en Osorno y Los Lagos | ZÉROK', description: 'Escribe a ZÉROK por WhatsApp o llama al +56 9 7789 6895. Servicio técnico a domicilio en Osorno y Los Lagos.',
     html: `${heading('Cuéntanos qué le pasa.', 'Coordinamos la visita contigo por teléfono o WhatsApp.')}<div class="contact-layout wrap section"><section class="contact-data"><h2>Hablemos.</h2><a class="contact-phone" href="tel:${g.telefono}">${g.telefonoVisible}</a><div class="contact-actions">${link(`tel:${g.telefono}`, 'Llamar', 'outline')}${link(wa(g), 'WhatsApp', 'outline')}</div><dl><dt>Horario</dt><dd>${g.horarioConfirmado ? hours(g) : 'Lunes a sábado'}</dd><dt>Cobertura</dt><dd>Osorno y sectores de Los Lagos.</dd><dt>Instagram</dt><dd><a href="${g.instagram}" target="_blank" rel="noopener noreferrer">${icon('instagram')}@zerok_osorno</a></dd></dl><p class="contact-privacy">${data.agenda ? 'El formulario prepara tu solicitud en esta página. Solo guardamos tus datos si la envías, para coordinar la visita.' : 'Este formulario prepara un mensaje en tu dispositivo. No guardamos tus datos.'}</p></section><section><h2 class="sr-only">Solicitud de visita</h2>${selector(data)}</section></div>`
@@ -218,6 +227,7 @@ export function structured(data, rendered, canonical) {
   const sitio = { '@context': 'https://schema.org', '@type': 'WebSite', '@id': `${origen}#sitio`, name: 'ZÉROK', alternateName: 'ZÉROK Refrigeración & Climatización Profesional', url: origen, inLanguage: 'es-CL', publisher: negocio };
   const list = [business, sitio];
   if (!rendered.status) list.push({ '@context': 'https://schema.org', '@type': 'WebPage', '@id': `${canonical}#pagina`, url: canonical, name: rendered.title, description: rendered.description, inLanguage: 'es-CL', isPartOf: { '@id': `${origen}#sitio` }, about: negocio });
+  if (rendered.servicio) list.push({ '@context': 'https://schema.org', '@type': 'Service', name: rendered.servicio.titulo, description: rendered.servicio.resumen, serviceType: rendered.servicio.titulo, provider: negocio, url: canonical, areaServed: { '@type': 'Place', name: 'Osorno y sectores de Los Lagos' }, offers: { '@type': 'Offer', availability: 'https://schema.org/InStock', url: canonical } });
   if (rendered.post) list.push({ '@context': 'https://schema.org', '@type': 'BlogPosting', headline: rendered.post.titulo, description: rendered.post.extracto, datePublished: rendered.post.fecha, inLanguage: 'es-CL', author: negocio, publisher: negocio, isPartOf: { '@id': `${origen}#sitio` }, mainEntityOfPage: canonical, ...(rendered.post.foto ? { image: new URL(rendered.post.foto, origen).href } : {}) });
   if (new URL(canonical).pathname === '/' && data.faq.length) list.push({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: data.faq.map(p => ({ '@type': 'Question', name: p.pregunta, acceptedAnswer: { '@type': 'Answer', text: p.respuesta } })) });
   if (new URL(canonical).pathname !== '/') list.push({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Inicio', item: origen }, { '@type': 'ListItem', position: 2, name: rendered.post?.titulo || rendered.title.split('|')[0].trim(), item: canonical }] });
@@ -227,7 +237,7 @@ export function structured(data, rendered, canonical) {
 // Documento para motores de IA (GEO): el negocio explicado en markdown, desde los datos reales del panel.
 export function llmsTxt(data, origen) {
   const g = data.general;
-  const paginas = [['Inicio', '/'], ['Servicios', '/servicios/'], ...(data.agenda ? [['Agendar visita técnica', '/agendar/']] : []), ['Contacto y cobertura', '/contacto/'], ...(data.productos.length ? [['Precios y productos', '/precios/']] : []), ...data.blog.map(p => [`Blog: ${p.titulo}`, `/blog/${p.slug}/`])];
+  const paginas = [['Inicio', '/'], ['Servicios', '/servicios/'], ...data.servicios.map(s => [`Servicio: ${s.titulo}`, `/servicios/${s.id}/`]), ...(data.agenda ? [['Agendar visita técnica', '/agendar/']] : []), ['Contacto y cobertura', '/contacto/'], ...(data.productos.length ? [['Precios y productos', '/precios/']] : []), ...data.blog.map(p => [`Blog: ${p.titulo}`, `/blog/${p.slug}/`])];
   return `# ZÉROK Refrigeración & Climatización Profesional
 
 > Servicio técnico de refrigeración y climatización a domicilio en Osorno y sectores de la Región de Los Lagos, Chile. Se solicita la visita en línea y el técnico confirma la hora por teléfono.
