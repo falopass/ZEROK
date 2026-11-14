@@ -5,12 +5,13 @@
   "compatibility_date": "2026-11-05",
   "workers_dev": true,
   "assets": { "directory": "sitio", "binding": "ASSETS", "run_worker_first": true, "html_handling": "none" },
-  "vars": { "SITE_URL": "https://zerok.cl", "PUBLIC_INDEXING": "true", "AVISOS_HABILITADOS": "false", "INDEXNOW_KEY": "bc5abfd87a89e7d43e33a87931bcd959" },
+  "vars": { "SITE_URL": "https://zerok.cl", "PUBLIC_INDEXING": "true", "AVISOS_HABILITADOS": "true", "INDEXNOW_KEY": "bc5abfd87a89e7d43e33a87931bcd959" },
   "routes": [
     { "pattern": "zerok.cl", "custom_domain": true },
     { "pattern": "www.zerok.cl", "custom_domain": true }
   ],
   "kv_namespaces": [{ "binding": "CONTENIDO", "id": "1cd1a1ea2d5b4a2a801701ea5723aea3" }],
+  "send_email": [{ "name": "AVISOS", "destination_address": "avisos@zerok.cl" }],
   "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "zerok-media" }],
   "durable_objects": { "bindings": [{ "name": "ADMIN", "class_name": "Admin" }] },
   "triggers": { "crons": ["*/15 * * * *"] },
