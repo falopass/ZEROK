@@ -91,8 +91,7 @@
 .agenda-toolbar{align-items:center;margin-bottom:16px;flex-wrap:wrap}
 .agenda-busqueda{flex:1 1 140px;min-width:120px}
 .agenda-toolbar>[data-agenda-csv]{flex-shrink:0}
-.agenda-filtros{flex:1;min-width:0;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
-.agenda-filtros::-webkit-scrollbar{display:none}
+.agenda-filtros{flex:1 1 100%;min-width:0;flex-wrap:wrap}
 .agenda-filtros .editor-action,.agenda-toolbar>[data-agenda-refresh]{flex-shrink:0}
 .agenda-filtros [aria-pressed=true]{background:var(--superficie-2);border-color:var(--texto);font-weight:600}
 .editor-action.primaria{background:var(--acento);border-color:var(--acento);color:var(--sobre-acento);font-weight:600}
