@@ -1,6 +1,6 @@
 import { Admin, json } from './admin.js';
 import { readContent, published } from './content.js';
-import { header, footer, page, structured, agendar, agendaLista, altOf } from './render.js';
+import { header, footer, page, structured, llmsTxt, agendar, agendaLista, altOf } from './render.js';
 import { equipos, limpiar, validarReserva } from './agenda.js';
 
 export { Admin };
@@ -49,6 +49,11 @@ async function upload(request, env) {
 // URLs absolutas (canonical, OG, sitemap, JSON-LD) usan el origen propio, para que las
 // vistas previas de WhatsApp resuelvan antes de conectar el dominio.
 const apex = env => { try { return env.SITE_URL ? new URL(env.SITE_URL) : null; } catch { return null; } };
+
+// Crawlers de motores de IA declarados explícitamente (GEO): pueden leer el sitio público,
+// nunca el panel ni la API. `User-agent: *` ya los permitía; la lista deja la intención explícita.
+const botsIA = ['GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'ClaudeBot', 'Claude-User', 'Claude-SearchBot', 'PerplexityBot', 'Perplexity-User', 'Google-Extended', 'Applebot-Extended', 'meta-externalagent', 'Amazonbot', 'DuckAssistBot'];
+const robotsTxt = origin => `User-agent: *\nDisallow: /admin/\nDisallow: /api/\n\n${botsIA.map(b => `User-agent: ${b}\nDisallow: /admin/\nDisallow: /api/`).join('\n\n')}\n\nSitemap: ${origin}/sitemap.xml\n`;
 
 const objeto = env => env.ADMIN.get(env.ADMIN.idFromName('zerok-admin'));
 const interno = (env, path, init) => objeto(env).fetch(new Request(`https://zerok.internal/interno/${path}`, init));
@@ -159,11 +164,14 @@ async function handle(request, env) {
   const indexing = env.PUBLIC_INDEXING === 'true' && !!site && url.origin === site.origin;
   // IndexNow (Bing, Yandex y otros): la clave es pública y se sirve en la raíz para probar la propiedad del dominio.
   if (env.INDEXNOW_KEY && path === `/${env.INDEXNOW_KEY}.txt`) return new Response(env.INDEXNOW_KEY, { headers: { 'content-type': 'text/plain; charset=utf-8' } });
-  if (path === '/robots.txt') return new Response(indexing ? `User-agent: *\nDisallow: /admin/\nDisallow: /api/\nSitemap: ${origin}/sitemap.xml\n` : 'User-agent: *\nDisallow: /\n', { headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-cache' } });
+  if (path === '/robots.txt') return new Response(indexing ? robotsTxt(origin) : 'User-agent: *\nDisallow: /\n', { headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-cache' } });
   if (path === '/sitemap.xml') {
-    const paths = ['/', '/servicios/', ...(data.agenda ? ['/agendar/'] : []), '/contacto/', ...(data.productos.length ? ['/precios/'] : []), ...(data.blog.length ? ['/blog/', ...data.blog.map(p => `/blog/${p.slug}/`)] : [])];
-    return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${paths.map(p => `<url><loc>${new URL(p, origin).href}</loc></url>`).join('')}</urlset>`, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'no-cache' } });
+    // Prioridad y frecuencia por tipo de página; lastmod solo donde hay fecha real de contenido.
+    const entradas = [['/', '1.0', 'weekly', ''], ['/servicios/', '0.9', 'monthly', ''], ...(data.agenda ? [['/agendar/', '0.9', 'monthly', '']] : []), ['/contacto/', '0.7', 'yearly', ''], ...(data.productos.length ? [['/precios/', '0.6', 'monthly', '']] : []), ...(data.blog.length ? [['/blog/', '0.6', 'weekly', ''], ...data.blog.map(p => [`/blog/${p.slug}/`, '0.5', 'yearly', p.fecha])] : [])];
+    return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${entradas.map(([p, prioridad, frecuencia, mod]) => `<url><loc>${new URL(p, origin).href}</loc>${mod ? `<lastmod>${mod}</lastmod>` : ''}<changefreq>${frecuencia}</changefreq><priority>${prioridad}</priority></url>`).join('')}</urlset>`, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'no-cache' } });
   }
+  if (path === '/llms.txt') return new Response(llmsTxt(data, origin), { headers: { 'content-type': 'text/markdown; charset=utf-8', 'cache-control': 'no-cache' } });
+  if (path === '/llms-full.txt') return Response.redirect(new URL('/llms.txt', url), 308);
   if (path === '/index.html') return Response.redirect(new URL('/', url), 308);
   if (path !== '/' && !path.includes('.') && !path.endsWith('/')) return Response.redirect(new URL(`${path}/${url.search}`, url), 308);
   // Only the equipment enum may arrive by GET; free text never travels in the URL.
@@ -207,11 +215,13 @@ async function render(request, env, url, data, path, rendered) {
     .on('meta[property="og:image:width"]', { element(element) { if (!ogSize) element.remove(); } })
     .on('meta[property="og:image:height"]', { element(element) { if (!ogSize) element.remove(); } })
     .on('meta[name="twitter:image"]', attribute('content', ogImage))
+    .on('meta[name="twitter:image:alt"]', attribute('content', ogAlt))
     .on('#header', replace(header(data, path)))
     .on('#contenido', replace(rendered.html))
     .on('#footer', replace(footer(data, path)))
     .on('#structured-data', replace(structured(data, rendered, canonical)));
   if (path === '/') transform = transform.on('head', { element(element) { element.append(`<link rel="preload" as="image" href="${data.general.hero}">`, { html: true }); } });
+  if (rendered.post) transform = transform.on('head', { element(element) { element.append(`<meta property="article:published_time" content="${rendered.post.fecha}"><meta name="author" content="ZÉROK">`, { html: true }); } });
   const response = transform.transform(template);
   const headers = new Headers(response.headers);
   headers.set('cache-control', 'no-cache');

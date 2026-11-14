@@ -198,17 +198,51 @@ export function page(data, path) {
 
 export function structured(data, rendered, canonical) {
   const g = data.general;
+  const origen = new URL('/', canonical).href;
+  const negocio = { '@id': `${origen}#negocio` };
   const business = {
-    '@context': 'https://schema.org', '@type': 'HVACBusiness', name: 'ZÉROK Refrigeración & Climatización Profesional',
-    url: new URL('/', canonical).href, logo: new URL('/img/logo.png', canonical).href, telephone: g.telefono, sameAs: [g.instagram],
-    image: data.trabajos.length ? data.trabajos.slice(0, 3).map(p => new URL(p.foto, canonical).href) : new URL('/img/logo.png', canonical).href,
+    '@context': 'https://schema.org', '@type': 'HVACBusiness', '@id': `${origen}#negocio`,
+    name: 'ZÉROK Refrigeración & Climatización Profesional', alternateName: 'ZÉROK',
+    description: 'Servicio técnico de refrigeración y climatización a domicilio en Osorno y sectores de la Región de Los Lagos.',
+    url: origen, logo: new URL('/img/logo.png', origen).href, telephone: g.telefono, sameAs: [g.instagram],
+    image: data.trabajos.length ? data.trabajos.slice(0, 3).map(p => new URL(p.foto, origen).href) : new URL('/img/logo.png', origen).href,
     address: { '@type': 'PostalAddress', addressLocality: 'Osorno', addressRegion: 'Los Lagos', addressCountry: 'CL' },
+    geo: { '@type': 'GeoCoordinates', latitude: -40.5740, longitude: -73.1335 },
     areaServed: g.cobertura.map(name => ({ '@type': 'Place', name })),
-    hasOfferCatalog: { '@type': 'OfferCatalog', name: 'Servicios ZÉROK', itemListElement: data.servicios.map(s => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: s.titulo } })) }
+    contactPoint: { '@type': 'ContactPoint', telephone: g.telefono, contactType: 'customer service', availableLanguage: 'Spanish', areaServed: 'CL' },
+    knowsAbout: [...data.servicios.map(s => s.titulo), 'Refrigeradores', 'Aire acondicionado', 'Lavadoras y secadoras', 'Calefones y calefacción', 'Equipos comerciales de refrigeración'],
+    hasOfferCatalog: { '@type': 'OfferCatalog', name: 'Servicios ZÉROK', itemListElement: data.servicios.map(s => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: s.titulo, description: s.resumen, provider: negocio, areaServed: { '@type': 'Place', name: 'Osorno y sectores de Los Lagos' } } })) }
   };
   if (g.horarioConfirmado) business.openingHoursSpecification = { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], opens: g.abre, closes: g.cierra };
-  const list = [business];
-  if (rendered.post) list.push({ '@context': 'https://schema.org', '@type': 'BlogPosting', headline: rendered.post.titulo, description: rendered.post.extracto, datePublished: rendered.post.fecha, author: { '@type': 'Organization', name: business.name }, mainEntityOfPage: canonical, ...(rendered.post.foto ? { image: new URL(rendered.post.foto, canonical).href } : {}) });
-  if (new URL(canonical).pathname !== '/') list.push({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Inicio', item: business.url }, { '@type': 'ListItem', position: 2, name: rendered.post?.titulo || rendered.title.split('|')[0].trim(), item: canonical }] });
+  if (data.agenda) business.potentialAction = { '@type': 'ReserveAction', name: 'Agendar visita técnica', target: { '@type': 'EntryPoint', urlTemplate: new URL('/agendar/', origen).href, actionPlatform: ['http://schema.org/DesktopWebPlatform', 'http://schema.org/MobileWebPlatform'] }, result: { '@type': 'Thing', name: 'Visita técnica a domicilio' } };
+  const sitio = { '@context': 'https://schema.org', '@type': 'WebSite', '@id': `${origen}#sitio`, name: 'ZÉROK', alternateName: 'ZÉROK Refrigeración & Climatización Profesional', url: origen, inLanguage: 'es-CL', publisher: negocio };
+  const list = [business, sitio];
+  if (!rendered.status) list.push({ '@context': 'https://schema.org', '@type': 'WebPage', '@id': `${canonical}#pagina`, url: canonical, name: rendered.title, description: rendered.description, inLanguage: 'es-CL', isPartOf: { '@id': `${origen}#sitio` }, about: negocio });
+  if (rendered.post) list.push({ '@context': 'https://schema.org', '@type': 'BlogPosting', headline: rendered.post.titulo, description: rendered.post.extracto, datePublished: rendered.post.fecha, inLanguage: 'es-CL', author: negocio, publisher: negocio, isPartOf: { '@id': `${origen}#sitio` }, mainEntityOfPage: canonical, ...(rendered.post.foto ? { image: new URL(rendered.post.foto, origen).href } : {}) });
+  if (new URL(canonical).pathname === '/' && data.faq.length) list.push({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: data.faq.map(p => ({ '@type': 'Question', name: p.pregunta, acceptedAnswer: { '@type': 'Answer', text: p.respuesta } })) });
+  if (new URL(canonical).pathname !== '/') list.push({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Inicio', item: origen }, { '@type': 'ListItem', position: 2, name: rendered.post?.titulo || rendered.title.split('|')[0].trim(), item: canonical }] });
   return JSON.stringify(list).replace(/</g, '\\u003c');
+}
+
+// Documento para motores de IA (GEO): el negocio explicado en markdown, desde los datos reales del panel.
+export function llmsTxt(data, origen) {
+  const g = data.general;
+  const paginas = [['Inicio', '/'], ['Servicios', '/servicios/'], ...(data.agenda ? [['Agendar visita técnica', '/agendar/']] : []), ['Contacto y cobertura', '/contacto/'], ...(data.productos.length ? [['Precios y productos', '/precios/']] : []), ...data.blog.map(p => [`Blog: ${p.titulo}`, `/blog/${p.slug}/`])];
+  return `# ZÉROK Refrigeración & Climatización Profesional
+
+> Servicio técnico de refrigeración y climatización a domicilio en Osorno y sectores de la Región de Los Lagos, Chile. Se solicita la visita en línea y el técnico confirma la hora por teléfono.
+
+## Datos del negocio
+- Teléfono y WhatsApp: ${g.telefono}
+- Horario: ${g.horarioConfirmado ? `lunes a sábado, de ${g.abre} a ${g.cierra}` : 'atención de lunes a sábado'}
+- Cobertura: ${g.cobertura.join(', ')}
+- Instagram: ${g.instagram}
+${data.agenda ? `- Agenda en línea: ${new URL('/agendar/', origen).href}` : ''}
+
+## Servicios
+${data.servicios.map(s => `- ${s.titulo}: ${s.resumen}`).join('\n')}
+
+## Páginas
+${paginas.map(([t, p]) => `- [${t}](${new URL(p, origen).href})`).join('\n')}
+`;
 }
