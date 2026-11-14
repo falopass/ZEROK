@@ -27,6 +27,7 @@ Cloudflare, worker **`zerok`** (`wrangler.jsonc`). Comando: `wrangler deploy`. R
 ## Reglas que no se rompen
 - El panel `/admin/` se diseña con `interface-design` y solo comparte tokens con el sitio público.
 - **Las animaciones van y no se prohíben** (decisión de Diego, 05-11-2026). Manda `frontend-base`: la regla es variar entre clientes, no recortar.
+- Piso comprobable antes de entregar: `C:/Users/lenov/.agents/studio/canonical/frontend-references/corpus/piso.md` (16 reglas; vale con cualquier dirección). Referencias por tema en `corpus/LEEME.md`; aquí sirven `motion.md`, `assets.md`. Rutas de la máquina de Diego. El panel `/admin/`: `interfaz-producto.md`.
 - Trato de **tú** en todo el sitio. Sin rayas largas (— ni –) en texto visible.
 - El WhatsApp del cliente no lo escribe ningún script.
 - Mobile-first a 390×844, contraste AA, sin placeholders de contenido, fotos reales en `.webp`.
