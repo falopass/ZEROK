@@ -13,7 +13,7 @@ const hace = iso => {
 };
 
 export function agendaPanel(root, api, status, activo, avisar = () => {}, autorizado = () => true) {
-  let data, vista = 'pendientes', cargando = false, configDirty = false, busqueda = '', mesCursor = null, diaSel = null;
+  let data, vista = 'pendientes', cargando = false, configDirty = false, busqueda = '', mesCursor = null, diaSel = null, mesBloq = null;
   const filtros = {
     pendientes: ['Por confirmar', v => v.estado === 'solicitada'],
     hoy: ['Hoy', v => ['solicitada', 'confirmada'].includes(v.estado) && v.dia === data.hoy],
@@ -63,32 +63,45 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
     const avisos = data.correo
       ? `Avisos por correo activos${pendientes ? ` · ${pendientes} pendiente${pendientes === 1 ? '' : 's'} de envío` : ''}${reintentos ? ` · ${reintentos} reintentando tras un fallo` : ''}.`
       : 'Correo desactivado hasta conectar zerok.cl: revisa esta pantalla.';
-    root.innerHTML = `${calendario()}<p class="agenda-aviso">${avisos} ${data.config.activa ? 'Solicitudes en línea activas.' : 'Solicitudes en línea desactivadas.'}</p><div class="agenda-toolbar"><div class="agenda-filtros" role="group" aria-label="Filtrar visitas">${Object.entries(filtros).map(([key, [label, filter]]) => `<button type="button" class="editor-action" data-vista="${key}" aria-pressed="${vista === key}">${label} (${data.visitas.filter(filter).length})</button>`).join('')}</div><input class="agenda-busqueda" type="search" name="busqueda" placeholder="Buscar por nombre, teléfono o dirección" value="${esc(busqueda)}" aria-label="Buscar visita"><button type="button" class="editor-action" data-agenda-refresh>Actualizar</button><button type="button" class="editor-action" data-agenda-csv>Descargar CSV</button></div>${visitas.length ? visitas.map(tarjeta).join('') : '<div class="empty-editor"><h2>Sin visitas en esta vista.</h2><p>Las solicitudes y los seguimientos aparecerán aquí.</p></div>'}<details class="editor-group agenda-config"><summary>Disponibilidad y avisos</summary><p>El cliente pide un día, no una hora ni un cupo confirmado. ZÉROK coordina la hora por teléfono.</p><label class="admin-field check"><input type="checkbox" name="activa" ${data.config.activa ? 'checked' : ''}>Activar solicitudes en línea</label><label class="admin-field">Días bloqueados<textarea name="bloqueados" rows="4" aria-describedby="bloqueados-ayuda">${esc(data.config.bloqueados.join('\n'))}</textarea><span id="bloqueados-ayuda" class="help">Una fecha por línea, con formato AAAA-MM-DD. No cancela visitas ya confirmadas.</span></label>${campo('seguimiento', 'Días después de la visita para llamar', data.config.seguimiento, 'number', 'min="1" max="90" required')}<p class="help">Por defecto son 14 días. Cambiarlo solo afecta las próximas visitas que marques realizadas.</p><button type="button" class="editor-action" data-agenda-config>Guardar disponibilidad</button></details>`;
+    root.innerHTML = `${calendario()}<p class="agenda-aviso">${avisos} ${data.config.activa ? 'Solicitudes en línea activas.' : 'Solicitudes en línea desactivadas.'}</p><div class="agenda-toolbar"><div class="agenda-filtros" role="group" aria-label="Filtrar visitas">${Object.entries(filtros).map(([key, [label, filter]]) => `<button type="button" class="editor-action" data-vista="${key}" aria-pressed="${vista === key}">${label} (${data.visitas.filter(filter).length})</button>`).join('')}</div><input class="agenda-busqueda" type="search" name="busqueda" placeholder="Buscar por nombre, teléfono o dirección" value="${esc(busqueda)}" aria-label="Buscar visita"><button type="button" class="editor-action" data-agenda-refresh>Actualizar</button><button type="button" class="editor-action" data-agenda-csv>Descargar CSV</button></div>${visitas.length ? visitas.map(tarjeta).join('') : '<div class="empty-editor"><h2>Sin visitas en esta vista.</h2><p>Las solicitudes y los seguimientos aparecerán aquí.</p></div>'}<details class="editor-group agenda-config"><summary>Disponibilidad y avisos</summary><p>El cliente pide un día, no una hora ni un cupo confirmado. ZÉROK coordina la hora por teléfono.</p><label class="admin-field check"><input type="checkbox" name="activa" ${data.config.activa ? 'checked' : ''}>Activar solicitudes en línea</label><input type="hidden" name="bloqueados" value="${esc(data.config.bloqueados.join(' '))}"><div class="admin-field">Días que no atiendes${calendarioBloqueo()}<span class="help">Toca un día para bloquearlo o liberarlo; tachado significa cerrado. Bloquear no cancela visitas ya confirmadas.</span></div>${campo('seguimiento', 'Días después de la visita para llamar', data.config.seguimiento, 'number', 'min="1" max="90" required')}<p class="help">Por defecto son 14 días. Cambiarlo solo afecta las próximas visitas que marques realizadas.</p><button type="button" class="editor-action" data-agenda-config>Guardar disponibilidad</button></details>`;
     for (const id of abiertas) root.querySelector(`[data-visita="${CSS.escape(id)}"]`)?.setAttribute('open', '');
     if (configAbierta) root.querySelector('.agenda-config')?.setAttribute('open', '');
     if (foco) (root.querySelector(foco) || root.querySelector('[data-agenda-refresh]'))?.focus();
   }
-  function calendario() {
-    const [anio, mesNum] = mesCursor.split('-').map(Number);
+  const mesHtml = (mes, marcar) => {
+    const [anio, mesNum] = mes.split('-').map(Number);
     const total = new Date(Date.UTC(anio, mesNum, 0)).getUTCDate();
     const inicio = (new Date(Date.UTC(anio, mesNum - 1, 1)).getUTCDay() + 6) % 7;
+    const dias = [];
+    for (let i = 0; i < inicio; i++) dias.push('<span></span>');
+    for (let d = 1; d <= total; d++) dias.push(marcar(`${mes}-${String(d).padStart(2, '0')}`));
+    return `<div class="cal-head"><button type="button" class="editor-action" data-cal-mes="-1" aria-label="Mes anterior">‹</button><b class="cal-mes">${new Date(`${mes}-15T12:00:00Z`).toLocaleDateString('es-CL', { month: 'long', year: 'numeric', timeZone: 'UTC' })}</b><button type="button" class="editor-action" data-cal-mes="1" aria-label="Mes siguiente">›</button></div><div class="cal-semana"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div><div class="cal-grid">${dias.join('')}</div>`;
+  };
+  const visitasPorDia = mes => {
     const porDia = {};
     for (const v of data.visitas) {
-      if (!v.dia.startsWith(mesCursor)) continue;
+      if (!v.dia.startsWith(mes)) continue;
       const c = porDia[v.dia] ||= { solicitada: 0, confirmada: 0, realizada: 0, otras: 0 };
       if (c[v.estado] !== undefined) c[v.estado]++; else c.otras++;
     }
+    return porDia;
+  };
+  const puntosDe = c => c ? `<span class="cal-puntos">${['solicitada', 'confirmada', 'realizada', 'otras'].map(e => c[e] ? `<i class="punto-${e}">${c[e]}</i>` : '').join('')}</span>` : '';
+  function calendario() {
+    const porDia = visitasPorDia(mesCursor);
     const bloqueados = new Set(data.config.bloqueados);
-    const dias = [];
-    for (let i = 0; i < inicio; i++) dias.push('<span></span>');
-    for (let d = 1; d <= total; d++) {
-      const dia = `${mesCursor}-${String(d).padStart(2, '0')}`;
+    return `<div class="agenda-calendario">${mesHtml(mesCursor, dia => {
       const c = porDia[dia];
-      const puntos = c ? `<span class="cal-puntos">${['solicitada', 'confirmada', 'realizada', 'otras'].map(e => c[e] ? `<i class="punto-${e}">${c[e]}</i>` : '').join('')}</span>` : '';
-      dias.push(`<button type="button" class="cal-dia${dia === diaSel ? ' sel' : ''}${dia === data.hoy ? ' hoy' : ''}${dia < data.hoy ? ' pasado' : ''}${bloqueados.has(dia) ? ' bloqueado' : ''}" data-dia="${dia}">${d}${puntos}</button>`);
-    }
-    const nombreMes = new Date(`${mesCursor}-15T12:00:00Z`).toLocaleDateString('es-CL', { month: 'long', year: 'numeric', timeZone: 'UTC' });
-    return `<div class="agenda-calendario"><div class="cal-head"><button type="button" class="editor-action" data-cal-mes="-1" aria-label="Mes anterior">‹</button><b class="cal-mes">${nombreMes}</b><button type="button" class="editor-action" data-cal-mes="1" aria-label="Mes siguiente">›</button></div><div class="cal-semana"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div><div class="cal-grid">${dias.join('')}</div>${diaSel ? `<p class="help">Mostrando visitas del ${fecha(diaSel)}. <button type="button" class="cal-limpiar" data-dia-limpiar>Ver el filtro completo</button></p>` : ''}</div>`;
+      return `<button type="button" class="cal-dia${dia === diaSel ? ' sel' : ''}${dia === data.hoy ? ' hoy' : ''}${dia < data.hoy ? ' pasado' : ''}${bloqueados.has(dia) ? ' bloqueado' : ''}" data-dia="${dia}">${Number(dia.slice(8))}${puntosDe(c)}</button>`;
+    })}${diaSel ? `<p class="help">Mostrando visitas del ${fecha(diaSel)}. <button type="button" class="cal-limpiar" data-dia-limpiar>Ver el filtro completo</button></p>` : ''}</div>`;
+  }
+  function calendarioBloqueo() {
+    const porDia = visitasPorDia(mesBloq);
+    const bloqueados = new Set((root.querySelector('[name="bloqueados"]')?.value || data.config.bloqueados.join(' ')).split(/\s+/).filter(Boolean));
+    return `<div class="agenda-calendario bloq-cal">${mesHtml(mesBloq, dia => {
+      const c = porDia[dia];
+      return `<button type="button" class="cal-dia${bloqueados.has(dia) ? ' bloqueado' : ''}${dia === data.hoy ? ' hoy' : ''}${dia < data.hoy ? ' pasado' : ''}" data-bloq-dia="${dia}"${dia < data.hoy ? ' disabled' : ''}>${Number(dia.slice(8))}${puntosDe(c)}</button>`;
+    }).replace(/data-cal-mes/g, 'data-bloq-mes')}</div>`;
   }
   async function load() {
     if (cargando) return true;
@@ -103,6 +116,7 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
       if (activo() && dirty()) return true;
       data = reciente;
       mesCursor ||= data.hoy.slice(0, 7);
+      mesBloq ||= mesCursor;
       render();
       return true;
     } catch (error) {
@@ -157,6 +171,23 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
       discard(); render(); return;
     }
     if (button.hasAttribute('data-dia-limpiar')) { diaSel = null; render(); return; }
+    if (button.dataset.bloqMes) {
+      const [a, m] = mesBloq.split('-').map(Number);
+      mesBloq = new Date(Date.UTC(a, m - 1 + Number(button.dataset.bloqMes), 1)).toISOString().slice(0, 7);
+      const tmp = document.createElement('div');
+      tmp.innerHTML = calendarioBloqueo();
+      root.querySelector('.bloq-cal').replaceWith(tmp.firstElementChild);
+      return;
+    }
+    if (button.dataset.bloqDia) {
+      const oculto = root.querySelector('[name="bloqueados"]');
+      const set = new Set(oculto.value.split(/\s+/).filter(Boolean));
+      set.has(button.dataset.bloqDia) ? set.delete(button.dataset.bloqDia) : set.add(button.dataset.bloqDia);
+      oculto.value = [...set].sort().join(' ');
+      button.classList.toggle('bloqueado');
+      configDirty = true;
+      return;
+    }
     if (button.hasAttribute('data-agenda-refresh')) {
       if (dirty() && !confirm('Tienes cambios sin guardar en la agenda. ¿Actualizar y descartarlos?')) return;
       discard(); await load(); return;
