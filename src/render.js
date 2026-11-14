@@ -33,7 +33,11 @@ export const altOf = (src, fallback) => reales[src] || credit(src)?.subject || f
 const heading = (title, intro = '', img = '') => `<div class="page-heading wrap${img ? ' has-photo' : ''}"><div><a class="backlink" href="/">ZÉROK / Osorno</a><h1>${esc(title)}</h1>${intro ? `<p>${esc(intro)}</p>` : ''}</div>${img}</div>`;
 // On the agenda page the primary action anchors to the form itself instead of reloading it.
 const agendarVisita = (data, path, type) => data.agenda ? link(path === '/agendar/' ? '#solicitud' : '/agendar/', 'Agendar visita', type) : link(wa(data.general), 'Agendar visita', type);
-const hours = g => g.horarioConfirmado ? `Lunes a sábado, ${esc(g.abre)} a ${esc(g.cierra)}` : 'Atención de lunes a sábado';
+const cierreSab = g => g.cierraSabado || g.cierra;
+const hours = g => {
+  if (!g.horarioConfirmado) return 'Atención de lunes a sábado';
+  return cierreSab(g) !== g.cierra ? `Lunes a viernes, ${esc(g.abre)} a ${esc(g.cierra)}<br>Sábado, ${esc(g.abre)} a ${esc(cierreSab(g))}` : `Lunes a sábado, ${esc(g.abre)} a ${esc(g.cierra)}`;
+};
 const servicioEquipo = { 'emergencias': 'Otro equipo', 'refrigeradores-y-vitrinas': 'Refrigerador', 'aire-acondicionado': 'Aire acondicionado', 'aire-acondicionado-automotriz': 'Aire acondicionado de auto', 'lavadoras-y-secadoras': 'Lavadora o secadora', 'calefones-y-calefaccion': 'Calefón o calefacción', 'equipos-comerciales': 'Equipo comercial' };
 const serviceMessage = (data, s) => data.agenda ? `/agendar/${servicioEquipo[s.id] ? `?equipo=${encodeURIComponent(servicioEquipo[s.id])}` : ''}` : wa(data.general, `Hola ZÉROK, quisiera agendar una visita para ${s.titulo.toLowerCase()}.`);
 const money = value => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(value);
@@ -64,7 +68,7 @@ export function navigation(data, path) {
 
 export function header(data, path) {
   const g = data.general;
-  return `<a class="skip" href="#contenido">Saltar al contenido</a><header class="site-header"><div class="wrap header-inner"><a class="logo" href="/" aria-label="ZÉROK, inicio">${logo()}</a><a class="header-location" href="/#cobertura" aria-label="Cobertura: Osorno y sectores de Los Lagos, a domicilio"><span class="radar" aria-hidden="true"></span><span class="header-location-texto"><b>Osorno</b><small>Los Lagos · a domicilio</small></span></a><span class="hours-state mono" data-hours data-open="${esc(g.abre)}" data-close="${esc(g.cierra)}" data-confirmed="${g.horarioConfirmado}" hidden></span><nav class="desktop-nav" aria-label="Principal">${navigation(data, path)}</nav>${agendarVisita(data, path, 'primary header-cta')}<details class="mobile-menu"><summary>Menú<span class="menu-lines" aria-hidden="true"></span></summary><nav aria-label="Principal móvil">${navigation(data, path)}${agendarVisita(data, path)}</nav></details></div><i class="termometro" aria-hidden="true"></i></header>${g.aviso ? `<aside class="notice wrap">${esc(g.aviso)}</aside>` : ''}`;
+  return `<a class="skip" href="#contenido">Saltar al contenido</a><header class="site-header"><div class="wrap header-inner"><a class="logo" href="/" aria-label="ZÉROK, inicio">${logo()}</a><a class="header-location" href="/#cobertura" aria-label="Cobertura: Osorno y sectores de Los Lagos, a domicilio"><span class="radar" aria-hidden="true"></span><span class="header-location-texto"><b>Osorno</b><small>Los Lagos · a domicilio</small></span></a><span class="hours-state mono" data-hours data-open="${esc(g.abre)}" data-close="${esc(g.cierra)}" data-close-sab="${esc(cierreSab(g))}" data-confirmed="${g.horarioConfirmado}" hidden></span><nav class="desktop-nav" aria-label="Principal">${navigation(data, path)}</nav>${agendarVisita(data, path, 'primary header-cta')}<details class="mobile-menu"><summary>Menú<span class="menu-lines" aria-hidden="true"></span></summary><nav aria-label="Principal móvil">${navigation(data, path)}${agendarVisita(data, path)}</nav></details></div><i class="termometro" aria-hidden="true"></i></header>${g.aviso ? `<aside class="notice wrap">${esc(g.aviso)}</aside>` : ''}`;
 }
 
 export function footer(data, path) {
@@ -222,7 +226,7 @@ export function structured(data, rendered, canonical) {
     knowsAbout: [...data.servicios.map(s => s.titulo), 'Refrigeradores', 'Aire acondicionado', 'Lavadoras y secadoras', 'Calefones y calefacción', 'Equipos comerciales de refrigeración'],
     hasOfferCatalog: { '@type': 'OfferCatalog', name: 'Servicios ZÉROK', itemListElement: data.servicios.map(s => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: s.titulo, description: s.resumen, provider: negocio, areaServed: { '@type': 'Place', name: 'Osorno y sectores de Los Lagos' } } })) }
   };
-  if (g.horarioConfirmado) business.openingHoursSpecification = { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], opens: g.abre, closes: g.cierra };
+  if (g.horarioConfirmado) business.openingHoursSpecification = [{ '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], opens: g.abre, closes: g.cierra }, { '@type': 'OpeningHoursSpecification', dayOfWeek: 'Saturday', opens: g.abre, closes: cierreSab(g) }];
   if (data.agenda) business.potentialAction = { '@type': 'ReserveAction', name: 'Agendar visita técnica', target: { '@type': 'EntryPoint', urlTemplate: new URL('/agendar/', origen).href, actionPlatform: ['http://schema.org/DesktopWebPlatform', 'http://schema.org/MobileWebPlatform'] }, result: { '@type': 'Thing', name: 'Visita técnica a domicilio' } };
   const sitio = { '@context': 'https://schema.org', '@type': 'WebSite', '@id': `${origen}#sitio`, name: 'ZÉROK', alternateName: 'ZÉROK Refrigeración & Climatización Profesional', url: origen, inLanguage: 'es-CL', publisher: negocio };
   const list = [business, sitio];
@@ -244,7 +248,7 @@ export function llmsTxt(data, origen) {
 
 ## Datos del negocio
 - Teléfono y WhatsApp: ${g.telefono}
-- Horario: ${g.horarioConfirmado ? `lunes a sábado, de ${g.abre} a ${g.cierra}` : 'atención de lunes a sábado'}
+- Horario: ${g.horarioConfirmado ? `lunes a viernes, de ${g.abre} a ${g.cierra}; sábado, de ${g.abre} a ${cierreSab(g)}` : 'atención de lunes a sábado'}
 - Cobertura: ${g.cobertura.join(', ')}
 - Instagram: ${g.instagram}
 ${data.agenda ? `- Agenda en línea: ${new URL('/agendar/', origen).href}` : ''}

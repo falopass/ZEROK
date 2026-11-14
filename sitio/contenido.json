@@ -4,10 +4,12 @@
     "telefonoVisible": "+56 9 7789 6895",
     "whatsapp": "56977896895",
     "instagram": "https://www.instagram.com/zerok_osorno/",
-    "horarioConfirmado": false,
-    "abre": "07:30",
-    "cierra": "",
-    "cobertura": ["Osorno"],
+    "horarioConfirmado": true,
+    "abre": "09:00",
+    "cierra": "20:00",
+    "cobertura": [
+      "Osorno"
+    ],
     "bajada": "Servicio técnico especializado en refrigeración, climatización y línea blanca a domicilio en Osorno y la Región de Los Lagos.",
     "presentacion": "En ZÉROK nos especializamos en la reparación, revisión y mantención a domicilio de refrigeradores, vitrinas comerciales y equipos de aire acondicionado en Osorno. Un servicio técnico rápido, transparente y confiable.",
     "hero": "/img/refrigeracion.webp",
@@ -15,22 +17,96 @@
     "heroAlt": "Detalle ilustrativo de manos revisando las cañerías y el compresor de un refrigerador",
     "casaFoto": "",
     "negocioFoto": "",
-    "aviso": ""
+    "aviso": "",
+    "cierraSabado": "16:00"
   },
   "servicios": [
-    { "id": "emergencias", "titulo": "Servicio técnico y emergencias", "resumen": "Cuando un equipo de tu casa o negocio deja de funcionar, también si es urgente.", "equipos": "", "fallas": [], "foto": "", "visible": true },
-    { "id": "refrigeradores-y-vitrinas", "titulo": "Refrigeradores y vitrinas", "resumen": "Reparación, revisión y mantención de refrigeradores de hogar y vitrinas comerciales.", "equipos": "Refrigeradores de hogar y vitrinas comerciales", "fallas": ["Problemas de enfriamiento", "Fugas de gas", "Ruidos extraños", "Cambio de motores"], "foto": "/img/trabajos/servicio-vitrinas.webp", "visible": true },
-    { "id": "aire-acondicionado", "titulo": "Aire acondicionado", "resumen": "Instalación, mantención, reparación y desmantelamiento. Limpieza de conductos y reemplazo de filtros.", "equipos": "Splits, equipos portátiles y sistemas de conductos", "fallas": [], "foto": "/img/fotos/aire.webp", "visible": true },
-    { "id": "aire-acondicionado-automotriz", "titulo": "Aire acondicionado automotriz", "resumen": "Carga de gas, fugas y mantención del aire acondicionado de tu auto.", "equipos": "Aire acondicionado de automóviles", "fallas": [], "foto": "/img/trabajos/servicio-automotriz.webp", "visible": true },
-    { "id": "lavadoras-y-secadoras", "titulo": "Lavadoras y secadoras", "resumen": "Reparación y mantención de lavadoras y secadoras.", "equipos": "Lavadoras y secadoras", "fallas": [], "foto": "/img/fotos/lavadora.webp", "visible": true },
-    { "id": "calefones-y-calefaccion", "titulo": "Calefones y calefacción", "resumen": "Reparación y mantención de calefones y sistemas de calefacción. También instalamos termostatos.", "equipos": "Calefones, calefacción y termostatos", "fallas": [], "foto": "/img/fotos/calefon.webp", "visible": true },
-    { "id": "equipos-comerciales", "titulo": "Equipos comerciales", "resumen": "Mantención de los equipos que acompañan tu trabajo: conservadores, máquinas cecineras y de panadería.", "equipos": "Conservadores, máquinas cecineras y de panadería", "fallas": [], "foto": "", "visible": true }
+    {
+      "id": "emergencias",
+      "titulo": "Servicio técnico y emergencias",
+      "resumen": "Cuando un equipo de tu casa o negocio deja de funcionar, también si es urgente.",
+      "equipos": "",
+      "fallas": [],
+      "foto": "",
+      "visible": true
+    },
+    {
+      "id": "refrigeradores-y-vitrinas",
+      "titulo": "Refrigeradores y vitrinas",
+      "resumen": "Reparación, revisión y mantención de refrigeradores de hogar y vitrinas comerciales.",
+      "equipos": "Refrigeradores de hogar y vitrinas comerciales",
+      "fallas": [
+        "Problemas de enfriamiento",
+        "Fugas de gas",
+        "Ruidos extraños",
+        "Cambio de motores"
+      ],
+      "foto": "/img/trabajos/servicio-vitrinas.webp",
+      "visible": true
+    },
+    {
+      "id": "aire-acondicionado",
+      "titulo": "Aire acondicionado",
+      "resumen": "Instalación, mantención, reparación y desmantelamiento. Limpieza de conductos y reemplazo de filtros.",
+      "equipos": "Splits, equipos portátiles y sistemas de conductos",
+      "fallas": [],
+      "foto": "/img/fotos/aire.webp",
+      "visible": true
+    },
+    {
+      "id": "aire-acondicionado-automotriz",
+      "titulo": "Aire acondicionado automotriz",
+      "resumen": "Carga de gas, fugas y mantención del aire acondicionado de tu auto.",
+      "equipos": "Aire acondicionado de automóviles",
+      "fallas": [],
+      "foto": "/img/trabajos/servicio-automotriz.webp",
+      "visible": true
+    },
+    {
+      "id": "lavadoras-y-secadoras",
+      "titulo": "Lavadoras y secadoras",
+      "resumen": "Reparación y mantención de lavadoras y secadoras.",
+      "equipos": "Lavadoras y secadoras",
+      "fallas": [],
+      "foto": "/img/fotos/lavadora.webp",
+      "visible": true
+    },
+    {
+      "id": "calefones-y-calefaccion",
+      "titulo": "Calefones y calefacción",
+      "resumen": "Reparación y mantención de calefones y sistemas de calefacción. También instalamos termostatos.",
+      "equipos": "Calefones, calefacción y termostatos",
+      "fallas": [],
+      "foto": "/img/fotos/calefon.webp",
+      "visible": true
+    },
+    {
+      "id": "equipos-comerciales",
+      "titulo": "Equipos comerciales",
+      "resumen": "Mantención de los equipos que acompañan tu trabajo: conservadores, máquinas cecineras y de panadería.",
+      "equipos": "Conservadores, máquinas cecineras y de panadería",
+      "fallas": [],
+      "foto": "",
+      "visible": true
+    }
   ],
   "productos": [],
   "trabajos": [
-    { "foto": "/img/trabajos/auto-fuga.webp", "texto": "Acá estoy cargando un auto que tenía una fuga.", "fecha": "" },
-    { "foto": "/img/trabajos/vitrina-pasteles.webp", "texto": "Acá estoy arreglando una vitrina de pasteles.", "fecha": "" },
-    { "foto": "/img/trabajos/camioneta.webp", "texto": "Acá estoy con una camioneta que fue chocada.", "fecha": "" }
+    {
+      "foto": "/img/trabajos/auto-fuga.webp",
+      "texto": "Acá estoy cargando un auto que tenía una fuga.",
+      "fecha": ""
+    },
+    {
+      "foto": "/img/trabajos/vitrina-pasteles.webp",
+      "texto": "Acá estoy arreglando una vitrina de pasteles.",
+      "fecha": ""
+    },
+    {
+      "foto": "/img/trabajos/camioneta.webp",
+      "texto": "Acá estoy con una camioneta que fue chocada.",
+      "fecha": ""
+    }
   ],
   "faq": [],
   "blog": []

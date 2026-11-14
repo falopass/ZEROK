@@ -209,11 +209,12 @@ function updateHours() {
   const minutes = value => Number(value.slice(0, 2)) * 60 + Number(value.slice(3));
   for (const element of document.querySelectorAll('[data-hours]')) {
     if (element.dataset.confirmed !== 'true') continue;
-    const open = parts.weekday !== 'Sun' && current >= element.dataset.open && current < element.dataset.close;
-    const remaining = open ? minutes(element.dataset.close) - minutes(current) : 0;
+    const cierre = parts.weekday === 'Sat' ? element.dataset.closeSab || element.dataset.close : element.dataset.close;
+    const open = parts.weekday !== 'Sun' && current >= element.dataset.open && current < cierre;
+    const remaining = open ? minutes(cierre) - minutes(current) : 0;
     element.hidden = false;
     element.classList.toggle('is-open', open);
-    element.textContent = open ? `Abierto · cierra en ${Math.floor(remaining / 60)} h ${remaining % 60} min` : `Cerrado · abre ${parts.weekday === 'Sat' && current >= element.dataset.close || parts.weekday === 'Sun' ? 'el lunes ' : current >= element.dataset.close ? 'mañana ' : 'hoy '}${element.dataset.open}`;
+    element.textContent = open ? `Abierto · cierra en ${Math.floor(remaining / 60)} h ${remaining % 60} min` : `Cerrado · abre ${parts.weekday === 'Sat' && current >= cierre || parts.weekday === 'Sun' ? 'el lunes ' : current >= cierre ? 'mañana ' : 'hoy '}${element.dataset.open}`;
   }
 }
 updateHours();

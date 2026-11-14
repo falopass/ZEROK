@@ -35,9 +35,10 @@ export function validateContent(data) {
   const time = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
   const date = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
   if (g.horarioConfirmado && (!time.test(g.abre) || !time.test(g.cierra) || g.abre >= g.cierra)) fail('Revisa el horario de apertura y cierre.');
+  if (g.horarioConfirmado && g.cierraSabado && (!time.test(g.cierraSabado) || g.cierraSabado <= g.abre)) fail('Revisa el horario del sábado.');
   const general = {
     ...defaults.general,
-    horarioConfirmado: bool(g.horarioConfirmado), abre: string(g.abre, 5, 'apertura'), cierra: string(g.cierra, 5, 'cierre'),
+    horarioConfirmado: bool(g.horarioConfirmado), abre: string(g.abre, 5, 'apertura'), cierra: string(g.cierra, 5, 'cierre'), cierraSabado: string(g.cierraSabado, 5, 'cierre de sábado'),
     cobertura: list(g.cobertura, 30, v => string(v, 80, 'sector', true)),
     bajada: string(g.bajada, 350, 'bajada', true), presentacion: string(g.presentacion, 2000, 'presentación', true),
     hero: photo(g.hero), heroReal: bool(g.heroReal), heroAlt: string(g.heroAlt, 200, 'descripción de portada', true),
