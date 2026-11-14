@@ -70,7 +70,7 @@ export function header(data, path) {
 export function footer(data, path) {
   const g = data.general;
   const cierre = library('cierre');
-  const note = [!g.heroReal && 'Portada creada con IA.', fotos.length && 'Fotos de apoyo: Wikimedia Commons.'].filter(Boolean).join(' ') || 'Osorno, Región de Los Lagos';
+  const note = 'Osorno, Región de Los Lagos';
   return `<section class="closing noche">${path === '/agendar/' ? '' : `<div class="closing-hero">${cierre ? `<img class="closing-photo parallax" src="${cierre}" alt="" width="1440" height="960" loading="lazy" decoding="async" data-source="library-commons">` : ''}<div class="wrap"><h2 data-reveal>¿Tu equipo falló?<br>Vamos a revisarlo.</h2><div class="closing-actions">${agendarVisita(data, path)}${link(`tel:${g.telefono}`, 'Llamar', 'outline')}</div></div></div>`}<div class="wrap"><footer class="footer"><a class="logo logo-grande" href="/" aria-label="ZÉROK, inicio">${logo()}</a><p>Refrigeración &amp;<br>Climatización Profesional</p><div><a href="tel:${g.telefono}">${g.telefonoVisible}</a><p>${hours(g)}<br>Osorno y sectores de Los Lagos</p></div><div><a href="${g.instagram}" rel="noopener noreferrer" target="_blank">Instagram</a><a href="/contacto/">Contacto</a><a href="/privacidad/">Privacidad</a><a href="/creditos/">Créditos</a></div></footer><div class="footer-bottom"><span>© ${new Date().getFullYear()} ZÉROK</span><span>${note}</span><a href="/admin/">Administración</a></div></div></section><aside class="contact-bar" aria-label="Contacto rápido">${agendarVisita(data, path)}${link(`tel:${g.telefono}`, 'Llamar', 'outline')}</aside>`;
 }
 
