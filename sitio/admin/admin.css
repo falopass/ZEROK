@@ -133,3 +133,7 @@
 .admin-sidebar nav [data-section=agenda][aria-current]{background:var(--superficie-2)}
 .visita-acciones .primaria{flex-basis:100%}
 }
+.agenda-resumen{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-bottom:12px}
+.resumen-card{display:grid;gap:2px;border:1px solid var(--linea);border-radius:6px;background:var(--superficie);padding:12px}
+.resumen-num{font-size:1.5rem;font-weight:600}
+.resumen-label,.resumen-mes{font-size:.75rem;color:var(--texto-2)}

@@ -120,6 +120,8 @@ async function handle(request, env) {
   if (site && url.protocol === 'http:' && (url.hostname === site.hostname || url.hostname === `www.${site.hostname}`)) return Response.redirect(`${site.origin}${url.pathname}${url.search}`, 301);
   if (site && url.hostname === `www.${site.hostname}`) return Response.redirect(`${site.origin}${url.pathname}${url.search}`, 301);
   const admin = () => objeto(env);
+  // Contadores anónimos del sitio: solo el tipo de evento, sin datos personales.
+  if (path === '/api/evento' && request.method === 'POST') return env.ADMIN ? interno(env, 'evento', { method: 'POST', headers: { 'content-type': 'application/json' }, body: await request.text() }) : json({ error: 'No disponible.' }, 404);
   if (/^\/interno(?:\/|$)/.test(path)) return json({ error: 'Ruta no encontrada.' }, 404);
   if (path.startsWith('/admin/api/')) {
     if (!env.ADMIN || !env.CONTENIDO) return json({ error: 'Falta configurar el almacenamiento del panel.' }, 503);
