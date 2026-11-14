@@ -4,6 +4,8 @@ Leer antes de tocar cualquier página pública. El panel `/admin/` es interfaz d
 `interface-design`, reutiliza solo los tokens de color y tipografía de este documento y no hereda
 composición, hero ni motion de la web pública.
 
+Piso comprobable antes de entregar: `C:/Users/lenov/.agents/studio/canonical/frontend-references/corpus/piso.md`; referencias por tema en `corpus/LEEME.md` (rutas de la máquina de Diego).
+
 Fecha: 05-11-2026 (revisión 2: sitio vivo, fotográfico, sin íconos decorativos). Decisiones cerradas con Diego: dominio **zerok.cl**, trato de **tú**, precios se
 cargan después (la página Precios queda oculta hasta tener ítems).
 

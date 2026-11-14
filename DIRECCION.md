@@ -126,3 +126,22 @@ HTML/CSS/JS estático en `sitio/` + worker en `src/`. Abrir `sitio/index.html` o
 ## Agent Prompt
 
 Lee este fichero, `DISENO.md` y `AGENTS.md` antes de tocar frontend. Respeta los tokens mientras no haya encargo de rediseño; si lo hay, actualiza este documento primero y pasa `npx -y -p @google/design.md designmd lint DIRECCION.md` con 0 errores y 0 warnings. Verifica 390 px, contraste y `prefers-reduced-motion`.
+
+## Piso comprobado (opcional)
+
+Reglas de `C:/Users/lenov/.agents/studio/canonical/frontend-references/corpus/piso.md`. Marca solo lo comprobado; anota cómo. Sin comprobar a la fecha 2026-11-13.
+
+- [ ] 1 Movimiento reducido con estado final, también en JS
+- [ ] 2 Nada nace invisible esperando a un script
+- [ ] 3-4 Contraste por par real, grises secundarios incluidos, en ambos temas
+- [ ] 5 Foco visible a 3:1
+- [ ] 6 Salto, `<main>`, un `<h1>`, controles nativos, ids únicos
+- [ ] 7 Formularios: label, validación al salir, `aria-disabled`
+- [ ] 8-9 Imágenes con caja, `srcset` y `alt`; vídeo con `poster` y `preload`
+- [ ] 10-12 Bucles con un reloj; pausa > 5 s; sin `transition: all`
+- [ ] 13-14 Zoom 200 %, reflujo 320 px, objetivo 24 px
+- [ ] 15-16 Cifras con fuente; `integrity`, `noopener`, `try/catch`, respaldo de `backdrop-filter`
+
+## Límites declarados (opcional)
+
+Aquí va lo no medido o no comprobado, dicho como tal: motion no visto en ejecución, tema secundario sin abrir, anchos sin probar, recetas del corpus usadas sin compilar.
