@@ -90,6 +90,8 @@ export class Admin {
       rate.count++;
       await this.ctx.storage.put(key, rate);
       await this.ctx.storage.setAlarm(now + 3600000);
+      // The queued notice leaves right away; the 15-minute cron only catches failures.
+      this.ctx.waitUntil(this.procesarAvisos());
       return json({ dia: record.dia }, 201);
     }
     return json({ error: 'Ruta no encontrada.' }, 404);
