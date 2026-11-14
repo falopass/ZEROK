@@ -13,7 +13,7 @@ const hace = iso => {
 };
 
 export function agendaPanel(root, api, status, activo, avisar = () => {}, autorizado = () => true) {
-  let data, vista = 'pendientes', cargando = false, configDirty = false;
+  let data, vista = 'pendientes', cargando = false, configDirty = false, busqueda = '';
   const filtros = {
     pendientes: ['Por confirmar', v => v.estado === 'solicitada'],
     hoy: ['Hoy', v => ['solicitada', 'confirmada'].includes(v.estado) && v.dia === data.hoy],
@@ -29,7 +29,7 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
     const mapa = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${v.direccion}, ${v.sector}, Chile`)}`;
     const wsp = /^\+56\d{9}$/.test(v.telefono) ? v.telefono.slice(1) : '';
     const saludo = `Hola ${v.nombre}, te escribo de ZÉROK por tu solicitud de visita del ${fecha(v.dia)} para tu ${v.equipo.toLowerCase()}.`;
-    return `<details class="editor-group visita" data-visita="${esc(v.id)}"><summary><span><b>${esc(v.nombre)}</b><span class="visita-sub">${esc(v.equipo)} · ${fecha(v.dia)}${v.hora ? ` a las ${esc(v.hora)}` : ''} · ${hace(v.creada)}${pasada ? ' · <b class="visita-pasada">el día pedido ya pasó</b>' : ''}</span></span><span class="visita-estado estado-${esc(v.estado)}">${estados[v.estado]}</span></summary><dl class="visita-datos"><dt>Problema</dt><dd>${esc(v.problema)}</dd><dt>Dirección</dt><dd>${esc(v.direccion)}, ${esc(v.sector)}${v.referencia ? `<br>${esc(v.referencia)}` : ''}</dd><dt>Teléfono</dt><dd><a href="tel:${esc(v.telefono)}">${esc(telefonoVisible(v.telefono))}</a></dd>${v.realizada ? `<dt>Realizada</dt><dd>${fecha(v.realizada)}</dd><dt>Seguimiento</dt><dd>${fecha(v.seguimiento)}${v.seguimiento <= data.hoy && v.estado === 'realizada' ? ' (toca llamar)' : ''}</dd>` : ''}${v.nota ? `<dt>Trabajo realizado</dt><dd>${esc(v.nota)}</dd>` : ''}${v.resultado ? `<dt>Resultado del llamado</dt><dd>${esc(v.resultado)}</dd>` : ''}</dl><div class="visita-acciones"><a class="editor-action${v.estado === 'solicitada' ? ' primaria' : ''}" href="tel:${esc(v.telefono)}">Llamar</a>${wsp ? `<a class="editor-action" href="https://wa.me/${wsp}?text=${encodeURIComponent(saludo)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}<a class="editor-action" href="${esc(mapa)}" target="_blank" rel="noopener noreferrer">Ver mapa</a><button class="editor-action" type="button" data-copiar="${esc(`${v.direccion}, ${v.sector}`)}">Copiar dirección</button></div>${abierta ? `<fieldset class="visita-coordinar"><legend>Después de hablar con el cliente</legend><div class="field-grid">${campo('dia', 'Día acordado', v.dia, 'date', `required min="${data.hoy}"`)}${campo('hora', 'Hora acordada (opcional)', v.hora, 'time')}</div>${accion('confirmar', v.estado === 'confirmada' ? 'Guardar coordinación' : 'Confirmar visita')}</fieldset><label class="admin-field">Trabajo realizado (opcional)<textarea name="nota" rows="3" maxlength="500"></textarea></label><div class="visita-decision">${accion('realizada', 'Marcar realizada')}${accion('ausente', 'No estaba')}${accion('cancelar', 'Cancelar visita')}</div>` : ''}${v.estado === 'realizada' ? `<label class="admin-field">¿Cómo quedó el equipo?<textarea name="resultado" rows="3" maxlength="500"></textarea></label>${accion('cerrar', 'Llamado realizado y cerrar')}` : ''}<div class="visita-borrar">${accion('eliminar', 'Borrar datos de esta visita', 'danger')}</div></details>`;
+    return `<details class="editor-group visita" data-visita="${esc(v.id)}"><summary><span><b>${esc(v.nombre)}</b><span class="visita-sub">${esc(v.equipo)} · ${fecha(v.dia)}${v.hora ? ` a las ${esc(v.hora)}` : ''} · ${hace(v.creada)}${pasada ? ' · <b class="visita-pasada">el día pedido ya pasó</b>' : ''}</span></span><span class="visita-estado estado-${esc(v.estado)}">${estados[v.estado]}</span></summary><dl class="visita-datos"><dt>Problema</dt><dd>${esc(v.problema)}</dd><dt>Dirección</dt><dd>${esc(v.direccion)}, ${esc(v.sector)}${v.referencia ? `<br>${esc(v.referencia)}` : ''}</dd><dt>Teléfono</dt><dd><a href="tel:${esc(v.telefono)}">${esc(telefonoVisible(v.telefono))}</a></dd>${v.correoAviso ? `<dt>Aviso por correo</dt><dd>${v.correoAviso.enviada ? `enviado ${hace(v.correoAviso.enviada)}` : v.correoAviso.intentos ? 'reintentando tras un fallo' : 'pendiente de envío'}</dd>` : ''}${v.realizada ? `<dt>Realizada</dt><dd>${fecha(v.realizada)}</dd><dt>Seguimiento</dt><dd>${fecha(v.seguimiento)}${v.seguimiento <= data.hoy && v.estado === 'realizada' ? ' (toca llamar)' : ''}</dd>` : ''}${v.nota ? `<dt>Trabajo realizado</dt><dd>${esc(v.nota)}</dd>` : ''}${v.resultado ? `<dt>Resultado del llamado</dt><dd>${esc(v.resultado)}</dd>` : ''}</dl><div class="visita-acciones"><a class="editor-action${v.estado === 'solicitada' ? ' primaria' : ''}" href="tel:${esc(v.telefono)}">Llamar</a>${wsp ? `<a class="editor-action" href="https://wa.me/${wsp}?text=${encodeURIComponent(saludo)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}<a class="editor-action" href="${esc(mapa)}" target="_blank" rel="noopener noreferrer">Ver mapa</a><button class="editor-action" type="button" data-copiar="${esc(`${v.direccion}, ${v.sector}`)}">Copiar dirección</button>${v.estado === 'solicitada' && data.correo ? accion('reenviar', 'Reenviar correo') : ''}</div>${abierta ? `<fieldset class="visita-coordinar"><legend>Después de hablar con el cliente</legend><div class="field-grid">${campo('dia', 'Día acordado', v.dia, 'date', `required min="${data.hoy}"`)}${campo('hora', 'Hora acordada (opcional)', v.hora, 'time')}</div>${accion('confirmar', v.estado === 'confirmada' ? 'Guardar coordinación' : 'Confirmar visita')}</fieldset><label class="admin-field">Trabajo realizado (opcional)<textarea name="nota" rows="3" maxlength="500"></textarea></label><div class="visita-decision">${accion('realizada', 'Marcar realizada')}${accion('ausente', 'No estaba')}${accion('cancelar', 'Cancelar visita')}</div>` : ''}${v.estado === 'realizada' ? `<label class="admin-field">¿Cómo quedó el equipo?<textarea name="resultado" rows="3" maxlength="500"></textarea></label>${accion('cerrar', 'Llamado realizado y cerrar')}` : ''}<div class="visita-borrar">${accion('eliminar', 'Borrar datos de esta visita', 'danger')}</div></details>`;
   }
   function render() {
     if (!activo() || !data) return;
@@ -55,13 +55,15 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
       if (el.closest('.agenda-config')) return `.agenda-config ${clave}`;
       return clave;
     })();
-    const visitas = data.visitas.filter(filtros[vista][1]);
+    const texto = busqueda.trim().toLowerCase();
+    const coincide = v => !texto || [v.nombre, v.telefono, v.direccion, v.sector, v.equipo, v.problema].join(' ').toLowerCase().includes(texto);
+    const visitas = data.visitas.filter(filtros[vista][1]).filter(coincide);
     const pendientes = data.avisos?.pendientes || 0;
     const reintentos = data.avisos?.reintentos || 0;
     const avisos = data.correo
       ? `Avisos por correo activos${pendientes ? ` · ${pendientes} pendiente${pendientes === 1 ? '' : 's'} de envío` : ''}${reintentos ? ` · ${reintentos} reintentando tras un fallo` : ''}.`
       : 'Correo desactivado hasta conectar zerok.cl: revisa esta pantalla.';
-    root.innerHTML = `<p class="agenda-aviso">${avisos} ${data.config.activa ? 'Solicitudes en línea activas.' : 'Solicitudes en línea desactivadas.'}</p><div class="agenda-toolbar"><div class="agenda-filtros" role="group" aria-label="Filtrar visitas">${Object.entries(filtros).map(([key, [label, filter]]) => `<button type="button" class="editor-action" data-vista="${key}" aria-pressed="${vista === key}">${label} (${data.visitas.filter(filter).length})</button>`).join('')}</div><button type="button" class="editor-action" data-agenda-refresh>Actualizar</button></div>${visitas.length ? visitas.map(tarjeta).join('') : '<div class="empty-editor"><h2>Sin visitas en esta vista.</h2><p>Las solicitudes y los seguimientos aparecerán aquí.</p></div>'}<details class="editor-group agenda-config"><summary>Disponibilidad y avisos</summary><p>El cliente pide un día, no una hora ni un cupo confirmado. ZÉROK coordina la hora por teléfono.</p><label class="admin-field check"><input type="checkbox" name="activa" ${data.config.activa ? 'checked' : ''}>Activar solicitudes en línea</label><label class="admin-field">Días bloqueados<textarea name="bloqueados" rows="4" aria-describedby="bloqueados-ayuda">${esc(data.config.bloqueados.join('\n'))}</textarea><span id="bloqueados-ayuda" class="help">Una fecha por línea, con formato AAAA-MM-DD. No cancela visitas ya confirmadas.</span></label>${campo('seguimiento', 'Días después de la visita para llamar', data.config.seguimiento, 'number', 'min="1" max="90" required')}<p class="help">Por defecto son 14 días. Cambiarlo solo afecta las próximas visitas que marques realizadas.</p><button type="button" class="editor-action" data-agenda-config>Guardar disponibilidad</button></details>`;
+    root.innerHTML = `<p class="agenda-aviso">${avisos} ${data.config.activa ? 'Solicitudes en línea activas.' : 'Solicitudes en línea desactivadas.'}</p><div class="agenda-toolbar"><div class="agenda-filtros" role="group" aria-label="Filtrar visitas">${Object.entries(filtros).map(([key, [label, filter]]) => `<button type="button" class="editor-action" data-vista="${key}" aria-pressed="${vista === key}">${label} (${data.visitas.filter(filter).length})</button>`).join('')}</div><input class="agenda-busqueda" type="search" name="busqueda" placeholder="Buscar por nombre, teléfono o dirección" value="${esc(busqueda)}" aria-label="Buscar visita"><button type="button" class="editor-action" data-agenda-refresh>Actualizar</button><button type="button" class="editor-action" data-agenda-csv>Descargar CSV</button></div>${visitas.length ? visitas.map(tarjeta).join('') : '<div class="empty-editor"><h2>Sin visitas en esta vista.</h2><p>Las solicitudes y los seguimientos aparecerán aquí.</p></div>'}<details class="editor-group agenda-config"><summary>Disponibilidad y avisos</summary><p>El cliente pide un día, no una hora ni un cupo confirmado. ZÉROK coordina la hora por teléfono.</p><label class="admin-field check"><input type="checkbox" name="activa" ${data.config.activa ? 'checked' : ''}>Activar solicitudes en línea</label><label class="admin-field">Días bloqueados<textarea name="bloqueados" rows="4" aria-describedby="bloqueados-ayuda">${esc(data.config.bloqueados.join('\n'))}</textarea><span id="bloqueados-ayuda" class="help">Una fecha por línea, con formato AAAA-MM-DD. No cancela visitas ya confirmadas.</span></label>${campo('seguimiento', 'Días después de la visita para llamar', data.config.seguimiento, 'number', 'min="1" max="90" required')}<p class="help">Por defecto son 14 días. Cambiarlo solo afecta las próximas visitas que marques realizadas.</p><button type="button" class="editor-action" data-agenda-config>Guardar disponibilidad</button></details>`;
     for (const id of abiertas) root.querySelector(`[data-visita="${CSS.escape(id)}"]`)?.setAttribute('open', '');
     if (configAbierta) root.querySelector('.agenda-config')?.setAttribute('open', '');
     if (foco) (root.querySelector(foco) || root.querySelector('[data-agenda-refresh]'))?.focus();
@@ -95,6 +97,21 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
   root.addEventListener('input', event => {
     const card = event.target.closest('[data-visita]');
     if (card) card.dataset.dirty = '1';
+    else if (event.target.name === 'busqueda') {
+      busqueda = event.target.value;
+      const texto = busqueda.trim().toLowerCase();
+      let visibles = 0;
+      root.querySelectorAll('[data-visita]').forEach(card => {
+        const v = data.visitas.find(x => x.id === card.dataset.visita);
+        const ok = v && (!texto || [v.nombre, v.telefono, v.direccion, v.sector, v.equipo, v.problema].join(' ').toLowerCase().includes(texto));
+        card.hidden = !ok;
+        if (ok) visibles++;
+      });
+      let nota = root.querySelector('.busqueda-vacia');
+      if (!visibles && root.querySelector('[data-visita]')) {
+        if (!nota) { nota = document.createElement('p'); nota.className = 'help busqueda-vacia'; nota.textContent = 'Sin visitas que coincidan con la búsqueda.'; root.querySelector('.agenda-toolbar').after(nota); }
+      } else nota?.remove();
+    }
     else if (event.target.closest('.agenda-config')) configDirty = true;
   });
   root.addEventListener('click', async event => {
@@ -108,6 +125,16 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
     if (button.hasAttribute('data-agenda-refresh')) {
       if (dirty() && !confirm('Tienes cambios sin guardar en la agenda. ¿Actualizar y descartarlos?')) return;
       discard(); await load(); return;
+    }
+    if (button.hasAttribute('data-agenda-csv')) {
+      const celda = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      const columnas = ['nombre', 'telefono', 'dia', 'hora', 'estado', 'equipo', 'problema', 'direccion', 'sector', 'referencia', 'nota', 'resultado', 'creada'];
+      const csv = [columnas.join(','), ...data.visitas.map(v => columnas.map(c => celda(c === 'estado' ? estados[v.estado] || v.estado : v[c])).join(','))].join('\n');
+      const enlace = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+      const a = document.createElement('a');
+      a.href = enlace; a.download = `zerok-agenda-${data.hoy}.csv`; a.click();
+      setTimeout(() => URL.revokeObjectURL(enlace), 1000);
+      return;
     }
     if (button.hasAttribute('data-copiar')) {
       const texto = button.dataset.copiar;

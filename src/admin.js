@@ -63,7 +63,10 @@ export class Admin {
     // Aggregate queue counts only; the panel never reads message bodies here.
     const pendientes = this.sql("SELECT COUNT(*) AS n FROM avisos WHERE enviada = ''")[0].n;
     const reintentos = this.sql("SELECT COUNT(*) AS n FROM avisos WHERE enviada = '' AND intentos > 0")[0].n;
-    return { visitas: this.sql('SELECT * FROM visitas ORDER BY dia, creada'), hoy: hoy(), config: await this.config(), correo: correoActivo(this.env), avisos: { pendientes, reintentos } };
+    const correoPorVisita = {};
+    for (const a of this.sql("SELECT visita, enviada, intentos FROM avisos WHERE tipo = 'reserva'")) correoPorVisita[a.visita] = { enviada: a.enviada, intentos: a.intentos };
+    const visitas = this.sql('SELECT * FROM visitas ORDER BY dia, creada').map(v => ({ ...v, correoAviso: correoPorVisita[v.id] || null }));
+    return { visitas, hoy: hoy(), config: await this.config(), correo: correoActivo(this.env), avisos: { pendientes, reintentos } };
   }
 
   // Routes under /interno/ are only reachable from the Worker, which forwards nothing but /admin/api/ from outside.
@@ -155,6 +158,14 @@ export class Admin {
     }
     if (input.nota !== undefined && (typeof input.nota !== 'string' || input.nota.length > 500)) return [400, 'La nota admite hasta 500 caracteres.'];
     if (input.resultado !== undefined && (typeof input.resultado !== 'string' || input.resultado.length > 500)) return [400, 'El resultado admite hasta 500 caracteres.'];
+    if (input.accion === 'reenviar' && v.estado === 'solicitada') {
+      this.ctx.storage.transactionSync(() => {
+        this.sql("DELETE FROM avisos WHERE visita = ? AND tipo = 'reserva'", v.id);
+        this.encolar(v.id, 'reserva', v.dia);
+      });
+      this.ctx.waitUntil(this.procesarAvisos());
+      return;
+    }
     if (input.accion === 'realizada' && abierta) { const dia = hoy(); set({ estado: 'realizada', nota: limpiar(input.nota, 500), realizada: dia, seguimiento: sumar(dia, config.seguimiento) }); return; }
     if (['ausente', 'cancelar'].includes(input.accion) && abierta) { set({ estado: input.accion === 'ausente' ? 'ausente' : 'cancelada' }); return; }
     if (input.accion === 'cerrar' && v.estado === 'realizada') { set({ estado: 'cerrada', resultado: limpiar(input.resultado, 500) }); return; }

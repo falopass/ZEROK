@@ -88,7 +88,9 @@
 .visita-pasada{color:var(--error)}
 .agenda-aviso{font-size:.8125rem;margin:0}
 .agenda-toolbar,.agenda-filtros{display:flex;gap:8px}
-.agenda-toolbar{align-items:center;margin-bottom:16px}
+.agenda-toolbar{align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.agenda-busqueda{flex:1 1 140px;min-width:120px}
+.agenda-toolbar>[data-agenda-csv]{flex-shrink:0}
 .agenda-filtros{flex:1;min-width:0;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
 .agenda-filtros::-webkit-scrollbar{display:none}
 .agenda-filtros .editor-action,.agenda-toolbar>[data-agenda-refresh]{flex-shrink:0}
