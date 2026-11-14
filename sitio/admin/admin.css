@@ -133,7 +133,24 @@
 .admin-sidebar nav [data-section=agenda][aria-current]{background:var(--superficie-2)}
 .visita-acciones .primaria{flex-basis:100%}
 }
-.agenda-resumen{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-bottom:12px}
-.resumen-card{display:grid;gap:2px;border:1px solid var(--linea);border-radius:6px;background:var(--superficie);padding:12px}
-.resumen-num{font-size:1.5rem;font-weight:600}
-.resumen-label,.resumen-mes{font-size:.75rem;color:var(--texto-2)}
+.agenda-calendario{border:1px solid var(--linea);border-radius:6px;background:var(--superficie);padding:12px;margin-bottom:16px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.cal-head .editor-action{min-width:44px;min-height:44px;font-size:1.125rem}
+.cal-mes{text-transform:capitalize}
+.cal-semana,.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-semana{font-size:.6875rem;color:var(--texto-2);text-align:center;margin-bottom:4px}
+.cal-dia{min-height:44px;border-radius:6px;border:1px solid transparent;display:grid;place-items:center;font-size:.875rem;padding:2px;background:transparent}
+.cal-dia:hover{background:var(--superficie-2)}
+.cal-dia.pasado{color:var(--texto-2);opacity:.5}
+.cal-dia.hoy{border-color:var(--texto)}
+.cal-dia.bloqueado{text-decoration:line-through}
+.cal-dia.sel{background:var(--acento);color:var(--sobre-acento)}
+.cal-puntos{display:flex;gap:2px;justify-content:center}
+.cal-puntos i{font-style:normal;font-size:.625rem;min-width:14px;height:14px;line-height:14px;border-radius:99px;text-align:center}
+.punto-solicitada{background:var(--acento);color:var(--sobre-acento)}
+.cal-dia.sel .punto-solicitada{background:var(--sobre-acento);color:var(--acento)}
+.punto-confirmada{background:#0c426c;color:#eef3f5}
+.punto-realizada{border:1px solid var(--texto-2);color:var(--texto)}
+.cal-dia.sel .punto-realizada{border-color:var(--sobre-acento);color:var(--sobre-acento)}
+.punto-otras{background:var(--superficie-2);color:var(--texto-2)}
+.cal-limpiar{border:0;background:none;text-decoration:underline;color:var(--acento);font-size:inherit;padding:0;min-height:44px}

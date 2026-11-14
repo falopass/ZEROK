@@ -51,7 +51,6 @@ export class Admin {
     ctx.storage.sql.exec(`CREATE TABLE IF NOT EXISTS visitas (${COLUMNAS.map(c => `${c} TEXT NOT NULL${c === 'id' ? ' PRIMARY KEY' : " DEFAULT ''"}`).join(', ')})`);
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS avisos (id TEXT PRIMARY KEY, visita TEXT NOT NULL, tipo TEXT NOT NULL, dia TEXT NOT NULL, intentos INTEGER NOT NULL DEFAULT 0, proximo INTEGER NOT NULL DEFAULT 0, enviada TEXT NOT NULL DEFAULT '')");
     ctx.storage.sql.exec('CREATE INDEX IF NOT EXISTS avisos_pendientes ON avisos (enviada, proximo)');
-    ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS metricas (dia TEXT NOT NULL, tipo TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (dia, tipo))');
   }
 
   sql(query, ...values) { return this.ctx.storage.sql.exec(query, ...values).toArray(); }
@@ -67,27 +66,12 @@ export class Admin {
     const correoPorVisita = {};
     for (const a of this.sql("SELECT visita, enviada, intentos FROM avisos WHERE tipo = 'reserva'")) correoPorVisita[a.visita] = { enviada: a.enviada, intentos: a.intentos };
     const visitas = this.sql('SELECT * FROM visitas ORDER BY dia, creada').map(v => ({ ...v, correoAviso: correoPorVisita[v.id] || null }));
-    const limite = new Date(Date.now() - 30 * 86400000).toLocaleDateString('sv-SE', { timeZone: 'America/Santiago' });
-    const metricas = { hoy: {}, mes: {} };
-    for (const m of this.sql('SELECT dia, tipo, n FROM metricas WHERE dia >= ?', limite)) {
-      metricas.mes[m.tipo] = (metricas.mes[m.tipo] || 0) + m.n;
-      if (m.dia === hoy()) metricas.hoy[m.tipo] = m.n;
-    }
-    return { visitas, hoy: hoy(), config: await this.config(), correo: correoActivo(this.env), avisos: { pendientes, reintentos }, metricas };
+    return { visitas, hoy: hoy(), config: await this.config(), correo: correoActivo(this.env), avisos: { pendientes, reintentos } };
   }
 
   // Routes under /interno/ are only reachable from the Worker, which forwards nothing but /admin/api/ from outside.
   async interno(path, request) {
     const config = await this.config();
-    if (path === '/interno/evento' && request.method === 'POST') {
-      const TIPOS = { pagina: 1, llamar: 1, whatsapp: 1, agendar: 1 };
-      try {
-        const { tipo } = await body(request, 200);
-        if (!TIPOS[tipo]) throw new Error('tipo');
-        this.sql('INSERT INTO metricas (dia, tipo, n) VALUES (?, ?, 1) ON CONFLICT (dia, tipo) DO UPDATE SET n = n + 1', hoy(), tipo);
-      } catch { return json({ error: 'Evento no válido.' }, 400); }
-      return new Response(null, { status: 204 });
-    }
     if (path === '/interno/dias' && request.method === 'GET') return json({ dias: config.activa ? disponibles(config.bloqueados) : [] });
     if (path === '/interno/reserva' && request.method === 'POST') {
       if (!config.activa) return json({ error: 'La agenda en línea no está disponible. Llámanos para agendar tu visita.' }, 403);
@@ -125,7 +109,6 @@ export class Admin {
     const horaChile = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Santiago', hour: '2-digit', hourCycle: 'h23' }).format(new Date()));
     this.ctx.storage.transactionSync(() => {
       this.sql('DELETE FROM visitas WHERE actualizada < ?', new Date(Date.now() - 365 * 86400000).toISOString());
-      this.sql('DELETE FROM metricas WHERE dia < ?', new Date(Date.now() - 400 * 86400000).toLocaleDateString('sv-SE', { timeZone: 'America/Santiago' }));
       this.sql("DELETE FROM avisos WHERE NOT EXISTS (SELECT 1 FROM visitas WHERE visitas.id = avisos.visita) OR (tipo = 'reserva' AND enviada = '' AND EXISTS (SELECT 1 FROM visitas WHERE visitas.id = avisos.visita AND visitas.estado != 'solicitada')) OR (tipo = 'seguimiento' AND EXISTS (SELECT 1 FROM visitas WHERE visitas.id = avisos.visita AND visitas.estado != 'realizada'))");
       if (horaChile >= 9) {
         const pendientes = this.sql("SELECT id FROM visitas WHERE estado = 'realizada' AND seguimiento != '' AND seguimiento <= ?", hoyChile);

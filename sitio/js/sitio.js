@@ -324,17 +324,3 @@ if (agenda) {
   }
   resumen();
 }
-
-// Contadores anónimos para el panel: visitas y toques en contacto, sin identificar a nadie.
-const evento = tipo => {
-  try { navigator.sendBeacon('/api/evento', new Blob([JSON.stringify({ tipo })], { type: 'application/json' })); } catch { /* sin contadores */ }
-};
-evento('pagina');
-document.addEventListener('click', event => {
-  const enlace = event.target.closest('a[href]');
-  if (!enlace) return;
-  const href = enlace.getAttribute('href') || '';
-  if (href.startsWith('tel:')) evento('llamar');
-  else if (href.includes('wa.me')) evento('whatsapp');
-  else if (href.includes('/agendar/')) evento('agendar');
-});
