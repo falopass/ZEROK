@@ -16,15 +16,126 @@ export const sintomas = {
 };
 
 // Visits are scheduled by Chilean calendar day; the Worker clock runs in UTC.
-export const hoy = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Santiago', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+export function ahoraChile(fechaRef = new Date()) {
+  const partes = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Santiago', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+  }).formatToParts(fechaRef).map(p => [p.type, p.value]));
+  return { dia: `${partes.year}-${partes.month}-${partes.day}`, minutos: Number(partes.hour) * 60 + Number(partes.minute) };
+}
+export const hoy = () => ahoraChile().dia;
 export const sumar = (dia, n) => new Date(Date.parse(`${dia}T12:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
 export const esFecha = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v)) && new Date(v).toISOString().slice(0, 10) === v;
 export const etiqueta = (dia, opciones = { weekday: 'long', day: 'numeric', month: 'long' }) => new Intl.DateTimeFormat('es-CL', { ...opciones, timeZone: 'UTC' }).format(new Date(`${dia}T12:00:00Z`)).replace(/\./g, '');
 
-// Monday to Saturday for the next two weeks, from tomorrow on: urgent visits are handled by phone.
-export function disponibles(bloqueados = []) {
-  const inicio = hoy();
-  return Array.from({ length: 14 }, (_, i) => sumar(inicio, i + 1)).filter(d => new Date(`${d}T12:00:00Z`).getUTCDay() !== 0 && !bloqueados.includes(d));
+export const parseHora = v => {
+  if (typeof v !== 'string' || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(v)) return null;
+  const [h, m] = v.split(':').map(Number);
+  return h * 60 + m;
+};
+export const formatHora = mins => `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
+export const rangoHora = hora => {
+  const m = parseHora(hora);
+  if (m === null || m + 60 > 1440) return '';
+  return `${formatHora(m)} a ${formatHora(m + 60)}`;
+};
+
+// Generates consecutive 1-hour slots for a date according to confirmed opening/closing hours.
+// On today's date (when enabled), enforces a lead time margin so urgent same-day bookings stay realistic.
+export function bloquesDia(dia, general = {}, opciones = {}) {
+  if (!esFecha(dia)) return [];
+  const dow = new Date(`${dia}T12:00:00Z`).getUTCDay();
+  if (dow === 0) return [];
+  const confirmado = general?.horarioConfirmado && parseHora(general.abre) !== null && parseHora(general.cierra) !== null;
+  const inicio = confirmado ? parseHora(general.abre) : 9 * 60;
+  const cierreStr = confirmado ? (dow === 6 ? (general.cierraSabado || general.cierra) : general.cierra) : (dow === 6 ? '14:00' : '18:00');
+  const fin = parseHora(cierreStr) ?? (dow === 6 ? 14 * 60 : 18 * 60);
+  const { mismoDia = false, margenHoy = 120, ahora = null } = opciones;
+  const minInicio = mismoDia && ahora && dia === ahora.dia ? ahora.minutos + margenHoy : -1;
+  const bloques = [];
+  for (let m = inicio; m + 60 <= fin; m += 60) {
+    if (m < minInicio) continue;
+    const hora = formatHora(m);
+    const hasta = formatHora(m + 60);
+    bloques.push({ hora, fin: hasta, label: `${hora} a ${hasta}` });
+  }
+  return bloques;
+}
+
+// Monday to Saturday for the next two weeks (optionally including today if slots with margin remain).
+export function disponibles(bloqueados = [], opciones = {}) {
+  const { mismoDia = false, general = {}, margenHoy = 120, ahora = ahoraChile() } = opciones;
+  const inicio = ahora.dia;
+  const total = mismoDia ? 15 : 14;
+  const offset = mismoDia ? 0 : 1;
+  return Array.from({ length: total }, (_, i) => sumar(inicio, i + offset)).filter(d => {
+    if (new Date(`${d}T12:00:00Z`).getUTCDay() === 0 || bloqueados.includes(d)) return false;
+    if (d === inicio) return bloquesDia(d, general, { mismoDia: true, margenHoy, ahora }).length > 0;
+    return true;
+  });
+}
+
+export function horasOcupadas(dia, horasActivas = [], general = {}, opciones = {}) {
+  const bloques = bloquesDia(dia, general, opciones);
+  const tomadas = new Set();
+  for (const h of horasActivas) {
+    const m = parseHora(h);
+    if (m === null) continue;
+    for (const b of bloques) {
+      const s = parseHora(b.hora);
+      if (m < s + 60 && s < m + 60) tomadas.add(b.hora);
+    }
+  }
+  return [...tomadas];
+}
+
+export function construirOferta(dias = [], ocupadas = {}, general = {}, opciones = {}) {
+  const horarios = {};
+  const libres = [];
+  for (const d of dias) {
+    const tomadas = new Set(ocupadas[d] || []);
+    const lista = bloquesDia(d, general, opciones).map(b => ({ ...b, ocupada: tomadas.has(b.hora) }));
+    horarios[d] = lista;
+    if (lista.some(b => !b.ocupada)) libres.push(d);
+  }
+  return { dias, libres, horarios };
+}
+
+export function utcDeChile(dia, hora) {
+  const [y, m, d] = dia.split('-').map(Number);
+  const [hh, mm] = hora.split(':').map(Number);
+  const target = Date.UTC(y, m - 1, d, hh, mm, 0);
+  const guess = target + 3 * 3600000;
+  const partes = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Santiago', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+  }).formatToParts(new Date(guess)).map(p => [p.type, p.value]));
+  const diff = target - Date.UTC(Number(partes.year), Number(partes.month) - 1, Number(partes.day), Number(partes.hour), Number(partes.minute), 0);
+  return new Date(guess + diff);
+}
+
+const icsStamp = date => date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+const icsText = v => String(v || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+export function generarIcs({ dia, hora, titulo, descripcion = '', ubicacion = '', uid = '' }) {
+  if (!esFecha(dia) || !rangoHora(hora)) return '';
+  const inicio = utcDeChile(dia, hora);
+  const fin = new Date(inicio.getTime() + 60 * 60000);
+  const lineas = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//ZEROK//Agenda//ES',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${icsText(uid || `${dia}-${hora}@zerok.cl`)}`,
+    `DTSTAMP:${icsStamp(new Date())}`,
+    `DTSTART:${icsStamp(inicio)}`,
+    `DTEND:${icsStamp(fin)}`,
+    `SUMMARY:${icsText(titulo)}`,
+    ...(descripcion ? [`DESCRIPTION:${icsText(descripcion)}`] : []),
+    ...(ubicacion ? [`LOCATION:${icsText(ubicacion)}`] : []),
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ];
+  return `${lineas.join('\r\n')}\r\n`;
 }
 
 export const limpiar = (v, max) => typeof v === 'string' ? v.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim().slice(0, max) : '';
@@ -37,17 +148,27 @@ export function telefono(v) {
 }
 export const telefonoVisible = t => /^\+569\d{8}$/.test(t) ? `+56 9 ${t.slice(4, 8)} ${t.slice(8)}` : t;
 
-export function validarReserva(input, dias, opciones = equipos) {
-  const limites = { equipo: 60, problema: 600, dia: 10, direccion: 150, sector: 80, referencia: 150, nombre: 80, telefono: 30 };
+export function validarReserva(input, oferta, opciones = equipos) {
+  const limites = { equipo: 60, problema: 600, dia: 10, hora: 5, direccion: 150, sector: 80, referencia: 150, nombre: 80, telefono: 30 };
   if (Object.entries(limites).some(([k, max]) => input[k] !== undefined && (typeof input[k] !== 'string' || input[k].length > max))) return { error: 'Revisa los datos: hay un campo demasiado largo o con formato incorrecto.', errores: [] };
   const linea = (k, max) => limpiar(input[k], max).replace(/\s+/g, ' ');
-  const visita = { equipo: linea('equipo', 60), problema: limpiar(input.problema, 600), dia: linea('dia', 10), direccion: linea('direccion', 150), sector: linea('sector', 80), referencia: linea('referencia', 150), nombre: linea('nombre', 80), telefono: telefono(input.telefono) };
+  const visita = { equipo: linea('equipo', 60), problema: limpiar(input.problema, 600), dia: linea('dia', 10), hora: linea('hora', 5), direccion: linea('direccion', 150), sector: linea('sector', 80), referencia: linea('referencia', 150), nombre: linea('nombre', 80), telefono: telefono(input.telefono) };
   // Every missing or invalid field gets its own message, linked back to the input.
   const errores = [];
   if (!opciones.includes(visita.equipo)) errores.push({ campo: 'equipo', mensaje: 'Elige el equipo que necesitas revisar.' });
   if (!visita.problema) errores.push({ campo: 'problema', mensaje: 'Cuéntanos qué le pasa a tu equipo.' });
   else if (visita.equipo === 'Otro equipo' && visita.problema.length < 12) errores.push({ campo: 'problema', mensaje: 'Cuéntanos qué equipo es y qué le pasa.' });
-  if (!dias.includes(visita.dia)) errores.push({ campo: 'dia', mensaje: 'Elige uno de los días disponibles.' });
+  const dias = oferta?.dias || [];
+  const libres = oferta?.libres || dias;
+  const diaValido = dias.includes(visita.dia);
+  if (!diaValido) errores.push({ campo: 'dia', mensaje: 'Elige uno de los días disponibles.' });
+  else if (!libres.includes(visita.dia)) errores.push({ campo: 'dia', mensaje: 'Ese día ya no tiene horas disponibles. Elige otro día.' });
+  if (!visita.hora) errores.push({ campo: 'hora', mensaje: 'Elige una hora disponible.' });
+  else if (diaValido) {
+    const slot = (oferta.horarios?.[visita.dia] || []).find(s => s.hora === visita.hora);
+    if (!slot) errores.push({ campo: 'hora', mensaje: 'Elige una hora dentro del horario de atención de ese día.' });
+    else if (slot.ocupada) errores.push({ campo: 'hora', mensaje: 'Esa hora ya fue tomada para ese día. Elige otra disponible.' });
+  }
   if (!visita.direccion) errores.push({ campo: 'direccion', mensaje: 'Indica la dirección donde está el equipo.' });
   if (!visita.sector) errores.push({ campo: 'sector', mensaje: 'Indica el sector o comuna donde está el equipo.' });
   if (!visita.nombre) errores.push({ campo: 'nombre', mensaje: 'Escribe tu nombre.' });
@@ -96,19 +217,21 @@ export async function avisoReserva(env, v) {
   const atrasada = esFecha(v.dia) && v.dia < hoy();
   const wsp = /^\+56\d{9}$/.test(v.telefono || '') ? v.telefono.slice(1) : '';
   const recibida = esFecha((v.creada || '').slice(0, 10)) ? v.creada.slice(0, 10) : '';
-  const datos = [[atrasada ? 'Día pedido (ya pasó)' : 'Día preferido', etiqueta(v.dia)], ...(atrasada && recibida ? [['Recibida', etiqueta(recibida)]] : []), ['Nombre', v.nombre], ['Teléfono', telefonoVisible(v.telefono)], ['Dirección', `${v.direccion}, ${v.sector}`], ...(v.referencia ? [['Referencia', v.referencia]] : []), ['Equipo', v.equipo], ['Problema', v.problema]];
+  const bloque = rangoHora(v.hora);
+  const datos = [[atrasada ? 'Día pedido (ya pasó)' : 'Día pedido', etiqueta(v.dia)], ...(bloque ? [['Horario pedido', bloque]] : []), ...(atrasada && recibida ? [['Recibida', etiqueta(recibida)]] : []), ['Nombre', v.nombre], ['Teléfono', telefonoVisible(v.telefono)], ['Dirección', `${v.direccion}, ${v.sector}`], ...(v.referencia ? [['Referencia', v.referencia]] : []), ['Equipo', v.equipo], ['Problema', v.problema]];
   const titulo = atrasada ? 'Solicitud pendiente de visita' : 'Nueva solicitud de visita';
   const text = `${titulo}\n\n${datos.map(([k, x]) => `${k}: ${x}`).join('\n')}\n\nLlamar: tel:${v.telefono}\n${wsp ? `WhatsApp: https://wa.me/${wsp}\n` : ''}Mapa: ${mapa(v)}\nConfirmar en el panel: ${panel(env)}\n`;
   const dia = etiqueta(v.dia);
-  const cuerpo = `<p style="margin:0 0 6px;font:${mono};color:${C.gris}">${atrasada ? 'Día pedido, ya pasó' : 'Día preferido'}</p>`
-    + `<p style="margin:0 0 22px;font:800 26px/1.15 Arial,sans-serif;color:${C.marino}">${esc(dia.charAt(0).toUpperCase() + dia.slice(1))}</p>`
+  const cuerpo = `<p style="margin:0 0 6px;font:${mono};color:${C.gris}">${atrasada ? 'Día pedido, ya pasó' : 'Día y horario pedido'}</p>`
+    + `<p style="margin:0 0 22px;font:800 26px/1.15 Arial,sans-serif;color:${C.marino}">${esc(dia.charAt(0).toUpperCase() + dia.slice(1))}${bloque ? `<br><span style="font-size:20px;color:${C.hielo}">${esc(bloque)}</span>` : ''}</p>`
     + `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.fondo};border-left:5px solid ${C.ambar};margin:0 0 22px"><tr><td style="padding:18px 20px"><p style="margin:0 0 8px;font:${mono};color:${C.gris}">${esc(v.equipo)}</p><p style="margin:0;font:17px/1.5 Arial,sans-serif;color:${C.tinta}">${esc(v.problema).replace(/\n/g, '<br>')}</p></td></tr></table>`
     + filas([...(atrasada && recibida ? [['Recibida', esc(etiqueta(recibida))]] : []), ['Cliente', `<strong>${esc(v.nombre)}</strong>`], ['Teléfono', `<a href="tel:${esc(v.telefono)}" style="color:${C.tinta};font-weight:700">${esc(telefonoVisible(v.telefono))}</a>`], ['Dirección', `<a href="${esc(mapa(v))}" style="color:${C.tinta}">${esc(`${v.direccion}, ${v.sector}`)}</a>`], ...(v.referencia ? [['Referencia', esc(v.referencia)]] : [])])
     + `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:26px 0 4px"><tr>${boton(`tel:${v.telefono}`, 'Llamar', C.ambar, C.tinta)}${wsp ? boton(`https://wa.me/${wsp}`, 'WhatsApp', '#1f7a45') : ''}${boton(mapa(v), 'Ver mapa', C.hielo)}${boton(panel(env), 'Abrir en el panel', C.marino)}</tr></table>`
-    + `<p style="margin:18px 0 0;font:15px/1.5 Arial,sans-serif;color:${C.gris}">Cuando acuerdes la hora con el cliente, <a href="${esc(panel(env))}" style="color:${C.marino};font-weight:700">confírmala en el panel</a>.</p>`;
-  const html = marco(env, { aviso: atrasada ? 'Solicitud pendiente' : 'Nueva solicitud', titulo: `${v.nombre} pide visita: ${v.equipo.toLowerCase()}`, previa: `${dia} · ${v.sector} · ${v.problema.slice(0, 90)}`, cuerpo });
+    + `<p style="margin:18px 0 0;font:15px/1.5 Arial,sans-serif;color:${C.gris}">Cuando confirmes la visita con el cliente, <a href="${esc(panel(env))}" style="color:${C.marino};font-weight:700">márcala en el panel</a>.</p>`;
+  const html = marco(env, { aviso: atrasada ? 'Solicitud pendiente' : 'Nueva solicitud', titulo: `${v.nombre} pide visita: ${v.equipo.toLowerCase()}`, previa: `${dia}${bloque ? ` (${bloque})` : ''} · ${v.sector} · ${v.problema.slice(0, 80)}`, cuerpo });
   const corto = etiqueta(v.dia, { weekday: 'short', day: 'numeric', month: 'short' });
-  await enviar(env, atrasada ? `Solicitud pendiente: ${v.nombre}, ${v.equipo.toLowerCase()}, día pedido ${corto}` : `Nueva visita: ${v.nombre}, ${v.equipo.toLowerCase()}, ${corto}`, text, html);
+  const cortoHora = bloque ? `${corto} (${bloque})` : corto;
+  await enviar(env, atrasada ? `Solicitud pendiente: ${v.nombre}, ${v.equipo.toLowerCase()}, día pedido ${cortoHora}` : `Nueva visita: ${v.nombre}, ${v.equipo.toLowerCase()}, ${cortoHora}`, text, html);
 }
 
 export async function avisoSeguimiento(env, visitas) {

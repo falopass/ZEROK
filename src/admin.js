@@ -1,6 +1,6 @@
 import { defaults, validateContent } from './content.js';
 import { MAX_CONTENT_BYTES } from '../sitio/js/limites.js';
-import { hoy, sumar, esFecha, disponibles, validarReserva, correoActivo, limpiar, avisoReserva, avisoSeguimiento } from './agenda.js';
+import { hoy, ahoraChile, sumar, esFecha, parseHora, disponibles, horasOcupadas, construirOferta, validarReserva, equipos, telefono, correoActivo, limpiar, avisoReserva, avisoSeguimiento } from './agenda.js';
 
 const enc = new TextEncoder();
 const hex = bytes => Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
@@ -55,8 +55,11 @@ export class Admin {
 
   sql(query, ...values) { return this.ctx.storage.sql.exec(query, ...values).toArray(); }
   async config() {
-    const config = { activa: false, bloqueados: [], seguimiento: 14, revision: 'inicial', ...await this.ctx.storage.get('agenda') };
+    const raw = await this.ctx.storage.get('agenda');
+    const config = { activa: false, bloqueados: [], horasBloqueadas: {}, mismoDia: true, seguimiento: 14, revision: 'inicial', ...raw };
     config.activa = config.activa === true && !!await this.ctx.storage.get('credentials');
+    config.horasBloqueadas = config.horasBloqueadas && typeof config.horasBloqueadas === 'object' && !Array.isArray(config.horasBloqueadas) ? config.horasBloqueadas : {};
+    config.mismoDia = config.mismoDia !== false;
     return config;
   }
   async agenda() {
@@ -65,14 +68,37 @@ export class Admin {
     const reintentos = this.sql("SELECT COUNT(*) AS n FROM avisos WHERE enviada = '' AND intentos > 0")[0].n;
     const correoPorVisita = {};
     for (const a of this.sql("SELECT visita, enviada, intentos FROM avisos WHERE tipo = 'reserva'")) correoPorVisita[a.visita] = { enviada: a.enviada, intentos: a.intentos };
-    const visitas = this.sql('SELECT * FROM visitas ORDER BY dia, creada').map(v => ({ ...v, correoAviso: correoPorVisita[v.id] || null }));
-    return { visitas, hoy: hoy(), config: await this.config(), correo: correoActivo(this.env), avisos: { pendientes, reintentos } };
+    const visitas = this.sql("SELECT * FROM visitas ORDER BY dia, CASE WHEN hora = '' THEN '99:99' ELSE hora END, creada").map(v => ({ ...v, correoAviso: correoPorVisita[v.id] || null }));
+    return { visitas, hoy: hoy(), config: await this.config(), general: await this.general(), correo: correoActivo(this.env), avisos: { pendientes, reintentos } };
+  }
+
+  async general() {
+    const stored = await this.ctx.storage.get('content');
+    if (stored?.data?.general) return stored.data.general;
+    const kv = await this.env.CONTENIDO?.get('contenido', 'json');
+    return kv?.data?.general || defaults.general;
   }
 
   // Routes under /interno/ are only reachable from the Worker, which forwards nothing but /admin/api/ from outside.
   async interno(path, request) {
     const config = await this.config();
-    if (path === '/interno/dias' && request.method === 'GET') return json({ dias: config.activa ? disponibles(config.bloqueados) : [] });
+    if (path === '/interno/dias' && request.method === 'GET') {
+      if (!config.activa) return json({ dias: [], ocupadas: {} });
+      const general = await this.general();
+      const ahora = ahoraChile();
+      const opts = { mismoDia: !!config.mismoDia, general, ahora };
+      const dias = disponibles(config.bloqueados, opts);
+      const filas = this.sql("SELECT dia, hora FROM visitas WHERE estado IN ('solicitada', 'confirmada') AND hora != '' AND dia >= ?", ahora.dia);
+      const porDia = {};
+      for (const f of filas) (porDia[f.dia] ||= []).push(f.hora);
+      const ocupadas = {};
+      for (const d of dias) {
+        const activasDia = [...(porDia[d] || []), ...(config.horasBloqueadas[d] || [])];
+        const tomadas = horasOcupadas(d, activasDia, general, opts);
+        if (tomadas.length) ocupadas[d] = tomadas;
+      }
+      return json({ dias, ocupadas, mismoDia: !!config.mismoDia, ahora });
+    }
     if (path === '/interno/reserva' && request.method === 'POST') {
       if (!config.activa) return json({ error: 'La agenda en línea no está disponible. Llámanos para agendar tu visita.' }, 403);
       const input = await body(request, 8000);
@@ -82,20 +108,44 @@ export class Admin {
       if (!rate || rate.expires <= now) rate = { count: 0, expires: now + 3600000 };
       const recientes = this.sql('SELECT COUNT(*) AS n FROM visitas WHERE creada > ?', new Date(now - 86400000).toISOString())[0].n;
       if (rate.count >= 5 || recientes >= 40) return json({ error: 'Recibimos muchas solicitudes seguidas. Llámanos para agendar tu visita.' }, 429);
-      const { error, visita } = validarReserva(input, disponibles(config.bloqueados));
-      if (error) return json({ error }, 400);
+      const general = await this.general();
+      const ahora = ahoraChile();
+      const opts = { mismoDia: !!config.mismoDia, general, ahora };
+      const dias = disponibles(config.bloqueados, opts);
+      const activas = d => [
+        ...this.sql("SELECT hora FROM visitas WHERE dia = ? AND estado IN ('solicitada', 'confirmada') AND hora != ''", d).map(r => r.hora),
+        ...(config.horasBloqueadas[d] || [])
+      ];
+      const ocupadas = {};
+      if (esFecha(input.dia) && dias.includes(input.dia)) {
+        const tomadas = horasOcupadas(input.dia, activas(input.dia), general, opts);
+        if (tomadas.length) ocupadas[input.dia] = tomadas;
+      }
+      const oferta = construirOferta(dias, ocupadas, general, opts);
+      const { error, errores, visita } = validarReserva(input, oferta);
+      if (error) {
+        const yaTomada = errores[0]?.campo === 'hora' && (ocupadas[visita.dia] || []).includes(visita.hora);
+        const diaLleno = errores[0]?.campo === 'dia' && dias.includes(visita.dia) && !oferta.libres.includes(visita.dia);
+        return json({ error, campo: errores[0]?.campo || '' }, yaTomada || diaLleno ? 409 : 400);
+      }
       const creada = new Date(now).toISOString();
       const record = { ...Object.fromEntries(COLUMNAS.map(c => [c, ''])), ...visita, id: crypto.randomUUID(), creada, actualizada: creada, estado: 'solicitada' };
+      let conflicto = false;
       this.ctx.storage.transactionSync(() => {
+        if (horasOcupadas(record.dia, activas(record.dia), general, opts).includes(record.hora)) {
+          conflicto = true;
+          return;
+        }
         this.sql(`INSERT INTO visitas (${COLUMNAS.join(', ')}) VALUES (${COLUMNAS.map(() => '?').join(', ')})`, ...COLUMNAS.map(c => record[c]));
         this.encolar(record.id, 'reserva', record.dia);
       });
+      if (conflicto) return json({ error: 'Esa hora ya fue tomada para ese día. Elige otra disponible.', campo: 'hora' }, 409);
       rate.count++;
       await this.ctx.storage.put(key, rate);
       await this.ctx.storage.setAlarm(now + 3600000);
       // The queued notice leaves right away; the 15-minute cron only catches failures.
       this.ctx.waitUntil(this.procesarAvisos());
-      return json({ dia: record.dia }, 201);
+      return json({ dia: record.dia, hora: record.hora }, 201);
     }
     return json({ error: 'Ruta no encontrada.' }, 404);
   }
@@ -138,6 +188,16 @@ export class Admin {
     return json({ ok: true, correo: true });
   }
 
+  choqueDe(dia, hora, excluirId = '') {
+    const m = parseHora(hora);
+    if (m === null) return null;
+    const otras = this.sql("SELECT id, nombre, hora FROM visitas WHERE dia = ? AND id != ? AND estado IN ('solicitada', 'confirmada') AND hora != ''", dia, excluirId);
+    return otras.find(o => {
+      const s = parseHora(o.hora);
+      return s !== null && m < s + 60 && s < m + 60;
+    }) || null;
+  }
+
   actualizar(input, config) {
     const v = this.sql('SELECT * FROM visitas WHERE id = ?', String(input.id ?? ''))[0];
     if (!v) return [404, 'Esta visita ya no existe. Recarga la agenda.'];
@@ -154,6 +214,10 @@ export class Admin {
     }
     if (input.accion === 'confirmar' && abierta) {
       if (!esFecha(input.dia) || input.dia < hoy() || config.bloqueados.includes(input.dia) || typeof hora !== 'string' || (hora !== '' && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(hora))) return [400, 'Revisa el día y la hora de la visita.'];
+      if (hora && !input.forzar) {
+        const choque = this.choqueDe(input.dia, hora, v.id);
+        if (choque) return [409, `Choque de horario: ya tienes una visita con ${choque.nombre} a las ${choque.hora} ese día.`, { choque: true }];
+      }
       set({ estado: 'confirmada', dia: input.dia, hora }); return;
     }
     if (input.nota !== undefined && (typeof input.nota !== 'string' || input.nota.length > 500)) return [400, 'La nota admite hasta 500 caracteres.'];
@@ -266,22 +330,56 @@ export class Admin {
         return json(record);
       }
     }
-    if (path === '/admin/api/visitas' && ['GET', 'PUT'].includes(method)) {
+    if (path === '/admin/api/visitas' && ['GET', 'POST', 'PUT'].includes(method)) {
+      const config = await this.config();
       if (method === 'PUT') {
-        const failure = this.actualizar(await body(request, 4000), await this.config());
-        if (failure) return json({ error: failure[1] }, failure[0]);
+        const failure = this.actualizar(await body(request, 4000), config);
+        if (failure) return json({ error: failure[1], ...(failure[2] || {}) }, failure[0]);
+      }
+      if (method === 'POST') {
+        const input = await body(request, 4000);
+        const nombre = limpiar(input.nombre, 80).replace(/\s+/g, ' ');
+        const dia = limpiar(input.dia, 10);
+        const hora = limpiar(input.hora ?? '', 5);
+        const equipo = equipos.includes(input.equipo) ? input.equipo : 'Otro equipo';
+        const tel = telefono(input.telefono) || limpiar(input.telefono, 30);
+        const direccion = limpiar(input.direccion, 150);
+        const sector = limpiar(input.sector, 80);
+        const referencia = limpiar(input.referencia, 150);
+        const problema = limpiar(input.problema, 600);
+        if (!nombre || !esFecha(dia) || dia < hoy()) return json({ error: 'Indica al menos el nombre del cliente y un día válido desde hoy.' }, 400);
+        if (hora !== '' && parseHora(hora) === null) return json({ error: 'Revisa la hora de la visita.' }, 400);
+        if (hora && !input.forzar) {
+          const choque = this.choqueDe(dia, hora);
+          if (choque) return json({ error: `Choque de horario: ya tienes una visita con ${choque.nombre} a las ${choque.hora} ese día.`, choque: true }, 409);
+        }
+        const now = new Date().toISOString();
+        const record = { ...Object.fromEntries(COLUMNAS.map(c => [c, ''])), id: crypto.randomUUID(), creada: now, actualizada: now, estado: 'confirmada', dia, hora, nombre, telefono: tel, direccion, sector, referencia, equipo, problema };
+        this.sql(`INSERT INTO visitas (${COLUMNAS.join(', ')}) VALUES (${COLUMNAS.map(() => '?').join(', ')})`, ...COLUMNAS.map(c => record[c]));
+        return json(await this.agenda(), 201);
       }
       return json(await this.agenda());
     }
     if (path === '/admin/api/agenda' && method === 'PUT') {
-      const input = await body(request, 4000);
+      const input = await body(request, 8000);
       const config = await this.config();
       if (input.revision !== config.revision) return json({ error: 'La configuración cambió. Recarga la agenda antes de guardar.' }, 409);
       const seguimiento = input.seguimiento;
-      if (typeof input.activa !== 'boolean' || !Array.isArray(input.bloqueados) || input.bloqueados.length > 120 || !input.bloqueados.every(esFecha) || !Number.isInteger(seguimiento) || seguimiento < 1 || seguimiento > 90) return json({ error: 'Revisa los días bloqueados y los días para el llamado de seguimiento (entre 1 y 90).' }, 400);
+      const mismoDia = typeof input.mismoDia === 'boolean' ? input.mismoDia : config.mismoDia;
+      const rawHoras = input.horasBloqueadas === undefined ? config.horasBloqueadas : input.horasBloqueadas;
+      const horasValidas = rawHoras && typeof rawHoras === 'object' && !Array.isArray(rawHoras) && Object.keys(rawHoras).length <= 120
+        && Object.entries(rawHoras).every(([d, hs]) => esFecha(d) && Array.isArray(hs) && hs.length <= 24 && hs.every(h => parseHora(h) !== null));
+      if (typeof input.activa !== 'boolean' || !Array.isArray(input.bloqueados) || input.bloqueados.length > 120 || !input.bloqueados.every(esFecha) || !horasValidas || !Number.isInteger(seguimiento) || seguimiento < 1 || seguimiento > 90) return json({ error: 'Revisa los días bloqueados y los días para el llamado de seguimiento (entre 1 y 90).' }, 400);
       const activa = input.activa;
       if (activa && !await this.ctx.storage.get('credentials')) return json({ error: 'Configura el acceso antes de abrir la agenda.' }, 409);
-      await this.ctx.storage.put('agenda', { activa, bloqueados: [...new Set(input.bloqueados)].filter(d => d >= hoy()).sort(), seguimiento, revision: crypto.randomUUID() });
+      const inicio = hoy();
+      const horasBloqueadas = {};
+      for (const [d, hs] of Object.entries(rawHoras)) {
+        if (d < inicio) continue;
+        const limpias = [...new Set(hs)].sort();
+        if (limpias.length) horasBloqueadas[d] = limpias;
+      }
+      await this.ctx.storage.put('agenda', { activa, bloqueados: [...new Set(input.bloqueados)].filter(d => d >= inicio).sort(), horasBloqueadas, mismoDia, seguimiento, revision: crypto.randomUUID() });
       // KV contains only the public switch, never visit or customer details.
       try { await this.env.CONTENIDO.put('agenda', JSON.stringify({ activa })); }
       catch { return json({ ...await this.agenda(), warning: 'Configuración guardada. Falta publicar el cambio de acceso público; vuelve a guardar.' }); }

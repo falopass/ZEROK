@@ -64,7 +64,7 @@ async function api(path, options = {}) {
       $('#access').hidden = false; $('#workspace').hidden = true;
       $('#login-status').textContent = 'Tu sesión terminó. Vuelve a entrar; lo que estabas editando se conserva en esta pestaña.';
     }
-    throw new Error(data.error || 'No se pudo completar la operación.');
+    throw Object.assign(new Error(data.error || 'No se pudo completar la operación.'), { status: response.status, choque: !!data.choque });
   }
   return data;
 }

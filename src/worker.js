@@ -1,7 +1,7 @@
 import { Admin, json } from './admin.js';
 import { readContent, published } from './content.js';
 import { header, footer, page, structured, llmsTxt, agendar, agendaLista, altOf } from './render.js';
-import { equipos, limpiar, validarReserva } from './agenda.js';
+import { equipos, limpiar, validarReserva, construirOferta, generarIcs, rangoHora } from './agenda.js';
 
 export { Admin };
 
@@ -57,7 +57,12 @@ const robotsTxt = origin => `User-agent: *\nDisallow: /admin/\nDisallow: /api/\n
 
 const objeto = env => env.ADMIN.get(env.ADMIN.idFromName('zerok-admin'));
 const interno = (env, path, init) => objeto(env).fetch(new Request(`https://zerok.internal/interno/${path}`, init));
-const dias = async env => (await (await interno(env, 'dias')).json()).dias;
+const ofertaDe = async (env, data) => {
+  const res = await (await interno(env, 'dias')).json();
+  const oferta = construirOferta(res.dias || [], res.ocupadas || {}, data.general, { mismoDia: !!res.mismoDia, ahora: res.ahora });
+  if (res.ahora?.dia) oferta.hoy = res.ahora.dia;
+  return oferta;
+};
 
 async function leer(request, max) {
   const reader = request.body?.getReader();
@@ -76,8 +81,8 @@ async function leer(request, max) {
 
 // A human form submit always gets the styled page back, never bare text or JSON.
 async function reservar(request, env, url, data) {
-  const oferta = await dias(env);
-  const pagina = (v, error, status, errores) => render(request, env, url, data, '/agendar/', agendar(data, oferta, v, error, status, errores));
+  const oferta = await ofertaDe(env, data);
+  const pagina = (v, error, status, errores, act = oferta) => render(request, env, url, data, '/agendar/', agendar(data, act, v, error, status, errores));
   const origin = request.headers.get('origin');
   if (origin !== url.origin) return pagina({}, 'No se pudo comprobar el origen del formulario. Vuelve a intentarlo desde esta página.', 403);
   if (!request.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) return pagina({}, 'El formulario no se pudo leer. Vuelve a intentarlo.', 415);
@@ -92,15 +97,18 @@ async function reservar(request, env, url, data) {
   const response = await interno(env, 'reserva', { method: 'POST', headers: { 'content-type': 'application/json', 'x-zerok-ip': request.headers.get('cf-connecting-ip') || 'local' }, body: JSON.stringify(input) });
   const result = await response.json();
   if (response.ok) {
-    return Response.redirect(new URL(`/agendar/listo/?dia=${result.dia}`, url), 303);
+    const params = new URLSearchParams({ dia: result.dia, ...(result.hora ? { hora: result.hora } : {}) });
+    return Response.redirect(new URL(`/agendar/listo/?${params}`, url), 303);
   }
-  return pagina(input, result.error || 'No pudimos registrar tu solicitud. Revisa los datos o llámanos para agendar.', response.status);
+  const fresca = response.status === 409 || result.campo === 'hora' || result.campo === 'dia' ? await ofertaDe(env, data) : oferta;
+  const errs = result.campo ? [{ campo: result.campo, mensaje: result.error }] : [];
+  return pagina(input, result.error || 'No pudimos registrar tu solicitud. Revisa los datos o llámanos para agendar.', response.status, errs, fresca);
 }
 
 // Stateless handoff: the selector posts equipo/problema/sector here and the agenda page is
 // rendered with them prefilled. Nothing is stored and free text never enters a URL.
 async function preparar(request, env, url, data) {
-  const oferta = data.agenda && env.ADMIN ? await dias(env) : [];
+  const oferta = data.agenda && env.ADMIN ? await ofertaDe(env, data) : construirOferta([], {}, data.general);
   const pagina = (v = {}, error = '', status) => render(request, env, url, data, '/agendar/', agendar(data, oferta, v, error, status));
   const origin = request.headers.get('origin');
   const fetchSite = request.headers.get('sec-fetch-site');
@@ -140,7 +148,7 @@ async function handle(request, env) {
   if (path === '/agendar/' && request.method === 'POST') {
     const data = await siteData(env);
     if (data.agenda && env.ADMIN) return reservar(request, env, url, data);
-    return render(request, env, url, data, '/agendar/', agendar(data, [], {}, '', 403));
+    return render(request, env, url, data, '/agendar/', agendar(data, construirOferta([], {}, data.general), {}, '', 403));
   }
   if (path === '/agendar/preparar/') {
     if (!['GET', 'HEAD', 'POST'].includes(request.method)) return new Response('Método no permitido.', { status: 405, headers: { allow: 'GET, HEAD, POST' } });
@@ -172,13 +180,29 @@ async function handle(request, env) {
   }
   if (path === '/llms.txt') return new Response(llmsTxt(data, origin), { headers: { 'content-type': 'text/markdown; charset=utf-8', 'cache-control': 'no-cache' } });
   if (path === '/llms-full.txt') return Response.redirect(new URL('/llms.txt', url), 308);
+  if (path === '/agendar/calendario.ics' && data.agenda) {
+    const dia = url.searchParams.get('dia') || '';
+    const hora = url.searchParams.get('hora') || '';
+    const ics = generarIcs({
+      dia,
+      hora,
+      titulo: 'Visita técnica ZÉROK',
+      descripcion: `Solicitud de visita técnica ZÉROK (${rangoHora(hora)}). Igualmente te llamaremos para confirmar. Teléfono: ${data.general.telefonoVisible}`,
+      ubicacion: 'Osorno, Los Lagos',
+      uid: `visita-${dia}-${hora.replace(':', '')}@zerok.cl`
+    });
+    if (!ics) return new Response('No encontrado.', { status: 404 });
+    return new Response(request.method === 'HEAD' ? null : ics, {
+      headers: { 'content-type': 'text/calendar; charset=utf-8', 'content-disposition': `attachment; filename="visita-zerok-${dia}.ics"`, 'cache-control': 'no-store' }
+    });
+  }
   if (path === '/index.html') return Response.redirect(new URL('/', url), 308);
   if (path !== '/' && !path.includes('.') && !path.endsWith('/')) return Response.redirect(new URL(`${path}/${url.search}`, url), 308);
   // Only the equipment enum may arrive by GET; free text never travels in the URL.
   const equipo = url.searchParams.get('equipo');
   const prefill = equipos.includes(equipo) ? { equipo } : {};
-  const rendered = path === '/agendar/' && data.agenda ? agendar(data, await dias(env), prefill)
-    : path === '/agendar/listo/' && data.agenda ? agendaLista(data, url.searchParams.get('dia'))
+  const rendered = path === '/agendar/' && data.agenda ? agendar(data, await ofertaDe(env, data), prefill)
+    : path === '/agendar/listo/' && data.agenda ? agendaLista(data, url.searchParams.get('dia'), url.searchParams.get('hora'))
     : page(data, path);
   return render(request, env, url, data, path, rendered);
 }
