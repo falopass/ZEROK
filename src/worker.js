@@ -59,7 +59,8 @@ const objeto = env => env.ADMIN.get(env.ADMIN.idFromName('zerok-admin'));
 const interno = (env, path, init) => objeto(env).fetch(new Request(`https://zerok.internal/interno/${path}`, init));
 const ofertaDe = async (env, data) => {
   const res = await (await interno(env, 'dias')).json();
-  const oferta = construirOferta(res.dias || [], res.ocupadas || {}, data.general, { mismoDia: !!res.mismoDia, ahora: res.ahora });
+  const general = res.horario || data.general;
+  const oferta = construirOferta(res.dias || [], res.ocupadas || {}, general, { mismoDia: !!res.mismoDia, ahora: res.ahora });
   if (res.ahora?.dia) oferta.hoy = res.ahora.dia;
   return oferta;
 };
@@ -91,6 +92,7 @@ async function reservar(request, env, url, data) {
   const input = Object.fromEntries(new URLSearchParams(raw));
   // Honeypot: bots that fill the hidden field see the usual confirmation and nothing is stored.
   if (input.empresa) return Response.redirect(new URL('/agendar/listo/', url), 303);
+  if (input.paso === 'horas') return pagina(input, '', 200, []);
   // Field errors are answered here so the page can link each one back to its input.
   const { errores } = validarReserva(input, oferta);
   if (errores.length) return pagina(input, '', 400, errores);

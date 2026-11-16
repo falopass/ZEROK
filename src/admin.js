@@ -97,7 +97,18 @@ export class Admin {
         const tomadas = horasOcupadas(d, activasDia, general, opts);
         if (tomadas.length) ocupadas[d] = tomadas;
       }
-      return json({ dias, ocupadas, mismoDia: !!config.mismoDia, ahora });
+      return json({
+        dias,
+        ocupadas,
+        mismoDia: !!config.mismoDia,
+        ahora,
+        horario: {
+          horarioConfirmado: !!general.horarioConfirmado,
+          abre: general.abre,
+          cierra: general.cierra,
+          cierraSabado: general.cierraSabado
+        }
+      });
     }
     if (path === '/interno/reserva' && request.method === 'POST') {
       if (!config.activa) return json({ error: 'La agenda en línea no está disponible. Llámanos para agendar tu visita.' }, 403);

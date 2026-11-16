@@ -358,9 +358,7 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
   };
 
   async function guardarHorasBloqueadas(horasBloqueadas, mensajeOk, button) {
-    if (configDirty || !!root.querySelector('[data-visita][data-dirty]')) {
-      if (!confirm('Hay cambios sin guardar en otra parte de la agenda. Al guardar este cambio se descartarán. ¿Seguir?')) return;
-    }
+    if (dirty() && !confirm('Hay cambios sin guardar en otra parte de la agenda. Al guardar este cambio se descartarán. ¿Seguir?')) return;
     if (button) button.disabled = true;
     try {
       const respuesta = await api('agenda', {
@@ -478,27 +476,27 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
       return;
     }
     if (button.hasAttribute('data-nueva-toggle')) {
-      if (nuevaAbierta && nuevaDirty && !confirm('¿Cerrar el formulario y descartar lo escrito?')) return;
+      if (dirty() && !confirm('Tienes cambios sin guardar en la agenda. Al continuar se descartarán. ¿Seguir?')) return;
       nuevaAbierta = !nuevaAbierta;
       nuevaDiaDef = '';
-      if (!nuevaAbierta) nuevaDirty = false;
+      discard();
       render();
       if (nuevaAbierta) root.querySelector('.agenda-nueva [name="nueva-nombre"]')?.focus();
       return;
     }
     if (button.hasAttribute('data-nueva-cerrar')) {
-      if (nuevaDirty && !confirm('¿Cerrar el formulario y descartar lo escrito?')) return;
+      if (dirty() && !confirm('Tienes cambios sin guardar en la agenda. Al cerrar el formulario se descartarán. ¿Seguir?')) return;
       nuevaAbierta = false;
-      nuevaDirty = false;
       nuevaDiaDef = '';
+      discard();
       render();
       return;
     }
     if (button.dataset.agendarDia) {
-      if (nuevaDirty && !confirm('¿Cambiar el día de la nueva visita y descartar lo escrito?')) return;
+      if (dirty() && !confirm('Tienes cambios sin guardar en la agenda. Al cambiar se descartarán. ¿Seguir?')) return;
       nuevaDiaDef = button.dataset.agendarDia;
       nuevaAbierta = true;
-      nuevaDirty = false;
+      discard();
       render();
       root.querySelector('.agenda-nueva [name="nueva-nombre"]')?.focus();
       return;
@@ -507,6 +505,7 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
       const box = root.querySelector('.agenda-nueva');
       if (!box) return;
       for (const input of box.querySelectorAll('input, select, textarea')) if (!input.reportValidity()) return;
+      if ((configDirty || !!root.querySelector('[data-visita][data-dirty]')) && !confirm('Hay cambios sin guardar en otra parte de la agenda. Al guardar esta visita se descartarán. ¿Seguir?')) return;
       const val = n => box.querySelector(`[name="nueva-${n}"]`)?.value || '';
       const payload = {
         nombre: val('nombre'),
