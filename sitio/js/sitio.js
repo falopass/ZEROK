@@ -294,9 +294,73 @@ if (agenda) {
   agenda.addEventListener('invalid', event => event.target.closest('details')?.setAttribute('open', ''), true);
   document.querySelector('[data-agenda-resumen]').hidden = false;
   const falla = document.querySelector('[data-agenda-problema]');
+  const horaResumen = document.querySelector('[data-agenda-hora]');
+  const horasContenedor = agenda.querySelector('[data-agenda-horas]');
+  const horasVacio = agenda.querySelector('[data-horas-vacio]');
+  const hourOptions = agenda.querySelector('[data-hour-options]');
+  const horarios = (() => { try { return JSON.parse(agenda.dataset.horarios || '{}'); } catch { return {}; } })();
+  const pintarHoras = (diaValor, conservarHora = '') => {
+    if (!hourOptions || !horasContenedor || !horasVacio) return;
+    const slots = diaValor ? (horarios[diaValor] || []) : [];
+    if (!slots.length) {
+      hourOptions.replaceChildren();
+      horasVacio.hidden = false;
+      horasContenedor.id = 'campo-hora';
+      horasContenedor.tabIndex = -1;
+      return;
+    }
+    horasVacio.hidden = true;
+    const primeraLibre = slots.find(s => !s.ocupada)?.hora || '';
+    if (!primeraLibre) {
+      horasContenedor.id = 'campo-hora';
+      horasContenedor.tabIndex = -1;
+    } else {
+      horasContenedor.removeAttribute('id');
+      horasContenedor.removeAttribute('tabindex');
+    }
+    const grupos = [
+      ['Mañana', slots.filter(s => s.hora < '13:00')],
+      ['Tarde', slots.filter(s => s.hora >= '13:00')]
+    ].filter(([, lista]) => lista.length);
+    hourOptions.replaceChildren(...grupos.map(([titulo, lista]) => {
+      const grupo = document.createElement('div');
+      grupo.className = 'hour-group';
+      const p = document.createElement('p');
+      p.className = 'hour-group-label mono';
+      p.textContent = titulo;
+      const grid = document.createElement('div');
+      grid.className = 'hour-grid';
+      grid.append(...lista.map(s => {
+        const label = document.createElement('label');
+        label.className = 'hour-option';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'hora';
+        input.value = s.hora;
+        input.required = true;
+        if (s.hora === primeraLibre) input.id = 'campo-hora';
+        if (s.ocupada) input.disabled = true;
+        else if (s.hora === conservarHora) input.checked = true;
+        const span = document.createElement('span');
+        const b = document.createElement('b');
+        b.textContent = s.label;
+        span.append(b);
+        if (s.ocupada) {
+          const small = document.createElement('small');
+          small.textContent = 'Ocupada';
+          span.append(small);
+        }
+        label.append(input, span);
+        return label;
+      }));
+      grupo.append(p, grid);
+      return grupo;
+    }));
+  };
   const resumen = () => {
     const equipo = agenda.querySelector('[name="equipo"]:checked');
     const dia = agenda.querySelector('[name="dia"]:checked');
+    const hora = agenda.querySelector('[name="hora"]:checked');
     const detalleEquipo = agenda.querySelector('.agenda-detalle-linea b');
     const detalleFalla = agenda.querySelector('.agenda-detalle-falla');
     if (detalleEquipo) detalleEquipo.textContent = equipo?.value || 'Elige tu equipo';
@@ -305,15 +369,24 @@ if (agenda) {
     if (falla) falla.textContent = agenda.querySelector('[name=problema]')?.value.trim() || 'Cuéntanos qué le pasa';
     document.querySelector('[data-agenda-dia]').textContent = dia
       ? new Intl.DateTimeFormat('es-CL', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(dia.value + 'T12:00:00Z'))
-      : 'Elige tu día preferido';
+      : 'Elige tu día';
+    if (horaResumen) horaResumen.textContent = hora?.closest('.hour-option')?.querySelector('b')?.textContent || 'Elige una hora';
   };
-  agenda.addEventListener('change', resumen);
+  agenda.addEventListener('change', event => {
+    if (event.target.name === 'dia') {
+      const horaActual = agenda.querySelector('[name="hora"]:checked')?.value || '';
+      delete agenda.dataset.hora;
+      pintarHoras(event.target.value, horaActual);
+    }
+    resumen();
+  });
   agenda.addEventListener('input', resumen);
   agenda.addEventListener('focusin', event => {
     const pasos = [...agenda.querySelectorAll('.agenda-paso')];
     const actual = pasos.indexOf(event.target.closest('.agenda-paso'));
     if (actual !== -1) document.querySelector('.agenda-etiqueta').textContent = `0${actual + 1} / 04`;
   });
+  pintarHoras(agenda.querySelector('[name="dia"]:checked')?.value || '', agenda.dataset.hora || '');
   // With a completed request, the day step gets keyboard focus; with server
   // errors the summary takes it instead, so each linked field stays reachable.
   const errorBox = agenda.querySelector('.agenda-error');
@@ -321,7 +394,7 @@ if (agenda) {
   else if (agenda.dataset.prefill !== undefined) {
     const detalle = agenda.querySelector('.agenda-detalle');
     if (detalle) detalle.open = false;
-    agenda.querySelector('[name=dia]')?.focus();
+    agenda.querySelector('[name=dia]:not(:disabled)')?.focus();
   }
   resumen();
 }
