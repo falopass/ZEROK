@@ -848,13 +848,19 @@ body:has(.agenda-form) .contact-bar{display:none}
 .por-pasos .is-hecho>.paso-cambiar{display:block;grid-area:1/2;min-height:44px;padding:0 4px;border:0;background:none;color:var(--texto);font:inherit;font-size:.8125rem;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
 .por-pasos .agenda-detalle>summary{display:none}
 .paso-seguir{justify-self:start;min-width:180px}
-@media(max-width:599px){
-.day-weeks{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;margin-inline:-24px;padding:4px 24px 8px}
+@media(max-width:599px){.day-weeks{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .day-week,.day-options{display:contents}
-.day-week-label{display:none}
-.day-option{flex:0 0 76px;scroll-snap-align:start}
-.paso-seguir{width:100%}
-}
+.day-week-label,.day-cupo:not(.lleno){display:none}
+.day-option b{font-size:.8125rem}
+.day-option strong{font-size:1.5rem}
+.day-option small{font-size:.75rem}
+.hour-option>span{min-height:52px}
+.hour-option b{font-size:1rem}
+.paso-seguir{width:100%}}
+@media(max-width:767px){.button{min-height:52px;font-size:1.0625rem}
+.field-help,.message-note,.agenda-ayuda,.agenda-form label,.agenda-equipo b,.por-pasos .is-hecho>.paso-resumen,.por-pasos .is-hecho>.paso-cambiar{font-size:.9375rem}
+.agenda-form .agenda-check{font-size:.875rem}
+.agenda-riel li{font-size:.75rem;letter-spacing:0}}
 .agenda-encabezado h2{display:none}
 @media(max-width:999px){.agenda-presentacion .backlink{margin-bottom:12px}
 .agenda-presentacion h1{font-size:2.25rem;margin-bottom:12px}
@@ -872,9 +878,10 @@ body:has(.agenda-form) .contact-bar{display:none}
 .ficha{display:block;padding:20px 16px;border-radius:var(--ficha)}
 .ficha-cuerpo{display:grid;gap:24px}
 .ficha-fila{display:block;min-width:0}
-.ficha-fila>legend,.ficha-fila>.mono{display:flex;align-items:center;gap:8px;width:100%;margin:0 0 10px;font-size:.6875rem;font-weight:400;letter-spacing:.08em;text-transform:uppercase;color:var(--texto-2)}
-.ficha-fila>legend::before,.ficha-fila>.mono::before{content:'';flex:none;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--texto-2);transition:background 300ms,border-color 300ms}
-.ficha-fila[data-ok]>legend::before,.ficha-fila[data-ok]>.mono::before{background:var(--acento);border-color:var(--acento)}
+.ficha-pregunta{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;font-size:1.0625rem;font-weight:650;line-height:1.3}
+.ficha-pregunta::before{content:'';flex:none;width:12px;height:12px;border-radius:50%;border:2px solid var(--texto-2);transition:background 300ms,border-color 300ms}
+.ficha-fila[data-ok]>.ficha-pregunta::before{background:var(--acento);border-color:var(--acento)}
+.nombre-largo{display:none}
 .equipo-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .equipment-option{position:relative;min-width:0;cursor:pointer}
 .equipment-option input{position:absolute;inset:0;z-index:2;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
@@ -890,16 +897,20 @@ body:has(.agenda-form) .contact-bar{display:none}
 .ficha textarea{min-height:72px}
 .ficha-accion{display:grid;align-content:start;gap:14px}
 .ficha .ficha-termo,.ficha .message-note{margin:0}
-@media(max-width:999px){.equipo-grid{display:flex;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
-.equipment-option{flex:0 0 104px;scroll-snap-align:start}}
-@media(max-width:639px){.ficha .sintoma-chip>span{font-size:.8125rem}
-.ficha .sintoma-lista{gap:6px}
+@media(max-width:639px){.equipo-grid{grid-template-columns:1fr 1fr;gap:8px}
+.equipment-option>span{grid-template-columns:40px minmax(0,1fr);align-items:center;gap:8px;min-height:66px;padding:4px;border-color:var(--linea)}
+.equipment-option img{aspect-ratio:1;opacity:1}
+.equipment-option b,.equipment-option input:checked+span b{font-size:.8125rem;font-weight:650;text-align:left}
+.nombre-largo{display:inline}
+.nombre-corto{display:none}
+.ficha .sintoma-chip>span{min-height:48px;font-size:.9375rem}
 .ficha .ficha-termo{display:none}
-.ficha-cuerpo{gap:20px}}
+.ficha-cuerpo{gap:28px}}
+@media(min-width:640px) and (max-width:999px){.equipo-grid{display:flex;overflow-x:auto;scrollbar-width:none;margin-inline:-32px;padding-inline:32px}
+.equipment-option{flex:0 0 104px}}
 @media(min-width:640px){.ficha{padding:28px 32px}}
 @media(min-width:640px) and (max-width:999px){.ficha-cuerpo{grid-template-columns:1fr 1fr}
-.ficha-cuerpo>:first-child{grid-column:1/-1}
-.equipo-grid{margin-inline:-32px;padding-inline:32px}}
+.ficha-cuerpo>:first-child{grid-column:1/-1}}
 @media(min-width:1000px){.diagnosis .ficha-cuerpo{grid-template-columns:minmax(0,1.3fr) minmax(0,1.1fr) minmax(0,.85fr);gap:0}
 .diagnosis .ficha-cuerpo>*{padding-inline:28px}
 .diagnosis .ficha-cuerpo>:first-child{padding-left:0}
