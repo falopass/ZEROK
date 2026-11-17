@@ -49,7 +49,7 @@ Seis fotos enviadas por el cliente, en tres pares, dentro de «Trabajo real»: s
 - La foto de la sierra limpia reemplaza a la foto de banco de «Equipo comercial» en el selector.
 
 ### Revisión 14 (16-11-2026): termografía, ficha de papel y agenda por pasos
-Propuesta trabajada en rama y enviada como PR. Pedido de Diego: el fondo oscuro azul se veía genérico y la página, desordenada.
+Fusionada con el PR #27 y desplegada el 16-11-2026. Pedido de Diego: el fondo oscuro azul se veía genérico y la página, desordenada.
 - **Fondo oscuro como termografía.** El concepto de §2 pasa al fondo: base casi negra (`--fondo #070D11`) con un campo de calor cobre junto a «¿Qué está fallando?» y uno frío azul al final de la página, más isotermas (anillos de `repeating-radial-gradient` en `body::before` y `body::after`). No es ilustración ni imagen: solo degradados. El cierre es frío, con anillos desde abajo. «Trabajo real» va sobre una banda `--cierre` con filetes.
 - **Ficha de papel.** En oscuro, la ficha de visita y el resumen de la agenda usan los tokens claros: son la única pieza clara de la página y se leen como orden de trabajo. En claro siguen siendo `.noche`.
 - **La ficha es el formulario.** El selector deja de ser un formulario largo con una ficha que lo repetía al lado: equipo, falla y sector se llenan en la propia ficha. En escritorio va apaisada en tres columnas con líneas de corte; en celular los equipos son una tira que se desliza. Reemplaza el recorrido numerado de la revisión 9 y el vuelo de la foto.
