@@ -206,3 +206,7 @@
 .cal-limpiar{border:0;background:none;text-decoration:underline;color:var(--acento);font-size:inherit;padding:0;min-height:44px}
 @media(min-width:1200px){#editor{grid-template-columns:1fr 1fr;align-items:start}
 #editor>:not(details),#editor>details.agenda-config,#editor>details.agenda-cal-panel{grid-column:1/-1}}
+
+/* El panel no lleva el fondo de termografía del sitio público. */
+body{background:var(--fondo)}
+body::before,body::after{content:none}
