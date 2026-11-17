@@ -12,7 +12,7 @@ const nevar = () => {
   capa.className = 'nevada';
   capa.setAttribute('aria-hidden', 'true');
   const azar = (min, max) => min + Math.random() * (max - min);
-  const total = innerWidth < 768 ? 9 : 18;
+  const total = innerWidth < 768 ? 5 : 18;
   for (let i = 0; i < total; i++) {
     const caida = azar(14, 30);
     const copo = document.createElement('span');
@@ -70,7 +70,7 @@ if (canReveal) {
       for (const entry of entries) entry.isIntersecting ? visibleActions.add(entry.target) : visibleActions.delete(entry.target);
       bar.classList.toggle('out-of-view', visibleActions.size > 0);
     }, { threshold: .3 });
-    document.querySelectorAll('.hero-actions, .closing-actions').forEach(actions => actionObserver.observe(actions));
+    document.querySelectorAll('.hero-actions, .ficha, .closing-actions, .trabajos-pie').forEach(actions => actionObserver.observe(actions));
   }
   const first = document.querySelector('.hero, .page-heading, .agenda-layout');
   if (first) new IntersectionObserver(entries => document.querySelector('.site-header')?.classList.toggle('is-compact', !entries[0].isIntersecting)).observe(first);
@@ -79,19 +79,16 @@ if (canReveal) {
     const active = new IntersectionObserver(entries => {
       for (const entry of entries) if (entry.isIntersecting) {
         index.querySelectorAll('a').forEach(a => a.removeAttribute('aria-current'));
-        index.querySelector(`a[href="#${CSS.escape(entry.target.id)}"]`)?.setAttribute('aria-current', 'location');
+        const actual = index.querySelector(`a[href="#${CSS.escape(entry.target.id)}"]`);
+        if (!actual) continue;
+        actual.setAttribute('aria-current', 'location');
+        // On phones the index is one row: keep the current service in view without touching the page scroll.
+        const fila = actual.parentElement;
+        fila.scrollLeft = actual.offsetLeft - (fila.clientWidth - actual.offsetWidth) / 2;
       }
     }, { rootMargin: '-40% 0px -45% 0px', threshold: 0 });
     document.querySelectorAll('.service-detail').forEach(section => active.observe(section));
   }
-  // Side-scrolling rails fade at the right edge only while more content remains there.
-  document.querySelectorAll('.equipment-rail').forEach(rail => {
-    rail.dataset.riel = '';
-    const edge = () => rail.classList.toggle('al-final', rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 4);
-    rail.addEventListener('scroll', edge, { passive: true });
-    addEventListener('resize', edge);
-    edge();
-  });
   if (!reduced.matches) document.documentElement.classList.add('motion-on');
 }
 reduced.addEventListener('change', () => document.documentElement.classList.toggle('motion-on', !reduced.matches && canReveal));
@@ -381,21 +378,60 @@ if (agenda) {
     resumen();
   });
   agenda.addEventListener('input', resumen);
-  agenda.addEventListener('focusin', event => {
-    const pasos = [...agenda.querySelectorAll('.agenda-paso')];
-    const actual = pasos.indexOf(event.target.closest('.agenda-paso'));
-    if (actual !== -1) document.querySelector('.agenda-etiqueta').textContent = `0${actual + 1} / 04`;
-  });
   pintarHoras(agenda.querySelector('[name="dia"]:checked')?.value || '', agenda.dataset.hora || '');
   // With a completed request, the day step gets keyboard focus; with server
   // errors the summary takes it instead, so each linked field stays reachable.
   const errorBox = agenda.querySelector('.agenda-error');
-  if (errorBox) errorBox.focus();
-  else if (agenda.dataset.prefill !== undefined) {
-    const detalle = agenda.querySelector('.agenda-detalle');
-    if (detalle) detalle.open = false;
-    agenda.querySelector('[name=dia]:not(:disabled)')?.focus();
-  }
   resumen();
+  if (errorBox) errorBox.focus();
+  else {
+    // One step open at a time. Without JavaScript, or after a server error, every step stays open.
+    const pasos = [...agenda.querySelectorAll('.agenda-paso')];
+    const riel = [...document.querySelectorAll('.agenda-riel li')];
+    const enviar = agenda.querySelector('.agenda-enviar');
+    const lineaDe = paso => [...paso.querySelectorAll('input, textarea')].map(c => c.name === 'empresa' || c.type === 'checkbox' ? ''
+      : c.type === 'radio' ? (c.checked ? [...c.closest('label').querySelectorAll('b, strong, small')].map(e => e.textContent).join(' ') : '')
+      : c.value.trim()).filter(Boolean).join(' · ');
+    const valido = paso => [...paso.querySelectorAll('input, textarea')].every(c => c.disabled || c.reportValidity());
+    let alcanzado = 0;
+    const abrir = (i, mover) => {
+      alcanzado = Math.max(alcanzado, i);
+      pasos.forEach((paso, n) => {
+        paso.classList.toggle('is-cerrado', n !== i);
+        paso.classList.toggle('is-hecho', n !== i && n <= alcanzado);
+        paso.querySelector('.paso-resumen').textContent = lineaDe(paso);
+      });
+      riel.forEach((li, n) => { li.classList.toggle('is-actual', n === i); li.classList.toggle('is-hecho', n < i || n <= alcanzado && n !== i); });
+      enviar.hidden = i !== pasos.length - 1;
+      if (!mover) return;
+      pasos[i].scrollIntoView({ block: 'start', behavior: reduced.matches ? 'auto' : 'smooth' });
+      pasos[i].focus({ preventScroll: true });
+    };
+    pasos.forEach((paso, i) => {
+      paso.tabIndex = -1;
+      const linea = Object.assign(document.createElement('p'), { className: 'paso-resumen' });
+      const cambiar = Object.assign(document.createElement('button'), { type: 'button', className: 'paso-cambiar', textContent: 'Cambiar' });
+      cambiar.setAttribute('aria-label', `Cambiar paso ${i + 1}`);
+      cambiar.addEventListener('click', () => abrir(i, true));
+      paso.querySelector('legend').after(linea, cambiar);
+      if (i === pasos.length - 1) return;
+      const seguir = Object.assign(document.createElement('button'), { type: 'button', className: 'button primary paso-seguir', innerHTML: '<span>Continuar</span>' });
+      seguir.addEventListener('click', () => { if (valido(paso)) abrir(i + 1, true); });
+      paso.append(seguir);
+    });
+    // A submit with a closed step holding an invalid field reopens that step first.
+    let primero = true;
+    agenda.addEventListener('invalid', event => {
+      if (!primero) return;
+      primero = false;
+      setTimeout(() => { primero = true; });
+      const i = pasos.indexOf(event.target.closest('.agenda-paso'));
+      if (i !== -1 && pasos[i].classList.contains('is-cerrado')) abrir(i, true);
+    }, true);
+    agenda.classList.add('por-pasos');
+    const detalle = agenda.querySelector('.agenda-detalle');
+    if (detalle) detalle.open = true;
+    abrir(agenda.dataset.prefill !== undefined ? 1 : 0, false);
+  }
 }
 

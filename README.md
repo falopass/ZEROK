@@ -115,7 +115,9 @@ El código usa **Cloudflare Email Service**, no solo Email Routing. Los avisos p
 4. Incorporar a Wrangler el binding `send_email` con nombre `AVISOS` y `destination_address: "avisos@zerok.cl"`, según las restricciones y verificaciones de la cuenta.
 5. Publicar con `AVISOS_HABILITADOS=true` únicamente cuando remitente y destinatario estén habilitados. Comprobar la recepción real de una solicitud y un seguimiento.
 
-Remitente y destinatario del código son `avisos@zerok.cl`. La cola persiste los fallos con reintentos; no envía solicitudes ya atendidas. La entrega es al menos una vez: un fallo entre la aceptación del proveedor y el registro local puede duplicar un aviso. No se ha confirmado la disponibilidad ni el costo del servicio de correo en esta cuenta.
+El resumen de «Trabajos hechos» usa un segundo binding `send_email`, `CLIENTES`, con `allowed_sender_addresses: ["avisos@zerok.cl"]` y sin destino fijo: escribe al correo del cliente, con copia oculta a `avisos@zerok.cl`. Solo se envía cuando el técnico lo pide desde el panel. Sin observar en producción: comprobar la llegada real tras el despliegue.
+
+Remitente y destinatario de los avisos de agenda son `avisos@zerok.cl`. La cola persiste los fallos con reintentos; no envía solicitudes ya atendidas. La entrega es al menos una vez: un fallo entre la aceptación del proveedor y el registro local puede duplicar un aviso. No se ha confirmado la disponibilidad ni el costo del servicio de correo en esta cuenta.
 
 Referencias: [API de envío](https://developers.cloudflare.com/email-service/api/send-emails/workers-api/), [bindings](https://developers.cloudflare.com/email-service/configuration/send-bindings/) y [configuración del dominio](https://developers.cloudflare.com/email-service/get-started/send-emails/).
 

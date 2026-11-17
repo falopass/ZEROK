@@ -1,4 +1,5 @@
 import { agendaPanel } from './agenda.js';
+import { hechosPanel } from './hechos.js';
 import { MAX_CONTENT_BYTES, CONTENT_SIZE_ERROR } from '../js/limites.js';
 
 const $ = selector => document.querySelector(selector);
@@ -10,7 +11,10 @@ const badge = n => {
   $('#agenda-badge').setAttribute('aria-label', `${n} pendiente${n === 1 ? '' : 's'}`);
   document.title = n ? `(${n}) Administración | ZÉROK` : 'Administración | ZÉROK';
 };
-const visitas = agendaPanel($('#editor'), api, status, () => section === 'agenda', badge, () => autenticado);
+const visitas = agendaPanel($('#editor'), api, status, () => section === 'agenda', badge, () => autenticado, visita => {
+  if (visitas.dirty()) { if (!confirm('Tienes cambios sin guardar en la agenda. ¿Salir y descartarlos?')) return; visitas.discard(); }
+  section = 'hechos'; status(''); render(); hechos.nuevoDesde(visita); });
+const hechos = hechosPanel($('#editor'), api, status, () => section === 'hechos', compress);
 // The agenda refreshes every 60 s while visible, authenticated and without typed edits.
 let refresco;
 const detenerRefresco = () => { clearInterval(refresco); refresco = null; };
@@ -30,7 +34,7 @@ addEventListener('pageshow', event => {
   iniciarRefresco();
   if (document.visibilityState === 'visible' && !visitas.dirty()) visitas.load();
 });
-const titles = { agenda: 'Agenda de visitas', general: 'Textos y cobertura', servicios: 'Servicios', productos: 'Precios y productos', trabajos: 'Trabajos y fotos', blog: 'Blog', faq: 'Preguntas frecuentes', seguridad: 'Seguridad y respaldo' };
+const titles = { agenda: 'Agenda de visitas', general: 'Textos y cobertura', servicios: 'Servicios', productos: 'Precios y productos', trabajos: 'Fotos del sitio', hechos: 'Trabajos hechos', blog: 'Blog', faq: 'Preguntas frecuentes', seguridad: 'Seguridad y respaldo' };
 const field = (key, label, type = 'text', options = {}) => ({ key, label, type, ...options });
 const schemas = {
   general: [field('bajada', 'Bajada de la portada', 'textarea', { max: 350, required: true }), field('presentacion', 'Presentación', 'textarea', { max: 2000, required: true }), field('hero', 'Imagen de portada', 'image'), field('heroAlt', 'Descripción de la imagen', 'text', { max: 200, required: true }), field('heroReal', 'La portada es una foto real del cliente', 'checkbox'), field('cobertura', 'Sectores confirmados', 'lines', { help: 'Un sector por línea. No agregues sectores sin confirmar.' }), field('horarioConfirmado', 'El cliente confirmó este horario', 'checkbox'), field('abre', 'Apertura', 'time'), field('cierra', 'Cierre de lunes a viernes', 'time'), field('cierraSabado', 'Cierre del sábado', 'time', { help: 'Déjalo vacío si el sábado atiende hasta la misma hora.' }), field('casaFoto', 'Foto del bloque En tu casa', 'image'), field('negocioFoto', 'Foto del bloque En tu negocio', 'image'), field('aviso', 'Aviso temporal', 'textarea', { max: 250, help: 'Déjalo vacío para ocultarlo.' })],
@@ -94,8 +98,16 @@ function render() {
     if (button.dataset.section === section) button.setAttribute('aria-current', 'page');
     else button.removeAttribute('aria-current');
   });
-  $('#save').hidden = ['seguridad', 'agenda'].includes(section);
+  $('#save').hidden = ['seguridad', 'agenda', 'hechos'].includes(section);
+  document.body.dataset.seccion = section;
+  $('#section-eyebrow').textContent = section === 'agenda' ? new Intl.DateTimeFormat('es-CL', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Santiago' }).format(new Date()) : section === 'hechos' ? 'Registro privado' : 'Contenido del sitio';
+  $('.nav-mas').classList.toggle('activa', !!$(`.nav-resto [data-section="${section}"]`));
   const editor = $('#editor');
+  if (section === 'hechos') {
+    editor.innerHTML = '<p role="status">Cargando trabajos...</p>';
+    hechos.load();
+    return;
+  }
   if (section === 'agenda') {
     // An existing agenda (e.g. after a session renewal) keeps its DOM and typed edits.
     if (!editor.querySelector('.agenda-toolbar')) editor.innerHTML = '<p role="status">Cargando agenda...</p>';
@@ -130,7 +142,8 @@ async function load(preserve = false) {
   $('#access').hidden = true; $('#workspace').hidden = false;
   render();
   actualizarBarra();
-  status(conflict ? 'Conservamos tus cambios, pero otra sesión publicó una versión más reciente. Descarga un respaldo en Seguridad y respaldo antes de cargar la última versión.' : dirty ? 'Recuperamos tus cambios de esta pestaña. Aún no están guardados.' : record.updated ? `Último guardado: ${new Date(record.updated).toLocaleString('es-CL')}.` : 'Contenido inicial. Todavía no hay cambios publicados desde el panel.', !!conflict);
+  // El estado del contenido no se muestra sobre la agenda, salvo que haya algo que recuperar.
+  if (section !== 'agenda' || conflict || dirty) status(conflict ? 'Conservamos tus cambios, pero otra sesión publicó una versión más reciente. Descarga un respaldo en Seguridad y respaldo antes de cargar la última versión.' : dirty ? 'Recuperamos tus cambios de esta pestaña. Aún no están guardados.' : record.updated ? `Último guardado: ${new Date(record.updated).toLocaleString('es-CL')}.` : 'Contenido inicial. Todavía no hay cambios publicados desde el panel.', !!conflict);
 }
 
 $('#login-form').addEventListener('submit', async event => {
@@ -158,10 +171,20 @@ document.querySelectorAll('[data-section]').forEach(button => button.addEventLis
     if (!confirm('Tienes cambios sin guardar en la agenda. ¿Salir y descartarlos?')) return;
     visitas.discard();
   }
+  if (section === 'hechos' && destino !== 'hechos' && hechos.dirty() && !confirm('Tienes un trabajo sin guardar. ¿Salir y descartarlo?')) return;
   section = destino;
+  status('');
   render();
-  button.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  menuMas(false);
 }));
+// En celular las secciones menos usadas viven en una hoja que abre «Más».
+function menuMas(abrir) {
+  $('.admin-sidebar nav').classList.toggle('abierta', abrir);
+  $('.nav-mas').setAttribute('aria-expanded', abrir);
+}
+$('.nav-mas').addEventListener('click', event => menuMas(event.currentTarget.getAttribute('aria-expanded') !== 'true'));
+document.addEventListener('click', event => { if (!event.target.closest('.admin-sidebar nav')) menuMas(false); });
+document.addEventListener('keydown', event => { if (event.key === 'Escape') menuMas(false); });
 $('#editor').addEventListener('submit', event => event.preventDefault());
 $('#editor').addEventListener('input', event => {
   const input = event.target;

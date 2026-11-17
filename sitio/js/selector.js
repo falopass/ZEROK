@@ -1,4 +1,3 @@
-const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const frasesSolicitud = {
   'Mantención': 'necesita mantención',
   'Instalación': 'necesita instalación',
@@ -15,8 +14,6 @@ export function setupMessages() {
     const agendaMode = form.dataset.solicitud === 'agenda';
     const sintomas = JSON.parse(form.dataset.sintomas || '{}');
     const lista = form.querySelector('[data-sintomas-lista]');
-    const fotoTarget = form.querySelector('[data-message-foto]');
-    const ficha = campo => form.querySelector(`[data-ficha="${campo}"]`);
     const estado = form.querySelector('[data-ficha-estado]');
     const termo = form.querySelector('[data-ficha-termo]');
     const result = form.querySelector('.message-result');
@@ -39,16 +36,13 @@ export function setupMessages() {
       const inicio = equipo === 'otro equipo' ? `Tengo un equipo con una falla: ${falla}` : `Mi ${equipo} ${falla}`;
       return `${inicio}${fin}${sector ? ` Estoy en ${sector}.` : ''}`;
     };
-    // The visit card mirrors the form; each finished step cools the bar from fault to visit.
+    // Each finished row cools the bar from fault to visit.
     const update = () => {
       const values = new FormData(form);
       const texto = s => String(s || '').trim();
       const datos = { equipo: texto(values.get('equipo')), falla: texto(values.get('problema')), sector: texto(values.get('sector')) };
       let listos = 0;
       for (const [campo, valor] of Object.entries(datos)) {
-        const dd = ficha(campo);
-        const visible = valor.replace(/^\p{Ll}/u, c => c.toUpperCase());
-        if (dd && dd.textContent !== visible) { dd.textContent = visible; dd.classList.remove('cambia'); requestAnimationFrame(() => dd.classList.add('cambia')); }
         form.querySelector(`[data-paso="${campo}"]`)?.toggleAttribute('data-ok', !!valor);
         if (valor) listos++;
       }
@@ -60,27 +54,6 @@ export function setupMessages() {
         url.searchParams.set('text', message());
         waLink.href = url.href;
       }
-    };
-    // The chosen equipment photo flies into the request card (FLIP, 280 ms).
-    const fly = option => {
-      const img = option?.querySelector('img');
-      if (!img || !fotoTarget) return;
-      const place = () => { const copia = img.cloneNode(); copia.loading = 'eager'; fotoTarget.replaceChildren(copia); };
-      if (reduced.matches || typeof img.animate !== 'function') return place();
-      const s = img.getBoundingClientRect();
-      const t = fotoTarget.getBoundingClientRect();
-      if (!s.width || !t.width) return place();
-      const ghost = img.cloneNode();
-      ghost.loading = 'eager';
-      ghost.style.cssText = `position:fixed;left:${s.left}px;top:${s.top}px;width:${s.width}px;height:${s.height}px;object-fit:cover;border-radius:14px;z-index:60;pointer-events:none;margin:0`;
-      ghost.style.transformOrigin = 'top left';
-      document.body.append(ghost);
-      fotoTarget.replaceChildren();
-      const scale = Math.min(t.width / s.width, t.height / s.height);
-      ghost.animate(
-        [{ transform: 'none' }, { transform: `translate(${t.left - s.left}px,${t.top - s.top}px) scale(${scale})` }],
-        { duration: 280, easing: 'cubic-bezier(.16,1,.3,1)' }
-      ).onfinish = () => { ghost.remove(); place(); };
     };
     const buildSintomas = () => {
       const equipo = String(new FormData(form).get('equipo') || '');
@@ -120,7 +93,10 @@ export function setupMessages() {
         const anterior = lista.querySelector('[name=sintoma]:checked');
         if (anterior?.value && problema.value === anterior.value) problema.value = '';
         if (anuncio) anuncio.textContent = `Equipo: ${target.value}`;
-        fly(target.closest('.equipment-option'));
+        // On phones the equipment row scrolls sideways: bring a pick made from a hero chip into view.
+        const fila = target.closest('.equipo-grid');
+        const opcion = target.closest('.equipment-option');
+        if (fila && opcion) fila.scrollLeft += opcion.getBoundingClientRect().left - fila.getBoundingClientRect().left - (fila.clientWidth - opcion.offsetWidth) / 2;
         buildSintomas();
         update();
       } else if (target.name === 'sintoma') {
@@ -138,8 +114,6 @@ export function setupMessages() {
     });
     for (const control of form.querySelectorAll('[disabled]')) control.disabled = false;
     buildSintomas();
-    const checked = form.querySelector('[name=equipo]:checked');
-    if (checked) fly(checked.closest('.equipment-option'));
     update();
   }
 }

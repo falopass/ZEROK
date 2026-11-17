@@ -72,6 +72,12 @@ const generarIcsCliente = v => {
   return `${lineas.join('\r\n')}\r\n`;
 };
 
+const ico = d => `<svg class="ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const ICO = {
+  fono: ico('<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>'),
+  chat: ico('<path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"/>'),
+  mapa: ico('<path d="M12 21s7-6.2 7-11.5a7 7 0 0 0-14 0C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>')
+};
 const estados = { solicitada: 'Por confirmar', confirmada: 'Confirmada', realizada: 'Llamar luego', cerrada: 'Cerrada', cancelada: 'Cancelada', ausente: 'No estaba' };
 const sumar = (d, n) => new Date(Date.parse(`${d}T12:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
 const telefonoVisible = t => /^\+569\d{8}$/.test(t) ? `+56 9 ${t.slice(4, 8)} ${t.slice(8)}` : t;
@@ -84,7 +90,7 @@ const hace = iso => {
   return `hace ${Math.floor(h / 24)} d`;
 };
 
-export function agendaPanel(root, api, status, activo, avisar = () => {}, autorizado = () => true) {
+export function agendaPanel(root, api, status, activo, avisar = () => {}, autorizado = () => true, registrar = () => {}) {
   const esEscritorio = () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
   let data, vista = 'pendientes', cargando = false, configDirty = false, nuevaDirty = false, busqueda = '', mesCursor = null, diaSel = null, mesBloq = null;
   let calAbierto = esEscritorio();
@@ -140,24 +146,27 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
     const sigHora = abierta && bloque ? siguienteBloque(v.dia, v.hora) : '';
     const sigBloqueada = sigHora && (data.config.horasBloqueadas?.[v.dia] || []).includes(sigHora);
     const dirTexto = [v.direccion, v.sector].filter(Boolean).join(', ');
-    const subPiezas = [v.equipo, fecha(v.dia), v.sector, hace(v.creada)].filter(Boolean).join(' · ');
+    const [desde, hasta] = bloque ? bloque.split(' a ') : [];
+    const abrir = { solicitada: 'Confirmar o cambiar la hora', confirmada: 'Marcar realizada o cambiar', realizada: 'Registrar el llamado' }[v.estado] || 'Ver detalle';
 
-    return `<details class="editor-group visita" data-visita="${esc(v.id)}">
+    return `<details class="visita visita-${esc(v.estado)}" data-visita="${esc(v.id)}">
       <summary>
-        <div class="visita-resumen">
-          <div class="visita-top">
-            <span class="visita-hora mono${bloque ? '' : ' sin-hora'}">${bloque ? esc(bloque) : 'Sin hora'}</span>
-            <b>${esc(v.nombre)}</b>
-            <span class="visita-estado estado-${esc(v.estado)}">${estados[v.estado]}</span>
-          </div>
-          <span class="visita-sub">${esc(subPiezas)}${pasada ? ' · <b class="visita-pasada">atrasada</b>' : ''}</span>
-        </div>
+        <span class="visita-talon mono">${bloque ? `<b>${desde}</b><span>a ${hasta}</span>` : '<span>Sin hora</span>'}</span>
+        <span class="visita-resumen">
+          <b class="visita-nombre">${esc(v.nombre)}</b>
+          <span class="visita-sub">${esc([v.equipo, v.sector].filter(Boolean).join(' · '))}</span>
+          ${v.direccion ? `<span class="visita-dir">${esc(v.direccion)}</span>` : ''}
+          <span class="visita-pie"><span class="visita-estado estado-${esc(v.estado)}">${estados[v.estado]}</span>${pasada ? '<b class="visita-pasada">Atrasada</b>' : `<span>Ingresada ${hace(v.creada)}</span>`}</span>
+        </span>
+        <span class="visita-acciones">
+          ${v.telefono ? `<a class="editor-action${v.estado === 'solicitada' ? ' primaria' : ''}" href="tel:${esc(v.telefono)}">${ICO.fono}Llamar</a>` : ''}
+          ${wsp ? `<a class="editor-action" href="https://wa.me/${wsp}?text=${encodeURIComponent(saludo)}" target="_blank" rel="noopener noreferrer">${ICO.chat}WhatsApp</a>` : ''}
+          ${dirTexto ? `<a class="editor-action" href="${esc(mapa)}" target="_blank" rel="noopener noreferrer">${ICO.mapa}Mapa</a>` : ''}
+          ${['realizada', 'cerrada'].includes(v.estado) ? `<button class="editor-action primaria visita-registrar" type="button" data-registrar="${esc(v.id)}">Registrar trabajo</button>` : ''}
+        </span>
+        <span class="visita-abrir">${abrir}</span>
       </summary>
-      <div class="visita-acciones">
-        ${v.telefono ? `<a class="editor-action${v.estado === 'solicitada' ? ' primaria' : ''}" href="tel:${esc(v.telefono)}">Llamar</a>` : ''}
-        ${wsp ? `<a class="editor-action" href="https://wa.me/${wsp}?text=${encodeURIComponent(saludo)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}
-        ${dirTexto ? `<a class="editor-action" href="${esc(mapa)}" target="_blank" rel="noopener noreferrer">Ver mapa</a>` : ''}
-      </div>
+      <div class="visita-detalle">
       <div class="visita-secundarias">
         ${dirTexto ? `<button class="editor-action mini" type="button" data-copiar="${esc(dirTexto)}">Copiar dirección</button>` : ''}
         ${bloque ? `<button class="editor-action mini" type="button" data-visita-ics="${esc(v.id)}">Calendario (.ics)</button>` : ''}
@@ -177,6 +186,7 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
       ${abierta ? `<fieldset class="visita-coordinar"><legend>Coordinar día y hora</legend><div class="field-grid">${campo('dia', 'Día acordado', v.dia, 'date', `required min="${data.hoy}"`)}${campo('hora', 'Hora acordada (opcional)', v.hora, 'time', `list="horas-${esc(v.id)}"`)}${datalistBloques(v.dia, `horas-${v.id}`)}</div>${accion('confirmar', v.estado === 'confirmada' ? 'Guardar coordinación' : 'Confirmar visita')}</fieldset><label class="admin-field">Trabajo realizado (opcional)<textarea name="nota" rows="2" maxlength="500"></textarea></label><div class="visita-decision">${accion('realizada', 'Marcar realizada')}${accion('ausente', 'No estaba')}${accion('cancelar', 'Cancelar visita')}</div>` : ''}
       ${v.estado === 'realizada' ? `<label class="admin-field">¿Cómo quedó el equipo?<textarea name="resultado" rows="2" maxlength="500"></textarea></label>${accion('cerrar', 'Llamado realizado y cerrar')}` : ''}
       <div class="visita-borrar">${accion('eliminar', 'Borrar datos de esta visita', 'danger')}</div>
+      </div>
     </details>`;
   }
 
@@ -274,7 +284,18 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
       : 'Correo desactivado hasta conectar zerok.cl: revisa esta pantalla.';
     const totalBloqHoras = Object.values(data.config.horasBloqueadas || {}).reduce((acc, hs) => acc + hs.length, 0);
 
-    root.innerHTML = `${calendario()}<p class="agenda-aviso">${avisos} ${data.config.activa ? 'Solicitudes en línea activas.' : 'Solicitudes en línea desactivadas.'}</p><div class="agenda-toolbar"><div class="agenda-filtros" role="group" aria-label="Filtrar visitas">${Object.entries(filtros).map(([key, [label, filter]]) => `<button type="button" class="editor-action" data-vista="${key}" aria-pressed="${vista === key}">${label} (${data.visitas.filter(filter).length})</button>`).join('')}</div><div class="agenda-tools"><input class="agenda-busqueda" type="search" name="busqueda" placeholder="Buscar cliente, fono o dirección" value="${esc(busqueda)}" aria-label="Buscar visita"><button type="button" class="editor-action primaria" data-nueva-toggle aria-expanded="${nuevaAbierta}">+ Nueva visita</button><button type="button" class="editor-action" data-agenda-refresh>Actualizar</button><button type="button" class="editor-action" data-agenda-csv>CSV</button></div></div>${formularioNueva()}${visitas.length ? visitas.map(tarjeta).join('') : '<div class="empty-editor"><h2>Sin visitas en esta vista.</h2><p>Las solicitudes y los seguimientos aparecerán aquí.</p></div>'}<details class="editor-group agenda-config"><summary>Disponibilidad y avisos</summary><p>El cliente elige un día y un bloque de 1 hora disponible según el horario de atención; ese bloque queda ocupado hasta que canceles o cierres la visita.</p><label class="admin-field check"><input type="checkbox" name="activa" ${data.config.activa ? 'checked' : ''}>Activar solicitudes en línea</label><label class="admin-field check"><input type="checkbox" name="mismoDia" ${data.config.mismoDia ? 'checked' : ''}>Permitir agendar para el mismo día (con 2 horas de margen)</label><input type="hidden" name="bloqueados" value="${esc(data.config.bloqueados.join(' '))}"><div class="admin-field">Días que no atiendes${calendarioBloqueo()}<span class="help">Toca un día para bloquearlo o liberarlo; tachado significa cerrado. Para bloquear solo horas sueltas, toca el día en el calendario de arriba.${totalBloqHoras ? ` Actualmente tienes ${totalBloqHoras} bloque${totalBloqHoras === 1 ? '' : 's'} horario${totalBloqHoras === 1 ? '' : 's'} bloqueado${totalBloqHoras === 1 ? '' : 's'} manualmente.` : ''}</span></div>${campo('seguimiento', 'Días después de la visita para llamar', data.config.seguimiento, 'number', 'min="1" max="90" required')}<p class="help">Por defecto son 14 días. Cambiarlo solo afecta las próximas visitas que marques realizadas.</p><button type="button" class="editor-action" data-agenda-config>Guardar disponibilidad</button></details>`;
+    const relativo = dia => dia === data.hoy ? 'Hoy' : dia === sumar(data.hoy, 1) ? 'Mañana' : '';
+    let lista = '', previo = '';
+    for (const v of visitas) {
+      if (v.dia !== previo) {
+        const n = visitas.filter(x => x.dia === v.dia).length;
+        lista += `<h2 class="agenda-dia">${relativo(v.dia) ? `<b>${relativo(v.dia)}</b>` : ''}<span>${esc(fechaLarga(v.dia))}</span><span class="agenda-dia-n mono">${n} visita${n === 1 ? '' : 's'}</span></h2>`;
+        previo = v.dia;
+      }
+      lista += tarjeta(v);
+    }
+
+    root.innerHTML = `<div class="agenda-principal"><div class="agenda-toolbar"><div class="agenda-filtros" role="group" aria-label="Filtrar visitas">${Object.entries(filtros).map(([key, [label, filter]]) => `<button type="button" class="filtro" data-vista="${key}" aria-pressed="${vista === key}"><b class="mono">${data.visitas.filter(filter).length}</b><span>${label}</span></button>`).join('')}</div><div class="agenda-tools"><input class="agenda-busqueda" type="search" name="busqueda" placeholder="Buscar cliente, fono o dirección" value="${esc(busqueda)}" aria-label="Buscar visita"><button type="button" class="editor-action primaria" data-nueva-toggle aria-expanded="${nuevaAbierta}">+ Nueva visita</button><button type="button" class="editor-action" data-agenda-refresh>Actualizar</button><button type="button" class="editor-action" data-agenda-csv>CSV</button></div></div>${formularioNueva()}${lista || '<div class="empty-editor"><h2>Sin visitas en esta vista.</h2><p>Las solicitudes y los seguimientos aparecerán aquí.</p></div>'}</div><aside class="agenda-lateral" aria-label="Calendario y disponibilidad">${calendario()}<details class="editor-group agenda-config"><summary>Disponibilidad y avisos</summary><p>El cliente elige un día y un bloque de 1 hora disponible según el horario de atención; ese bloque queda ocupado hasta que canceles o cierres la visita.</p><label class="admin-field check"><input type="checkbox" name="activa" ${data.config.activa ? 'checked' : ''}>Activar solicitudes en línea</label><label class="admin-field check"><input type="checkbox" name="mismoDia" ${data.config.mismoDia ? 'checked' : ''}>Permitir agendar para el mismo día (con 2 horas de margen)</label><input type="hidden" name="bloqueados" value="${esc(data.config.bloqueados.join(' '))}"><div class="admin-field">Días que no atiendes${calendarioBloqueo()}<span class="help">Toca un día para bloquearlo o liberarlo; tachado significa cerrado. Para bloquear solo horas sueltas, toca el día en el calendario de arriba.${totalBloqHoras ? ` Actualmente tienes ${totalBloqHoras} bloque${totalBloqHoras === 1 ? '' : 's'} horario${totalBloqHoras === 1 ? '' : 's'} bloqueado${totalBloqHoras === 1 ? '' : 's'} manualmente.` : ''}</span></div>${campo('seguimiento', 'Días después de la visita para llamar', data.config.seguimiento, 'number', 'min="1" max="90" required')}<p class="help">Por defecto son 14 días. Cambiarlo solo afecta las próximas visitas que marques realizadas.</p><button type="button" class="editor-action" data-agenda-config>Guardar disponibilidad</button></details><p class="agenda-aviso${data.config.activa ? ' activa' : ''}">${data.config.activa ? 'Solicitudes en línea activas.' : 'Solicitudes en línea desactivadas.'} ${avisos}</p></aside>`;
 
     for (const id of abiertas) root.querySelector(`[data-visita="${CSS.escape(id)}"]`)?.setAttribute('open', '');
     if (configAbierta) root.querySelector('.agenda-config')?.setAttribute('open', '');
@@ -304,12 +325,10 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
   function calendario() {
     const porDia = visitasPorDia(mesCursor);
     const bloqueados = new Set(data.config.bloqueados);
-    const hoyCount = data.visitas.filter(v => ['solicitada', 'confirmada'].includes(v.estado) && v.dia === data.hoy).length;
-    const pendCount = data.visitas.filter(v => v.estado === 'solicitada').length;
     return `<details class="agenda-cal-panel" ${calAbierto ? 'open' : ''}>
       <summary>
         <span class="cal-panel-titulo">Calendario y horarios</span>
-        <span class="cal-panel-resumen mono">Hoy: ${hoyCount} · Por confirmar: ${pendCount}${diaSel ? ` · ${fecha(diaSel)}` : ''}</span>
+        <span class="cal-panel-resumen mono">${diaSel ? `Viendo ${fecha(diaSel)}` : 'Elegir un día'}</span>
       </summary>
       <div class="agenda-calendario">${mesHtml(mesCursor, dia => {
         const c = porDia[dia];
@@ -428,6 +447,8 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
   });
 
   root.addEventListener('click', async event => {
+    const origen = activo() && event.target.closest('[data-registrar]');
+    if (origen) { event.preventDefault(); return registrar(data.visitas.find(v => v.id === origen.dataset.registrar)); }
     if (!activo()) return;
     const button = event.target.closest('button');
     if (!button) return;

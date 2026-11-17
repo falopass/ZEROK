@@ -186,7 +186,7 @@ const panel = env => new URL('/admin/', env.SITE_URL || 'https://zerok.cl').href
 const C = { marino: '#042c56', tinta: '#0c2340', gris: '#4a5f75', fondo: '#eef3f5', linea: '#c6d4de', ambar: '#e09a1f', hielo: '#2381a9' };
 const mono = `700 12px/1.3 'Courier New',monospace;letter-spacing:.1em;text-transform:uppercase`;
 const boton = (href, texto, fondo, color = '#ffffff') => `<td style="padding:0 8px 8px 0"><a href="${esc(href)}" style="display:inline-block;background:${fondo};color:${color};font:700 15px/1 Arial,sans-serif;text-decoration:none;padding:14px 22px;border-radius:999px">${texto}</a></td>`;
-function marco(env, { aviso, titulo, previa, cuerpo }) {
+function marco(env, { aviso, titulo, previa, cuerpo, pie = '' }) {
   const sitio = new URL('/', env.SITE_URL || 'https://zerok.cl').href;
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${esc(titulo)}</title></head>`
     + `<body style="margin:0;padding:0;background:${C.fondo}"><div style="display:none;max-height:0;overflow:hidden;opacity:0">${esc(previa)}</div>`
@@ -196,7 +196,7 @@ function marco(env, { aviso, titulo, previa, cuerpo }) {
     + `<tr><td style="padding:0;font-size:0;line-height:0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td height="5" style="background:${C.hielo}"></td><td height="5" style="background:#bd541c"></td><td height="5" style="background:#e4ac4b"></td></tr></table></td></tr>`
     + `<tr><td style="background:${C.marino};padding:26px 28px 28px;color:#ffffff"><p style="margin:0 0 10px;font:${mono};color:#9fc6d8">${esc(aviso)}</p><h1 style="margin:0;font:800 26px/1.2 Arial,Helvetica,sans-serif;color:#ffffff">${esc(titulo)}</h1></td></tr>`
     + `<tr><td style="padding:28px">${cuerpo}</td></tr>`
-    + `<tr><td style="padding:18px 28px 24px;border-top:1px solid ${C.linea};font:13px/1.5 Arial,sans-serif;color:${C.gris}">Aviso automático de la agenda de <a href="${esc(sitio)}" style="color:${C.gris}">zerok.cl</a>. Los datos del cliente son privados: úsalos solo para esta visita.</td></tr>`
+    + `<tr><td style="padding:18px 28px 24px;border-top:1px solid ${C.linea};font:13px/1.5 Arial,sans-serif;color:${C.gris}">${pie || `Aviso automático de la agenda de <a href="${esc(sitio)}" style="color:${C.gris}">zerok.cl</a>. Los datos del cliente son privados: úsalos solo para esta visita.`}</td></tr>`
     + `</table></td></tr></table></body></html>`;
 }
 const filas = datos => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">${datos.map(([k, x]) => `<tr><td style="padding:12px 12px 12px 0;border-bottom:1px solid ${C.linea};width:32%;vertical-align:top;font:${mono};color:${C.gris}">${esc(k)}</td><td style="padding:12px 0;border-bottom:1px solid ${C.linea};vertical-align:top;font:16px/1.45 Arial,sans-serif;color:${C.tinta}">${x}</td></tr>`).join('')}</table>`;
@@ -241,4 +241,36 @@ export async function avisoSeguimiento(env, visitas) {
     + `<p style="margin:22px 0 0;font:15px/1.5 Arial,sans-serif;color:${C.gris}">Cuando llames, <a href="${esc(panel(env))}" style="color:${C.marino};font-weight:700">márcalo en el panel</a>.</p>`;
   const html = marco(env, { aviso: 'Seguimiento', titulo: 'Llamados de seguimiento pendientes', previa: visitas.map(v => v.nombre).join(', '), cuerpo });
   await enviar(env, visitas.length === 1 ? `Hoy toca llamar a ${visitas[0].nombre}` : `Hoy toca llamar a ${visitas.length} clientes`, text, html);
+}
+
+// Resumen de un trabajo hecho: el mismo contenido sirve para el correo, su vista previa y el texto de WhatsApp.
+export const correoClientes = env => env.AVISOS_HABILITADOS === 'true' && typeof env.CLIENTES?.send === 'function';
+export const precioVisible = p => /^\d+$/.test(p) ? `$${Number(p).toLocaleString('es-CL')}` : '';
+export function resumenTrabajo(env, t, general = {}) {
+  const sitio = env.SITE_URL || 'https://zerok.cl';
+  const abs = src => new URL(src, sitio).href;
+  const fecha = etiqueta(t.fecha, { day: 'numeric', month: 'long', year: 'numeric' });
+  const lugar = [t.direccion, t.sector].filter(Boolean).join(', ');
+  const precio = precioVisible(t.precio);
+  const fono = general.telefono || '';
+  const wsp = /^\+56\d{9}$/.test(fono) ? `https://wa.me/${fono.slice(1)}` : '';
+  const datos = [['Fecha', fecha], ...(lugar ? [['Lugar', lugar]] : []), ['Equipo', t.equipo], ...(precio ? [['Valor', precio]] : []), ...(t.garantia ? [['Garantía y observaciones', t.garantia]] : [])];
+  const grupos = [['Antes', t.antes], ['Después', t.despues]].filter(([, fotos]) => fotos.length);
+  const text = `Hola ${t.nombre}, este es el resumen del trabajo que hizo ZÉROK.\n\nTrabajo realizado:\n${t.descripcion}\n\n${datos.map(([k, x]) => `${k}: ${x}`).join('\n')}\n`
+    + grupos.map(([k, fotos]) => `\nFotos de ${k.toLowerCase()}:\n${fotos.map(abs).join('\n')}\n`).join('')
+    + `\nSi tienes dudas, escríbenos${fono ? ` o llama al ${telefonoVisible(fono)}` : ''}.\nZÉROK Refrigeración & Climatización Profesional\nEste resumen no es una boleta ni una factura.\n`;
+  const foto = (src, k, i, n) => `<td width="${Math.floor(100 / n)}%" style="padding:0 6px 6px 0;vertical-align:top"><a href="${esc(abs(src))}"><img src="${esc(abs(src))}" width="${Math.floor(510 / n)}" alt="${esc(`Foto de ${k.toLowerCase()} ${i + 1}`)}" style="display:block;width:100%;max-width:${Math.floor(510 / n)}px;height:auto;border:0;border-radius:10px"></a><a href="${esc(abs(src))}" style="font:13px/1.6 Arial,sans-serif;color:${C.gris}">Ver foto</a></td>`;
+  const cuerpo = `<p style="margin:0 0 18px;font:17px/1.5 Arial,sans-serif;color:${C.tinta}">Hola ${esc(t.nombre)}, este es el resumen del trabajo que hicimos.</p>`
+    + `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.fondo};border-left:5px solid ${C.ambar};margin:0 0 22px"><tr><td style="padding:18px 20px"><p style="margin:0 0 8px;font:${mono};color:${C.gris}">Trabajo realizado</p><p style="margin:0;font:17px/1.5 Arial,sans-serif;color:${C.tinta}">${esc(t.descripcion).replace(/\n/g, '<br>')}</p></td></tr></table>`
+    + filas(datos.map(([k, x]) => [k, k === 'Valor' ? `<strong>${esc(x)}</strong>` : esc(x).replace(/\n/g, '<br>')]))
+    + grupos.map(([k, fotos]) => `<p style="margin:24px 0 10px;font:${mono};color:${C.gris}">${k}</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>${fotos.map((src, i) => foto(src, k, i, fotos.length)).join('')}</tr></table>`).join('')
+    + (fono ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:26px 0 4px"><tr>${wsp ? boton(wsp, 'Escribir por WhatsApp', '#1f7a45') : ''}${boton(`tel:${fono}`, 'Llamar', C.ambar, C.tinta)}</tr></table>` : '');
+  const html = marco(env, { aviso: 'Resumen de trabajo', titulo: `${t.equipo}: trabajo realizado`, previa: `${fecha}. ${t.descripcion.slice(0, 90)}`, cuerpo, pie: `Recibes este correo porque ZÉROK realizó un trabajo para ti y le diste tu dirección. Este resumen no es una boleta ni una factura. Si quieres que borremos tus datos, responde este correo.` });
+  return { asunto: `Resumen de tu trabajo con ZÉROK, ${etiqueta(t.fecha, { day: 'numeric', month: 'long' })}`, text, html };
+}
+export async function enviarTrabajo(env, t, general) {
+  if (!correoClientes(env)) throw new Error('Correo no habilitado.');
+  const { asunto, text, html } = resumenTrabajo(env, t, general);
+  // La copia oculta deja el respaldo en el buzón del técnico; las respuestas del cliente llegan al mismo buzón.
+  await env.CLIENTES.send({ from: { email: 'avisos@zerok.cl', name: 'ZÉROK' }, to: t.correo, bcc: 'avisos@zerok.cl', replyTo: 'avisos@zerok.cl', subject: asunto, text, html });
 }
