@@ -278,8 +278,14 @@ $('#save').addEventListener('click', guardar);
 $('#save-bar-save').addEventListener('click', guardar);
 
 async function compress(file) {
-  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 20000000) throw new Error('Elige un JPG, PNG o WebP de hasta 20 MB.');
-  const bitmap = await createImageBitmap(file);
+  const heic = /^image\/hei[cf]/.test(file.type) || /\.hei[cf]$/i.test(file.name);
+  if (!(heic || ['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) || file.size > 20000000) throw new Error('Elige una foto JPG, PNG, WebP o HEIC de hasta 20 MB.');
+  // Chrome en Android no abre HEIC; Safari sí. El decodificador (3 MB) se carga solo cuando hace falta.
+  const bitmap = await createImageBitmap(file).catch(async () => {
+    if (!heic) throw new Error('No se pudo abrir la foto. Prueba con otra.');
+    const { heicTo } = await import('./vendor/heic-to.js');
+    return heicTo({ blob: file, type: 'bitmap' }).catch(() => { throw new Error('No se pudo abrir la foto HEIC. Prueba con otra.'); });
+  });
   const canvas = document.createElement('canvas');
   try {
     for (const max of [1600, 1200, 960]) {
