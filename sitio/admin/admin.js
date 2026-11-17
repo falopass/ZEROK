@@ -95,6 +95,9 @@ function render() {
     else button.removeAttribute('aria-current');
   });
   $('#save').hidden = ['seguridad', 'agenda'].includes(section);
+  document.body.dataset.seccion = section;
+  $('#section-eyebrow').textContent = section === 'agenda' ? new Intl.DateTimeFormat('es-CL', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Santiago' }).format(new Date()) : 'Contenido del sitio';
+  $('.nav-mas').classList.toggle('activa', !!$(`.nav-resto [data-section="${section}"]`));
   const editor = $('#editor');
   if (section === 'agenda') {
     // An existing agenda (e.g. after a session renewal) keeps its DOM and typed edits.
@@ -130,7 +133,8 @@ async function load(preserve = false) {
   $('#access').hidden = true; $('#workspace').hidden = false;
   render();
   actualizarBarra();
-  status(conflict ? 'Conservamos tus cambios, pero otra sesión publicó una versión más reciente. Descarga un respaldo en Seguridad y respaldo antes de cargar la última versión.' : dirty ? 'Recuperamos tus cambios de esta pestaña. Aún no están guardados.' : record.updated ? `Último guardado: ${new Date(record.updated).toLocaleString('es-CL')}.` : 'Contenido inicial. Todavía no hay cambios publicados desde el panel.', !!conflict);
+  // El estado del contenido no se muestra sobre la agenda, salvo que haya algo que recuperar.
+  if (section !== 'agenda' || conflict || dirty) status(conflict ? 'Conservamos tus cambios, pero otra sesión publicó una versión más reciente. Descarga un respaldo en Seguridad y respaldo antes de cargar la última versión.' : dirty ? 'Recuperamos tus cambios de esta pestaña. Aún no están guardados.' : record.updated ? `Último guardado: ${new Date(record.updated).toLocaleString('es-CL')}.` : 'Contenido inicial. Todavía no hay cambios publicados desde el panel.', !!conflict);
 }
 
 $('#login-form').addEventListener('submit', async event => {
@@ -159,9 +163,18 @@ document.querySelectorAll('[data-section]').forEach(button => button.addEventLis
     visitas.discard();
   }
   section = destino;
+  status('');
   render();
-  button.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  menuMas(false);
 }));
+// En celular las secciones menos usadas viven en una hoja que abre «Más».
+function menuMas(abrir) {
+  $('.admin-sidebar nav').classList.toggle('abierta', abrir);
+  $('.nav-mas').setAttribute('aria-expanded', abrir);
+}
+$('.nav-mas').addEventListener('click', event => menuMas(event.currentTarget.getAttribute('aria-expanded') !== 'true'));
+document.addEventListener('click', event => { if (!event.target.closest('.admin-sidebar nav')) menuMas(false); });
+document.addEventListener('keydown', event => { if (event.key === 'Escape') menuMas(false); });
 $('#editor').addEventListener('submit', event => event.preventDefault());
 $('#editor').addEventListener('input', event => {
   const input = event.target;

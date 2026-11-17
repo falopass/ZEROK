@@ -82,32 +82,15 @@
 }
 
 .agenda-badge{display:inline-grid;place-items:center;min-width:22px;height:22px;margin-left:8px;padding-inline:6px;border-radius:999px;background:var(--acento);color:var(--sobre-acento);font-size:.6875rem;font-weight:600;vertical-align:2px}
-.visita-acciones{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
-.visita-acciones .editor-action{flex:1;min-width:104px;min-height:48px}
 .visita-secundarias{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
 .visita-estado{padding:4px 8px;background:var(--superficie-2);font-size:.75rem;font-weight:600;border-radius:4px;line-height:1.4;white-space:nowrap}
 .visita-estado.estado-solicitada{background:var(--acento);color:var(--sobre-acento)}
 .visita-estado.estado-confirmada{background:#0c426c;color:#eef3f5}
 .visita-estado.estado-realizada{background:transparent;border:1px solid var(--texto-2);color:var(--texto)}
 .visita-pasada{color:var(--error)}
-.agenda-aviso{font-size:.8125rem;margin:0}
 .agenda-toolbar{display:grid;gap:10px;margin-bottom:4px}
-.agenda-filtros{display:flex;gap:8px;flex-wrap:wrap;min-width:0}
-.agenda-filtros .editor-action{flex-shrink:0;min-height:40px;padding:8px 12px}
-.agenda-filtros [aria-pressed=true]{background:var(--superficie-2);border-color:var(--texto);font-weight:600}
-.agenda-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.agenda-busqueda{flex:1 1 200px;min-width:140px;min-height:44px}
-.agenda-tools>.editor-action{flex-shrink:0}
 .editor-action.primaria{background:var(--acento);border-color:var(--acento);color:var(--sobre-acento);font-weight:600}
 .editor-action.primaria:hover{background:var(--acento-hover);border-color:var(--acento-hover)}
-.visita>summary{align-items:flex-start}
-.visita-resumen{flex:1;min-width:0;display:grid;gap:6px}
-.visita-top{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px}
-.visita-top>b{font-size:1rem;line-height:1.25}
-.visita-top .visita-estado{margin-left:auto}
-.visita-hora{padding:3px 8px;border-radius:4px;background:var(--superficie-2);font-size:.75rem;font-weight:600;flex-shrink:0}
-.visita-hora.sin-hora{color:var(--texto-2);font-weight:400}
-.visita-sub{display:block;font-size:.8125rem;font-weight:400;color:var(--texto-2);line-height:1.4}
 .visita-datos{display:grid;gap:6px;margin:0 0 18px;overflow-wrap:anywhere}
 .visita-datos dt{font-size:.75rem;font-weight:600;color:var(--texto-2);margin-top:6px}
 .visita-datos dd{margin:0;white-space:pre-wrap}
@@ -163,23 +146,12 @@
 @media(min-width:768px){.save-bar{left:224px}.con-save-bar .admin-content{padding-bottom:120px}}
 @media(max-width:767px){
 .admin-topbar{height:60px;padding-inline:16px}
-.admin-sidebar{padding:10px 16px}
-.admin-sidebar button{padding:10px 14px;min-height:44px}
-.admin-sidebar nav{scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
-.admin-sidebar nav::-webkit-scrollbar{display:none}
-.admin-sidebar nav [data-section=agenda]{position:sticky;left:0;z-index:1;flex-shrink:0;background:var(--fondo);box-shadow:10px 0 10px -8px rgb(0 0 0/.4)}
-.admin-sidebar nav [data-section=agenda][aria-current]{background:var(--superficie-2)}
 .admin-content{padding:20px 16px 72px}
 .editor-heading{margin-bottom:12px;gap:12px}
 .editor-heading .mono{margin-bottom:6px}
 .save-status{margin-bottom:16px}
 .editor-group{padding:16px}
 #editor{gap:14px}
-.agenda-filtros{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:2px}
-.agenda-filtros::-webkit-scrollbar{display:none}
-.agenda-busqueda{flex:1 1 100%}
-.agenda-tools>[data-nueva-toggle]{flex:1}
-.visita-acciones .primaria{flex-basis:100%}
 .agenda-nueva-pie .editor-action{width:100%}
 }
 .agenda-calendario{border:1px solid var(--linea);border-radius:6px;background:var(--superficie);padding:12px;margin-bottom:16px}
@@ -204,17 +176,135 @@
 .cal-dia.sel .punto-realizada{border-color:var(--sobre-acento);color:var(--sobre-acento)}
 .punto-otras{background:var(--superficie-2);color:var(--texto-2)}
 .cal-limpiar{border:0;background:none;text-decoration:underline;color:var(--acento);font-size:inherit;padding:0;min-height:44px}
-@media(min-width:1200px){#editor{grid-template-columns:1fr 1fr;align-items:start}
-#editor>:not(details),#editor>details.agenda-config,#editor>details.agenda-cal-panel{grid-column:1/-1}}
 
 /* El panel no lleva el fondo de termografía del sitio público. */
 body{background:var(--fondo)}
 body::before,body::after{content:none}
 
-/* Visitas como lista de trabajo: llamar, escribir y ver el mapa sin abrir la tarjeta. */
-.visita>summary{display:grid;gap:12px}
-.visita>summary .visita-acciones{display:flex;flex-wrap:wrap;gap:8px;margin:0}
-.visita>summary .editor-action{flex:1 1 96px;display:inline-flex;align-items:center;justify-content:center;min-height:48px;font-size:1rem;font-weight:600}
-.visita-dir{display:block;margin-top:4px;font-size:.9375rem;color:var(--texto)}
-.visita-sub{font-size:.9375rem}
-.visita-top b{font-size:1.125rem}
+/* ── Revisión 15: el panel como talonario del técnico ─────────────────────── */
+.admin-body{font-size:1rem;--pagina:var(--fondo);--suave:16px}
+.admin-body .ico{flex-shrink:0}
+.admin-topbar>a:nth-last-child(2),.admin-topbar>button{font-size:.9375rem}
+.admin-topbar>button{border-radius:999px;padding-inline:16px}
+.editor-heading .mono::first-letter{text-transform:uppercase}
+.save-status,.editor-heading .button{font-size:.9375rem}
+.save-status:empty{display:none}
+.admin-field{font-size:.9375rem}
+.admin-field .help,.editor-note,.respaldo-op p,.agenda-config>p,.agenda-config .help,.image-control .upload-status,.image-control input[type=file],.image-control button{font-size:.875rem}
+.row-tools button,.editor-action{border-radius:999px;font-size:.9375rem;padding-inline:18px}
+.editor-action.mini{font-size:.875rem;min-height:44px;padding-inline:14px}
+.editor-group,.empty-editor,.image-control,.editor-note,.agenda-cal-panel,.agenda-calendario{border-radius:var(--suave)}
+.editor-group>summary::after,.agenda-cal-panel>summary::after{content:'';width:10px;height:10px;margin:0 6px 4px;border:solid var(--texto-2);border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform .2s}
+.editor-group[open]>summary::after,.agenda-cal-panel[open]>summary::after{content:'';transform:translateY(5px) rotate(225deg)}
+@media(min-width:1200px){body:not([data-seccion=agenda]) #editor{grid-template-columns:1fr 1fr;align-items:start}
+body:not([data-seccion=agenda]) #editor>:not(details){grid-column:1/-1}}
+
+/* Navegación */
+.admin-sidebar button{display:flex;align-items:center;gap:10px;border-radius:12px;font-size:.9375rem}
+.admin-sidebar .nav-corto,.admin-sidebar .nav-mas{display:none}
+.nav-resto{display:contents}
+@media(min-width:768px){.admin-sidebar .ico{display:none}}
+@media(max-width:767px){
+.admin-sidebar{position:fixed;inset:auto 0 0;z-index:30;padding:0;border:0}
+.admin-sidebar nav{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;overflow:visible;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:var(--superficie);border-top:1px solid var(--linea);box-shadow:0 -14px 28px -18px rgb(0 0 0/.6)}
+.admin-sidebar nav>button{position:relative;display:grid;justify-items:center;align-content:center;gap:3px;min-height:56px;padding:6px 4px;border-radius:14px;font-size:.8125rem;font-weight:500;color:var(--texto-2);white-space:nowrap}
+.admin-sidebar nav>button[aria-current],.admin-sidebar .nav-mas.activa,.admin-sidebar .nav-mas[aria-expanded=true]{background:var(--superficie-2);color:var(--texto);font-weight:600}
+.admin-sidebar nav>button[aria-current] .ico{color:var(--acento)}
+.admin-sidebar .nav-largo{display:none}
+.admin-sidebar .nav-corto{display:inline}
+.admin-sidebar .nav-mas{display:grid}
+.admin-sidebar .agenda-badge{position:absolute;top:4px;left:calc(50% + 6px);margin:0}
+.nav-resto{display:none;position:absolute;inset:auto 8px calc(100% + 8px);padding:8px;border:1px solid var(--linea);border-radius:var(--suave);background:var(--superficie);box-shadow:0 18px 40px -12px rgb(0 0 0/.7)}
+.abierta .nav-resto{display:grid;gap:2px}
+.nav-resto button{min-height:52px;padding:12px 14px;font-size:1rem}
+.admin-content{padding:20px 16px calc(104px + env(safe-area-inset-bottom,0px))}
+.save-bar{bottom:calc(69px + env(safe-area-inset-bottom,0px));z-index:25}
+.con-save-bar .admin-content{padding-bottom:230px}
+}
+
+/* Agenda: lecturas que filtran */
+#editor{align-items:start}
+.agenda-principal,.agenda-lateral{display:grid;gap:14px;min-width:0}
+.agenda-toolbar{gap:12px;margin:0}
+.agenda-filtros{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.filtro{display:grid;gap:4px;justify-items:start;align-content:center;min-height:68px;padding:10px 12px;border:1px solid var(--linea);border-radius:14px;background:var(--superficie);text-align:left;transition:border-color .15s,background-color .15s}
+.filtro b{font-size:1.375rem;line-height:1;font-weight:600}
+.filtro span{font-size:.8125rem;line-height:1.2;color:var(--texto-2)}
+.filtro:first-child{grid-column:1/-1;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px;min-height:76px;padding:12px 18px;border-radius:var(--ficha)}
+.filtro:first-child b{font-size:2.25rem}
+.filtro:first-child span{font-size:1.0625rem;font-weight:600;color:var(--texto)}
+.filtro:hover{border-color:var(--texto-2)}
+.filtro[aria-pressed=true]{border-color:var(--acento);box-shadow:inset 0 0 0 1px var(--acento);background:color-mix(in srgb,var(--acento) 13%,var(--superficie))}
+.filtro[aria-pressed=true] b{color:var(--acento)}
+.filtro[aria-pressed=true] span{color:var(--texto)}
+.agenda-tools{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center}
+.agenda-busqueda{grid-column:1/-1;min-height:50px;padding-inline:20px;border-radius:999px}
+.agenda-tools .editor-action{min-height:50px}
+.agenda-tools .editor-action:not(.primaria){padding-inline:12px;border-color:transparent;color:var(--texto-2);text-decoration:underline;text-underline-offset:4px}
+
+/* Agenda: un encabezado por día y cada visita como talón de papel */
+.admin-body .agenda-dia{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;margin:10px 2px -2px;font-size:1rem;font-weight:500;letter-spacing:0;color:var(--texto-2)}
+.agenda-dia b{font-size:1.25rem;font-weight:650;color:var(--texto)}
+.agenda-dia>span:not(.mono)::first-letter{text-transform:uppercase}
+.agenda-dia-n{margin-left:auto;font-size:.75rem}
+.visita{position:relative;min-width:0;overflow:hidden;border-radius:var(--ficha);background:var(--superficie);color:var(--texto);border:1px solid var(--linea)}
+.visita>summary{display:grid;grid-template-columns:78px minmax(0,1fr);list-style:none;cursor:pointer}
+.visita>summary::-webkit-details-marker{display:none}
+.visita-talon{display:grid;justify-items:center;align-content:center;gap:4px;padding:16px 4px;background:var(--superficie-2);color:var(--texto);text-align:center}
+.visita-talon b{font-size:1.375rem;line-height:1;font-weight:600;letter-spacing:-.02em}
+.visita-talon span{font-size:.75rem;line-height:1.2;opacity:.8}
+.visita-solicitada .visita-talon{background:var(--acento);color:var(--sobre-acento)}
+.visita-confirmada .visita-talon{background:#0c426c;color:#eef3f5}
+.visita-resumen{display:grid;gap:3px;min-width:0;padding:14px 16px 14px;overflow-wrap:anywhere}
+.visita-nombre{font-size:1.1875rem;line-height:1.2;font-weight:650}
+.visita-sub{font-size:.9375rem;line-height:1.35;color:var(--texto-2)}
+.visita-dir{font-size:.9375rem;line-height:1.35}
+.visita-pie{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-top:6px;font-size:.8125rem;color:var(--texto-2)}
+.visita-estado{border-radius:999px;padding:3px 10px;font-size:.8125rem}
+.visita .visita-estado{background:none;border:1px solid var(--texto-2);color:var(--texto)}
+.visita-pasada{font-weight:600}
+.visita-acciones{position:relative;grid-column:1/-1;display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:8px;padding:12px 12px 0;border-top:2px dashed var(--linea)}
+.visita-acciones::before,.visita-acciones::after{content:'';position:absolute;top:-10px;width:18px;height:18px;border-radius:50%;background:var(--pagina)}
+.visita-acciones::before{left:-10px}
+.visita-acciones::after{right:-10px}
+.visita-acciones .editor-action{min-width:0;min-height:48px;padding-inline:6px;gap:6px;font-weight:600}
+.visita-acciones .editor-action:only-child{grid-column:1/-1}
+.visita-abrir{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:50px;padding:2px 18px 0;font-size:.9375rem;font-weight:600;color:var(--texto-2)}
+.visita-abrir::after{content:'';width:9px;height:9px;margin:0 4px 4px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform .2s}
+.visita[open] .visita-abrir::after{transform:translateY(5px) rotate(225deg)}
+.visita-detalle{padding:16px;border-top:1px solid var(--linea)}
+.visita-secundarias .editor-action.mini{min-height:44px}
+@media(prefers-color-scheme:dark){
+.visita,.agenda-nueva{color-scheme:light;--fondo:#eef3f5;--superficie:#f8fafb;--superficie-2:#dde8ef;--linea:#c6d4de;--texto:#0c2340;--texto-2:#4a5f75;--marca:#042c56;--acento-hover:#c9861a;--error:#b42318;border-color:transparent}
+.visita :focus-visible,.agenda-nueva :focus-visible{outline-color:var(--texto)}
+}
+
+/* Agenda: calendario y disponibilidad en segundo plano */
+.agenda-cal-panel>summary{min-height:56px;padding:12px 18px;font-size:1rem}
+.cal-panel-resumen{font-size:.8125rem}
+.agenda-aviso{display:flex;gap:10px;margin:0 4px;font-size:.875rem;line-height:1.45;color:var(--texto-2)}
+.agenda-aviso::before{content:'';flex-shrink:0;width:9px;height:9px;margin-top:6px;border-radius:50%;border:2px solid var(--texto-2)}
+.agenda-aviso.activa::before{border-color:var(--acento);background:var(--acento)}
+.cal-semana{font-size:.8125rem}
+@media(max-width:1099px){
+.agenda-principal,.agenda-lateral{display:contents}
+.agenda-cal-panel{order:1}
+.agenda-nueva{order:2}
+.agenda-dia,.visita,.agenda-principal>.empty-editor{order:3}
+.agenda-config{order:4}
+.agenda-aviso{order:5}
+}
+@media(min-width:1100px){
+body[data-seccion=agenda] #editor{grid-template-columns:minmax(0,1fr) minmax(320px,380px);gap:32px}
+.agenda-lateral{position:sticky;top:96px;max-height:calc(100dvh - 120px);overflow:auto;padding-right:2px}
+.agenda-filtros{grid-template-columns:1.6fr repeat(4,minmax(0,1fr))}
+.filtro:first-child{grid-column:auto}
+.agenda-tools{grid-template-columns:minmax(0,1fr) auto auto auto}
+.agenda-busqueda{grid-column:auto}
+.visita>summary{grid-template-columns:96px minmax(0,1fr) auto}
+.visita-talon{grid-row:1/3}
+.visita-acciones{grid-column:3;grid-row:1;align-self:center;grid-template-columns:repeat(3,auto);padding:0 18px 0 0;border:0}
+.visita-acciones::before,.visita-acciones::after{content:none}
+.visita-acciones .editor-action{padding-inline:16px}
+.visita-abrir{grid-column:2/-1;min-height:44px;padding:0 18px 0 16px;border-top:2px dashed var(--linea)}
+}
