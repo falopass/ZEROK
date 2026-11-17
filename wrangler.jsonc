@@ -11,7 +11,7 @@
     { "pattern": "www.zerok.cl", "custom_domain": true }
   ],
   "kv_namespaces": [{ "binding": "CONTENIDO", "id": "1cd1a1ea2d5b4a2a801701ea5723aea3" }],
-  "send_email": [{ "name": "AVISOS", "destination_address": "avisos@zerok.cl" }],
+  "send_email": [{ "name": "AVISOS", "destination_address": "avisos@zerok.cl" }, { "name": "CLIENTES", "allowed_sender_addresses": ["avisos@zerok.cl"] }],
   "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "zerok-media" }],
   "durable_objects": { "bindings": [{ "name": "ADMIN", "class_name": "Admin" }] },
   "triggers": { "crons": ["*/15 * * * *"] },

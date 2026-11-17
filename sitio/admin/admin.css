@@ -269,13 +269,14 @@ body:not([data-seccion=agenda]) #editor>:not(details){grid-column:1/-1}}
 .visita-acciones::after{right:-10px}
 .visita-acciones .editor-action{min-width:0;min-height:48px;padding-inline:6px;gap:6px;font-weight:600}
 .visita-acciones .editor-action:only-child{grid-column:1/-1}
+.visita-acciones .visita-registrar{grid-column:1/-1}
 .visita-abrir{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:50px;padding:2px 18px 0;font-size:.9375rem;font-weight:600;color:var(--texto-2)}
 .visita-abrir::after{content:'';width:9px;height:9px;margin:0 4px 4px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform .2s}
 .visita[open] .visita-abrir::after{transform:translateY(5px) rotate(225deg)}
 .visita-detalle{padding:16px;border-top:1px solid var(--linea)}
 .visita-secundarias .editor-action.mini{min-height:44px}
 @media(prefers-color-scheme:dark){
-.visita,.agenda-nueva{color-scheme:light;--fondo:#eef3f5;--superficie:#f8fafb;--superficie-2:#dde8ef;--linea:#c6d4de;--texto:#0c2340;--texto-2:#4a5f75;--marca:#042c56;--acento-hover:#c9861a;--error:#b42318;border-color:transparent}
+.visita,.agenda-nueva,.hecho,.hecho-form{color-scheme:light;--fondo:#eef3f5;--superficie:#f8fafb;--superficie-2:#dde8ef;--linea:#c6d4de;--texto:#0c2340;--texto-2:#4a5f75;--marca:#042c56;--acento-hover:#c9861a;--error:#b42318;border-color:transparent}
 .visita :focus-visible,.agenda-nueva :focus-visible{outline-color:var(--texto)}
 }
 
@@ -307,4 +308,41 @@ body[data-seccion=agenda] #editor{grid-template-columns:minmax(0,1fr) minmax(320
 .visita-acciones::before,.visita-acciones::after{content:none}
 .visita-acciones .editor-action{padding-inline:16px}
 .visita-abrir{grid-column:2/-1;min-height:44px;padding:0 18px 0 16px;border-top:2px dashed var(--linea)}
+}
+
+/* ── Trabajos hechos: registro privado con resumen para el cliente ─────────── */
+.hechos-lista{display:grid;gap:14px}
+.hecho{display:grid;grid-template-columns:78px minmax(0,1fr);overflow:hidden;border:1px solid transparent;border-radius:var(--ficha);background:var(--superficie);color:var(--texto)}
+.hecho .visita-talon small{font-size:.75rem}
+.hecho .visita-acciones{padding-bottom:12px}
+.hecho-texto{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.9375rem}
+.hecho-minis{display:flex;gap:6px;margin-top:4px}
+.hecho-minis img{width:44px;height:44px;border-radius:8px;object-fit:cover}
+.hecho-form{display:grid;gap:14px;background:var(--superficie);color:var(--texto)}
+.hecho-paso{margin:10px 0 0;padding-top:16px;border-top:1px solid var(--linea);font-size:.8125rem;color:var(--texto-2)}
+.hecho-paso:first-of-type{border:0;padding:0;margin:0}
+.hecho-fotos-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.hecho-fotos figure{display:grid;gap:6px;margin:0}
+.hecho-fotos img{width:100%;height:auto;aspect-ratio:1;border-radius:12px;object-fit:cover}
+.hecho-subir{display:grid;place-content:center;justify-items:center;gap:2px;aspect-ratio:1;border:2px dashed var(--linea);border-radius:12px;font-size:.875rem;font-weight:500;color:var(--texto-2);text-align:center;cursor:pointer}
+.hecho-subir b{font-size:1.75rem;line-height:1;font-weight:400;color:var(--acento)}
+.hecho-subir input{position:absolute;width:1px;height:1px;opacity:0}
+.hecho-subir:focus-within{outline:2px solid var(--acento);outline-offset:2px}
+.hecho-form .agenda-nueva-pie{gap:10px;flex-wrap:wrap}
+.hecho-previa{width:min(680px,100% - 24px);max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--linea);border-radius:var(--ficha);background:var(--superficie);color:var(--texto)}
+.hecho-previa[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto}
+.hecho-previa::backdrop{background:rgb(0 0 0/.7)}
+.hecho-previa-cab{display:grid;gap:4px;padding:14px 18px;font-size:.9375rem;overflow-wrap:anywhere}
+.hecho-previa-cab p{margin:0}
+.hecho-previa-cab .mono{margin-right:8px;font-size:.75rem;color:var(--texto-2)}
+.hecho-previa iframe{width:100%;height:56dvh;border:0;background:#eef3f5}
+.hecho-previa-nota{margin:0;padding:12px 18px 0;font-size:.875rem;color:var(--texto-2)}
+.hecho-previa-pie{display:grid;grid-template-columns:1fr 1.6fr;gap:10px;padding:12px 18px 16px}
+.hecho-previa-pie .editor-action{min-height:50px}
+@media(min-width:1100px){
+.hechos-lista,.hecho-form{grid-column:1/-1}
+.hecho{grid-template-columns:96px minmax(0,1fr) auto}
+.hecho .visita-acciones{padding-bottom:0}
+.hecho-form{max-width:860px}
+#editor>.agenda-toolbar:has([name=hecho-buscar]){grid-column:1/-1;grid-template-columns:minmax(0,1fr) auto}
 }

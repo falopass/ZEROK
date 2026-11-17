@@ -90,7 +90,7 @@ const hace = iso => {
   return `hace ${Math.floor(h / 24)} d`;
 };
 
-export function agendaPanel(root, api, status, activo, avisar = () => {}, autorizado = () => true) {
+export function agendaPanel(root, api, status, activo, avisar = () => {}, autorizado = () => true, registrar = () => {}) {
   const esEscritorio = () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches;
   let data, vista = 'pendientes', cargando = false, configDirty = false, nuevaDirty = false, busqueda = '', mesCursor = null, diaSel = null, mesBloq = null;
   let calAbierto = esEscritorio();
@@ -162,6 +162,7 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
           ${v.telefono ? `<a class="editor-action${v.estado === 'solicitada' ? ' primaria' : ''}" href="tel:${esc(v.telefono)}">${ICO.fono}Llamar</a>` : ''}
           ${wsp ? `<a class="editor-action" href="https://wa.me/${wsp}?text=${encodeURIComponent(saludo)}" target="_blank" rel="noopener noreferrer">${ICO.chat}WhatsApp</a>` : ''}
           ${dirTexto ? `<a class="editor-action" href="${esc(mapa)}" target="_blank" rel="noopener noreferrer">${ICO.mapa}Mapa</a>` : ''}
+          ${['realizada', 'cerrada'].includes(v.estado) ? `<button class="editor-action primaria visita-registrar" type="button" data-registrar="${esc(v.id)}">Registrar trabajo</button>` : ''}
         </span>
         <span class="visita-abrir">${abrir}</span>
       </summary>
@@ -446,6 +447,8 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
   });
 
   root.addEventListener('click', async event => {
+    const origen = activo() && event.target.closest('[data-registrar]');
+    if (origen) { event.preventDefault(); return registrar(data.visitas.find(v => v.id === origen.dataset.registrar)); }
     if (!activo()) return;
     const button = event.target.closest('button');
     if (!button) return;

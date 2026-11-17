@@ -1,6 +1,6 @@
 import { defaults, validateContent } from './content.js';
 import { MAX_CONTENT_BYTES } from '../sitio/js/limites.js';
-import { hoy, ahoraChile, sumar, esFecha, parseHora, disponibles, horasOcupadas, construirOferta, validarReserva, equipos, telefono, correoActivo, limpiar, avisoReserva, avisoSeguimiento } from './agenda.js';
+import { hoy, ahoraChile, sumar, esFecha, parseHora, disponibles, horasOcupadas, construirOferta, validarReserva, equipos, telefono, correoActivo, limpiar, avisoReserva, avisoSeguimiento, correoClientes, resumenTrabajo, enviarTrabajo } from './agenda.js';
 
 const enc = new TextEncoder();
 const hex = bytes => Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
@@ -10,6 +10,9 @@ const equal = (a, b) => { let difference = a.length ^ b.length; for (let i = 0; 
 const passwordOK = value => typeof value === 'string' && value.length >= 12 && value.length <= 200;
 const cookie = (value, age = 43200) => `__Host-zerok=${value}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${age}`;
 const COLUMNAS = ['id', 'creada', 'actualizada', 'estado', 'dia', 'hora', 'nombre', 'telefono', 'direccion', 'sector', 'referencia', 'equipo', 'problema', 'nota', 'realizada', 'seguimiento', 'resultado'];
+const TRABAJO = ['id', 'creado', 'actualizado', 'fecha', 'nombre', 'telefono', 'correo', 'direccion', 'sector', 'equipo', 'descripcion', 'precio', 'garantia', 'antes', 'despues', 'visita', 'enviado', 'enviadoA'];
+const esFoto = v => typeof v === 'string' && /^\/media\/[a-f0-9-]{36}\.webp$/.test(v);
+const fotosDe = t => ({ ...t, antes: JSON.parse(t.antes || '[]'), despues: JSON.parse(t.despues || '[]') });
 export const json = (data, status = 200, extra = {}) => new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...extra } });
 
 async function derive(password, salt) {
@@ -51,6 +54,7 @@ export class Admin {
     ctx.storage.sql.exec(`CREATE TABLE IF NOT EXISTS visitas (${COLUMNAS.map(c => `${c} TEXT NOT NULL${c === 'id' ? ' PRIMARY KEY' : " DEFAULT ''"}`).join(', ')})`);
     ctx.storage.sql.exec("CREATE TABLE IF NOT EXISTS avisos (id TEXT PRIMARY KEY, visita TEXT NOT NULL, tipo TEXT NOT NULL, dia TEXT NOT NULL, intentos INTEGER NOT NULL DEFAULT 0, proximo INTEGER NOT NULL DEFAULT 0, enviada TEXT NOT NULL DEFAULT '')");
     ctx.storage.sql.exec('CREATE INDEX IF NOT EXISTS avisos_pendientes ON avisos (enviada, proximo)');
+    ctx.storage.sql.exec(`CREATE TABLE IF NOT EXISTS trabajos (${TRABAJO.map(c => `${c} TEXT NOT NULL${c === 'id' ? ' PRIMARY KEY' : " DEFAULT ''"}`).join(', ')})`);
   }
 
   sql(query, ...values) { return this.ctx.storage.sql.exec(query, ...values).toArray(); }
@@ -161,6 +165,76 @@ export class Admin {
     return json({ error: 'Ruta no encontrada.' }, 404);
   }
 
+  // Trabajos hechos: registro privado del técnico, con o sin visita de origen.
+  validarTrabajo(input) {
+    const fotos = lista => Array.isArray(lista) && lista.length <= 3 && lista.every(esFoto) ? lista : null;
+    const t = {
+      fecha: limpiar(input.fecha, 10), nombre: limpiar(input.nombre, 80).replace(/\s+/g, ' '),
+      telefono: telefono(input.telefono) || limpiar(input.telefono, 30), correo: limpiar(input.correo, 120).toLowerCase(),
+      direccion: limpiar(input.direccion, 150), sector: limpiar(input.sector, 80),
+      equipo: equipos.includes(input.equipo) ? input.equipo : 'Otro equipo',
+      descripcion: limpiar(input.descripcion, 1500), precio: String(input.precio ?? '').replace(/\D/g, ''),
+      garantia: limpiar(input.garantia, 500), visita: limpiar(input.visita, 36)
+    };
+    const antes = fotos(input.antes ?? []), despues = fotos(input.despues ?? []);
+    if (!t.nombre) return { error: 'Escribe el nombre del cliente.' };
+    if (!t.descripcion) return { error: 'Describe el trabajo que hiciste.' };
+    if (!esFecha(t.fecha) || t.fecha > hoy()) return { error: 'Revisa la fecha del trabajo: no puede ser futura.' };
+    if (t.correo && !/^[^\s@,;<>]+@[^\s@,;<>]+\.[a-z]{2,}$/.test(t.correo)) return { error: 'Revisa el correo del cliente.' };
+    if (t.precio.length > 9) return { error: 'Revisa el valor cobrado.' };
+    if (!antes || !despues) return { error: 'Sube hasta 3 fotos de antes y 3 de después.' };
+    return { trabajo: { ...t, antes: JSON.stringify(antes), despues: JSON.stringify(despues) } };
+  }
+  async trabajos() {
+    const general = await this.general();
+    const trabajos = this.sql('SELECT * FROM trabajos ORDER BY fecha DESC, creado DESC').map(fotosDe).map(t => ({ ...t, texto: resumenTrabajo(this.env, t, general).text }));
+    return { trabajos, hoy: hoy(), correo: correoClientes(this.env) };
+  }
+  async guardarTrabajo(method, input) {
+    if (method === 'POST') {
+      const { error, trabajo } = this.validarTrabajo(input);
+      if (error) return json({ error }, 400);
+      const now = new Date().toISOString();
+      const record = { ...Object.fromEntries(TRABAJO.map(c => [c, ''])), ...trabajo, id: crypto.randomUUID(), creado: now, actualizado: now };
+      this.sql(`INSERT INTO trabajos (${TRABAJO.join(', ')}) VALUES (${TRABAJO.map(() => '?').join(', ')})`, ...TRABAJO.map(c => record[c]));
+      return json({ ...await this.trabajos(), id: record.id }, 201);
+    }
+    const actual = this.sql('SELECT * FROM trabajos WHERE id = ?', String(input.id ?? ''))[0];
+    if (!actual) return json({ error: 'Este trabajo ya no existe. Recarga la lista.' }, 404);
+    if (input.expectedUpdated !== actual.actualizado) return json({ error: 'El trabajo cambió en otra sesión. Recarga la lista antes de modificarlo.' }, 409);
+    if (input.accion === 'eliminar') {
+      this.sql('DELETE FROM trabajos WHERE id = ?', actual.id);
+      await this.borrarFotos([actual]);
+      return json(await this.trabajos());
+    }
+    const { error, trabajo } = this.validarTrabajo(input);
+    if (error) return json({ error }, 400);
+    const keys = Object.keys(trabajo).filter(k => k !== 'visita');
+    this.sql(`UPDATE trabajos SET ${keys.map(k => `${k} = ?`).join(', ')}, actualizado = ? WHERE id = ?`, ...keys.map(k => trabajo[k]), new Date(Math.max(Date.now(), Date.parse(actual.actualizado) + 1)).toISOString(), actual.id);
+    const quedan = new Set([...JSON.parse(trabajo.antes), ...JSON.parse(trabajo.despues)]);
+    await this.borrarFotos([actual], quedan);
+    return json({ ...await this.trabajos(), id: actual.id });
+  }
+  // Las fotos de un trabajo muestran la casa o el local del cliente: se borran con el registro.
+  async borrarFotos(trabajos, quedan = new Set()) {
+    const keys = trabajos.flatMap(t => [...JSON.parse(t.antes || '[]'), ...JSON.parse(t.despues || '[]')]).filter(src => esFoto(src) && !quedan.has(src)).map(src => src.slice(7));
+    if (keys.length) await this.env.MEDIA?.delete(keys).catch(() => {});
+  }
+  // Espera al proveedor de correo, por eso corre fuera de blockConcurrencyWhile.
+  async enviarTrabajo(request) {
+    if (!await this.session(request)) return json({ error: 'Inicia sesión para continuar.' }, 401);
+    const input = await body(request, 500);
+    const fila = this.sql('SELECT * FROM trabajos WHERE id = ?', String(input.id ?? ''))[0];
+    if (!fila) return json({ error: 'Este trabajo ya no existe. Recarga la lista.' }, 404);
+    if (!fila.correo) return json({ error: 'Este trabajo no tiene correo del cliente. Agrégalo o usa WhatsApp.' }, 400);
+    if (!correoClientes(this.env)) return json({ error: 'El envío de correos a clientes todavía no está activo en el sitio.' }, 503);
+    try { await enviarTrabajo(this.env, fotosDe(fila), await this.general()); }
+    catch { return json({ error: 'No se pudo enviar el correo. Inténtalo de nuevo en unos minutos.' }, 502); }
+    // «actualizado» no cambia: enviar no es una edición y no debe invalidar el formulario abierto.
+    this.sql('UPDATE trabajos SET enviado = ?, enviadoA = ? WHERE id = ?', new Date().toISOString(), fila.correo, fila.id);
+    return json(await this.trabajos());
+  }
+
   encolar(visita, tipo, dia) {
     this.sql('INSERT OR IGNORE INTO avisos (id, visita, tipo, dia) VALUES (?, ?, ?, ?)', `${tipo}:${visita}:${dia}`, visita, tipo, dia);
   }
@@ -168,8 +242,10 @@ export class Admin {
   async procesarAvisos() {
     const hoyChile = hoy();
     const horaChile = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Santiago', hour: '2-digit', hourCycle: 'h23' }).format(new Date()));
+    let viejos = [];
     this.ctx.storage.transactionSync(() => {
       this.sql('DELETE FROM visitas WHERE actualizada < ?', new Date(Date.now() - 365 * 86400000).toISOString());
+      viejos = this.sql('DELETE FROM trabajos WHERE actualizado < ? RETURNING antes, despues', new Date(Date.now() - 365 * 86400000).toISOString());
       this.sql("DELETE FROM avisos WHERE NOT EXISTS (SELECT 1 FROM visitas WHERE visitas.id = avisos.visita) OR (tipo = 'reserva' AND enviada = '' AND EXISTS (SELECT 1 FROM visitas WHERE visitas.id = avisos.visita AND visitas.estado != 'solicitada')) OR (tipo = 'seguimiento' AND EXISTS (SELECT 1 FROM visitas WHERE visitas.id = avisos.visita AND visitas.estado != 'realizada'))");
       if (horaChile >= 9) {
         const pendientes = this.sql("SELECT id FROM visitas WHERE estado = 'realizada' AND seguimiento != '' AND seguimiento <= ?", hoyChile);
@@ -179,6 +255,7 @@ export class Admin {
         }
       }
     });
+    await this.borrarFotos(viejos);
     if (!correoActivo(this.env)) return json({ ok: true, correo: false });
     for (let i = 0; i < 10; i++) {
       const aviso = this.sql("SELECT * FROM avisos WHERE enviada = '' AND proximo <= ? ORDER BY proximo, dia, id LIMIT 1", Date.now())[0];
@@ -250,6 +327,10 @@ export class Admin {
   async fetch(request) {
     // Provider I/O must not hold blockConcurrencyWhile's 30-second initialization lock.
     if (new URL(request.url).pathname === '/interno/cron' && request.method === 'POST') return this.procesarAvisos();
+    if (new URL(request.url).pathname === '/admin/api/trabajos/enviar' && request.method === 'POST') {
+      try { return await this.enviarTrabajo(request); }
+      catch (error) { return json({ error: [400, 413, 415].includes(error.status) || error instanceof SyntaxError ? 'La solicitud no es válida.' : 'No se pudo completar la operación. Inténtalo de nuevo.' }, error.status || (error instanceof SyntaxError ? 400 : 500)); }
+    }
     return this.ctx.blockConcurrencyWhile(async () => {
       try { return await this.handle(request); }
       catch (error) {
@@ -370,6 +451,16 @@ export class Admin {
         return json(await this.agenda(), 201);
       }
       return json(await this.agenda());
+    }
+    if (path === '/admin/api/trabajos' && ['GET', 'POST', 'PUT'].includes(method)) {
+      if (method !== 'GET') return this.guardarTrabajo(method, await body(request, 6000));
+      const previa = new URL(request.url).searchParams.get('previa');
+      if (!previa) return json(await this.trabajos());
+      const fila = this.sql('SELECT * FROM trabajos WHERE id = ?', previa)[0];
+      if (!fila) return json({ error: 'Este trabajo ya no existe. Recarga la lista.' }, 404);
+      const { asunto, html } = resumenTrabajo(this.env, fotosDe(fila), await this.general());
+      // El panel solo carga imágenes de su propio origen: en la vista previa las URL del sitio van relativas.
+      return json({ asunto, html: html.replaceAll(new URL(this.env.SITE_URL || 'https://zerok.cl').origin, ''), para: fila.correo });
     }
     if (path === '/admin/api/agenda' && method === 'PUT') {
       const input = await body(request, 8000);
