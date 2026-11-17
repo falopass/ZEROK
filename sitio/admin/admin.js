@@ -11,7 +11,9 @@ const badge = n => {
   $('#agenda-badge').setAttribute('aria-label', `${n} pendiente${n === 1 ? '' : 's'}`);
   document.title = n ? `(${n}) Administración | ZÉROK` : 'Administración | ZÉROK';
 };
-const visitas = agendaPanel($('#editor'), api, status, () => section === 'agenda', badge, () => autenticado, visita => { section = 'hechos'; status(''); render(); hechos.nuevoDesde(visita); });
+const visitas = agendaPanel($('#editor'), api, status, () => section === 'agenda', badge, () => autenticado, visita => {
+  if (visitas.dirty()) { if (!confirm('Tienes cambios sin guardar en la agenda. ¿Salir y descartarlos?')) return; visitas.discard(); }
+  section = 'hechos'; status(''); render(); hechos.nuevoDesde(visita); });
 const hechos = hechosPanel($('#editor'), api, status, () => section === 'hechos', compress);
 // The agenda refreshes every 60 s while visible, authenticated and without typed edits.
 let refresco;
