@@ -70,7 +70,7 @@ if (canReveal) {
       for (const entry of entries) entry.isIntersecting ? visibleActions.add(entry.target) : visibleActions.delete(entry.target);
       bar.classList.toggle('out-of-view', visibleActions.size > 0);
     }, { threshold: .3 });
-    document.querySelectorAll('.hero-actions, .closing-actions, .trabajos-pie, .agenda-form').forEach(actions => actionObserver.observe(actions));
+    document.querySelectorAll('.hero-actions, .ficha, .closing-actions, .trabajos-pie').forEach(actions => actionObserver.observe(actions));
   }
   const first = document.querySelector('.hero, .page-heading, .agenda-layout');
   if (first) new IntersectionObserver(entries => document.querySelector('.site-header')?.classList.toggle('is-compact', !entries[0].isIntersecting)).observe(first);
@@ -89,14 +89,6 @@ if (canReveal) {
     }, { rootMargin: '-40% 0px -45% 0px', threshold: 0 });
     document.querySelectorAll('.service-detail').forEach(section => active.observe(section));
   }
-  // Side-scrolling rails fade at the right edge only while more content remains there.
-  document.querySelectorAll('.equipment-rail').forEach(rail => {
-    rail.dataset.riel = '';
-    const edge = () => rail.classList.toggle('al-final', rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 4);
-    rail.addEventListener('scroll', edge, { passive: true });
-    addEventListener('resize', edge);
-    edge();
-  });
   if (!reduced.matches) document.documentElement.classList.add('motion-on');
 }
 reduced.addEventListener('change', () => document.documentElement.classList.toggle('motion-on', !reduced.matches && canReveal));
