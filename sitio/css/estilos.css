@@ -820,8 +820,9 @@ body::before,body::after{content:'';position:absolute;inset-inline:0;z-index:-1;
 body::before{top:0;background:repeating-radial-gradient(ellipse 150% 56% at 100% 700px,transparent 0 3.6%,rgb(228 172 75 / .17) 3.6% 3.75%);-webkit-mask-image:radial-gradient(ellipse 135% 58% at 100% 700px,#000 10%,transparent 74%);mask-image:radial-gradient(ellipse 135% 58% at 100% 700px,#000 10%,transparent 74%)}
 body::after{bottom:0;background:repeating-radial-gradient(ellipse 160% 60% at 8% calc(100% - 360px),transparent 0 3.6%,rgb(143 211 238 / .14) 3.6% 3.75%);-webkit-mask-image:radial-gradient(ellipse 140% 70% at 8% calc(100% - 360px),#000 12%,transparent 72%);mask-image:radial-gradient(ellipse 140% 70% at 8% calc(100% - 360px),#000 12%,transparent 72%)}
 .trabajos{background:var(--cierre);border-block:1px solid var(--linea)}
-.ficha,.agenda-resumen{--fondo:#eef3f5;--superficie:#f8fafb;--superficie-2:#dde8ef;--linea:#c6d4de;--texto:#0c2340;--texto-2:#4a5f75;--marca:#042c56;--acento-hover:#c9861a;--error:#b42318;background:var(--superficie);color:var(--texto);border-color:transparent}
-.ficha :focus-visible,.agenda-resumen :focus-visible{outline-color:var(--texto)}
+.ficha,.agenda-resumen,.agenda-form .form-fields:not(.is-cerrado){color-scheme:light;--fondo:#eef3f5;--superficie:#f8fafb;--superficie-2:#dde8ef;--linea:#c6d4de;--texto:#0c2340;--texto-2:#4a5f75;--marca:#042c56;--acento-hover:#c9861a;--error:#b42318;background:var(--superficie);color:var(--texto);border-color:transparent}
+.ficha :focus-visible,.agenda-resumen :focus-visible,.agenda-form .form-fields:not(.is-cerrado) :focus-visible{outline-color:var(--texto)}
+.agenda-form .form-fields::after{display:none}
 }
 @media(prefers-color-scheme:dark) and (max-width:999px){.hero-copy{background:linear-gradient(180deg,var(--fondo) 30%,transparent)}}
 .noche.closing{background:radial-gradient(120% 75% at 50% 112%,rgb(35 129 169 / .5),transparent 62%),repeating-radial-gradient(circle at 50% calc(100% + 120px),transparent 0 46px,rgb(143 211 238 / .1) 46px 47px),var(--cierre)}
