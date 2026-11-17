@@ -55,7 +55,6 @@ Propuesta en rama, sin fusionar ni desplegar. Pedido de Diego: el fondo oscuro a
 - **Tarjetas.** `.form-fields` cambia la barra térmica superior por un riel lateral y el radio parejo por `--ficha` (una sola esquina amplia).
 - **Hero en celular.** Foto y lockup más bajos para que la bajada y los dos botones entren en 844 px.
 - **Agenda por pasos.** Con JavaScript se abre un paso a la vez; los completos quedan como fila con resumen y «Cambiar», y «Continuar» valida el paso. Riel de cuatro tramos arriba. En celular los días van en una tira horizontal. Sin JavaScript, o si el servidor devuelve errores, el formulario queda completo como antes. La barra fija inferior no aparece en esta página.
-- **Antes y después como comparador.** Cada par es un `<input type="range">` sobre las dos fotos; mantiene el barrido de entrada. Sin JavaScript los pares siguen lado a lado.
 - **Servicios.** En celular el índice fijo es una sola fila que se desplaza; la página de cada servicio no repite el título ni la foto de la portada.
 - **Nevada.** En celular baja de 9 a 5 copos (ajuste a la revisión 11).
 - Contraste medido: `--texto` 16,9:1 y `--texto-2` 9,8:1 sobre `--fondo`; `--texto-2` 6,3:1 sobre el punto más intenso del cobre y 5,3:1 sobre el del frío; ámbar 8,2:1.

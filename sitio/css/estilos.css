@@ -915,22 +915,6 @@ body:has(.agenda-form) .contact-bar{display:none}
 .agenda-urgencia{margin-top:4px}
 .agenda-layout{gap:20px;padding-top:24px}}
 
-/* Antes y después como comparador (la clase .es-comparador la pone sitio.js) */
-.es-comparador{display:block;aspect-ratio:1;--corte:50%}
-.es-comparador .antes-foto{position:absolute;inset:0;aspect-ratio:auto}
-.es-comparador .es-despues{clip-path:inset(0 0 0 var(--corte))}
-.es-comparador .es-despues b{left:auto;right:10px}
-.motion-on .antes .es-comparador .es-despues{clip-path:inset(0 0 0 100%)}
-.motion-on .antes.is-visible .es-comparador .es-despues{clip-path:inset(0 0 0 var(--corte))}
-.motion-on .antes .es-comparador.arrastra .es-despues{transition:none}
-.es-comparador::before{content:'';position:absolute;z-index:2;top:0;bottom:0;left:var(--corte);width:2px;margin-left:-1px;background:#eef3f5;pointer-events:none}
-.es-comparador::after{content:'‹ ›';inset:auto;z-index:2;top:50%;left:var(--corte);display:grid;place-items:center;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;background:var(--acento);color:var(--sobre-acento);font-weight:700;line-height:1;box-shadow:0 6px 18px rgb(0 0 0 / .45);pointer-events:none}
-.antes-corte{position:absolute;inset:0;z-index:3;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize;touch-action:pan-y}
-.antes-fotos:has(.antes-corte:focus-visible){outline:2px solid var(--acento);outline-offset:3px}
-.antes-par:hover .es-comparador img{scale:none}
-@media(max-width:639px){.antes-grid:has(.es-comparador){display:grid;gap:28px;overflow:visible}}
-@media(min-width:640px){.es-comparador{aspect-ratio:4/5}}
-
 /* Índice de servicios en una fila en celular; ficha única sin título ni foto repetidos */
 @media(max-width:639px){.service-index>.wrap{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-inline:8px}
 .service-index a,.service-index a:nth-child(n){flex:0 0 auto;border-top:0;white-space:nowrap}}

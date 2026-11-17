@@ -294,14 +294,6 @@ async function motion() {
 if ('requestIdleCallback' in window) requestIdleCallback(motion, { timeout: 2000 });
 else setTimeout(motion, 1200);
 
-// Before/after pairs become a draggable wipe; without JavaScript they stay side by side.
-document.querySelectorAll('.antes-corte').forEach(corte => {
-  const marco = corte.parentElement;
-  marco.classList.add('es-comparador');
-  corte.hidden = false;
-  corte.addEventListener('input', () => { marco.classList.add('arrastra'); marco.style.setProperty('--corte', `${corte.value}%`); });
-});
-
 const agenda = document.querySelector('.agenda-form');
 if (agenda) {
   agenda.addEventListener('invalid', event => event.target.closest('details')?.setAttribute('open', ''), true);
