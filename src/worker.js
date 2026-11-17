@@ -8,7 +8,8 @@ export { Admin };
 const policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests";
 function secure(response, privatePage = false) {
   const headers = new Headers(response.headers);
-  headers.set('content-security-policy', policy);
+  // El decodificador HEIC del panel corre en un worker creado desde blob:.
+  headers.set('content-security-policy', privatePage ? `${policy}; worker-src 'self' blob:` : policy);
   headers.set('x-content-type-options', 'nosniff');
   headers.set('referrer-policy', 'strict-origin-when-cross-origin');
   headers.set('permissions-policy', 'camera=(), microphone=(), geolocation=()');
