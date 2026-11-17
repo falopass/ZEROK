@@ -151,13 +151,14 @@ export function agendaPanel(root, api, status, activo, avisar = () => {}, autori
             <span class="visita-estado estado-${esc(v.estado)}">${estados[v.estado]}</span>
           </div>
           <span class="visita-sub">${esc(subPiezas)}${pasada ? ' · <b class="visita-pasada">atrasada</b>' : ''}</span>
+          ${v.direccion ? `<span class="visita-dir">${esc(dirTexto)}</span>` : ''}
+        </div>
+      <div class="visita-acciones">
+          ${v.telefono ? `<a class="editor-action${v.estado === 'solicitada' ? ' primaria' : ''}" href="tel:${esc(v.telefono)}">Llamar</a>` : ''}
+          ${wsp ? `<a class="editor-action" href="https://wa.me/${wsp}?text=${encodeURIComponent(saludo)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}
+          ${dirTexto ? `<a class="editor-action" href="${esc(mapa)}" target="_blank" rel="noopener noreferrer">Ver mapa</a>` : ''}
         </div>
       </summary>
-      <div class="visita-acciones">
-        ${v.telefono ? `<a class="editor-action${v.estado === 'solicitada' ? ' primaria' : ''}" href="tel:${esc(v.telefono)}">Llamar</a>` : ''}
-        ${wsp ? `<a class="editor-action" href="https://wa.me/${wsp}?text=${encodeURIComponent(saludo)}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}
-        ${dirTexto ? `<a class="editor-action" href="${esc(mapa)}" target="_blank" rel="noopener noreferrer">Ver mapa</a>` : ''}
-      </div>
       <div class="visita-secundarias">
         ${dirTexto ? `<button class="editor-action mini" type="button" data-copiar="${esc(dirTexto)}">Copiar dirección</button>` : ''}
         ${bloque ? `<button class="editor-action mini" type="button" data-visita-ics="${esc(v.id)}">Calendario (.ics)</button>` : ''}

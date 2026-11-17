@@ -210,3 +210,11 @@
 /* El panel no lleva el fondo de termografía del sitio público. */
 body{background:var(--fondo)}
 body::before,body::after{content:none}
+
+/* Visitas como lista de trabajo: llamar, escribir y ver el mapa sin abrir la tarjeta. */
+.visita>summary{display:grid;gap:12px}
+.visita>summary .visita-acciones{display:flex;flex-wrap:wrap;gap:8px;margin:0}
+.visita>summary .editor-action{flex:1 1 96px;display:inline-flex;align-items:center;justify-content:center;min-height:48px;font-size:1rem;font-weight:600}
+.visita-dir{display:block;margin-top:4px;font-size:.9375rem;color:var(--texto)}
+.visita-sub{font-size:.9375rem}
+.visita-top b{font-size:1.125rem}
