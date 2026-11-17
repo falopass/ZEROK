@@ -168,12 +168,13 @@ export class Admin {
   // Trabajos hechos: registro privado del técnico, con o sin visita de origen.
   validarTrabajo(input) {
     const fotos = lista => Array.isArray(lista) && lista.length <= 3 && lista.every(esFoto) ? lista : null;
+    const precio = String(input.precio ?? '').trim().replace(/^\$\s*/, '');
     const t = {
       fecha: limpiar(input.fecha, 10), nombre: limpiar(input.nombre, 80).replace(/\s+/g, ' '),
       telefono: telefono(input.telefono) || limpiar(input.telefono, 30), correo: limpiar(input.correo, 120).toLowerCase(),
       direccion: limpiar(input.direccion, 150), sector: limpiar(input.sector, 80),
       equipo: equipos.includes(input.equipo) ? input.equipo : 'Otro equipo',
-      descripcion: limpiar(input.descripcion, 1500), precio: String(input.precio ?? '').replace(/\D/g, ''),
+      descripcion: limpiar(input.descripcion, 1500), precio: precio.replace(/\./g, ''),
       garantia: limpiar(input.garantia, 500), visita: limpiar(input.visita, 36)
     };
     const antes = fotos(input.antes ?? []), despues = fotos(input.despues ?? []);
@@ -181,7 +182,8 @@ export class Admin {
     if (!t.descripcion) return { error: 'Describe el trabajo que hiciste.' };
     if (!esFecha(t.fecha) || t.fecha > hoy()) return { error: 'Revisa la fecha del trabajo: no puede ser futura.' };
     if (t.correo && !/^[^\s@,;<>]+@[^\s@,;<>]+\.[a-z]{2,}$/.test(t.correo)) return { error: 'Revisa el correo del cliente.' };
-    if (t.precio.length > 9) return { error: 'Revisa el valor cobrado.' };
+    // Solo pesos enteros, con o sin puntos de miles: «45,50» o «45 mil» no se adivinan.
+    if (precio && !/^(\d+|\d{1,3}(\.\d{3})+)$/.test(precio) || t.precio.length > 9) return { error: 'Escribe el valor cobrado en pesos, solo con números. Ejemplo: 45000.' };
     if (!antes || !despues) return { error: 'Sube hasta 3 fotos de antes y 3 de después.' };
     return { trabajo: { ...t, antes: JSON.stringify(antes), despues: JSON.stringify(despues) } };
   }
