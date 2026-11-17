@@ -48,6 +48,18 @@ Seis fotos enviadas por el cliente, en tres pares, dentro de «Trabajo real»: s
 - La foto de la sierra limpia se recortó para dejar fuera un adhesivo con el nombre de otro servicio técnico y la marca de la máquina.
 - La foto de la sierra limpia reemplaza a la foto de banco de «Equipo comercial» en el selector.
 
+### Revisión 14 (16-11-2026): termografía, ficha de papel y agenda por pasos
+Propuesta en rama, sin fusionar ni desplegar. Pedido de Diego: el fondo oscuro azul se veía genérico y la página, desordenada.
+- **Fondo oscuro como termografía.** El concepto de §2 pasa al fondo: base casi negra (`--fondo #070D11`) con un campo de calor cobre junto a «¿Qué está fallando?» y uno frío azul al final de la página, más isotermas (anillos de `repeating-radial-gradient` en `body::before` y `body::after`). No es ilustración ni imagen: solo degradados. El cierre es frío, con anillos desde abajo. «Trabajo real» va sobre una banda `--cierre` con filetes.
+- **Ficha de papel.** En oscuro, la ficha de visita y el resumen de la agenda usan los tokens claros: son la única pieza clara de la página y se leen como orden de trabajo. En claro siguen siendo `.noche`.
+- **Tarjetas.** `.form-fields` cambia la barra térmica superior por un riel lateral y el radio parejo por `--ficha` (una sola esquina amplia).
+- **Hero en celular.** Foto y lockup más bajos para que la bajada y los dos botones entren en 844 px.
+- **Agenda por pasos.** Con JavaScript se abre un paso a la vez; los completos quedan como fila con resumen y «Cambiar», y «Continuar» valida el paso. Riel de cuatro tramos arriba. En celular los días van en una tira horizontal. Sin JavaScript, o si el servidor devuelve errores, el formulario queda completo como antes. La barra fija inferior no aparece en esta página.
+- **Antes y después como comparador.** Cada par es un `<input type="range">` sobre las dos fotos; mantiene el barrido de entrada. Sin JavaScript los pares siguen lado a lado.
+- **Servicios.** En celular el índice fijo es una sola fila que se desplaza; la página de cada servicio no repite el título ni la foto de la portada.
+- **Nevada.** En celular baja de 9 a 5 copos (ajuste a la revisión 11).
+- Contraste medido: `--texto` 16,9:1 y `--texto-2` 9,8:1 sobre `--fondo`; `--texto-2` 6,3:1 sobre el punto más intenso del cobre y 5,3:1 sobre el del frío; ámbar 8,2:1.
+
 ### Revisión 4 (06-11-2026): logo y fotos reales
 - **Logo del cliente**: copo con Z y aguja de manómetro, azul marino `#042C56` y celestes `#65BED7`,
   `#2381A9`, `#0C426C`. Vectorizado en `sitio/img/logo.svg`; se usa en header, hero (símbolo que entra
@@ -169,17 +181,17 @@ modo claro.
 
 | Token | Claro | Oscuro | Uso |
 |-------|-------|--------|-----|
-| `--fondo` | `#EEF3F5` hielo | `#0B161D` noche | Fondo de página |
-| `--superficie` | `#F8FAFB` | `#12212A` | Paneles, selector, tarjetas con jerarquía real |
-| `--superficie-2` | `#DFE8EC` | `#183039` | Bloques tintados (negocio, banda de datos) |
-| `--linea` | `#C9D5DB` | `#24353F` | Líneas de 1 px, bordes de inputs |
-| `--texto` | `#0F1D26` | `#E6EEF1` | Texto principal |
-| `--texto-2` | `#4A5F6B` | `#9DB0BA` | Texto secundario, metadatos |
+| `--fondo` | `#EEF3F5` hielo | `#070D11` noche | Fondo de página |
+| `--superficie` | `#F8FAFB` | `#0F1A21` | Paneles, selector, tarjetas con jerarquía real |
+| `--superficie-2` | `#DFE8EC` | `#1A2B35` | Bloques tintados (negocio, banda de datos) |
+| `--linea` | `#C9D5DB` | `#2C4553` | Líneas de 1 px, bordes de inputs |
+| `--texto` | `#0F1D26` | `#E8F0F2` | Texto principal |
+| `--texto-2` | `#4A5F6B` | `#A3BCC6` | Texto secundario, metadatos |
 | `--acento` | `#E09A1F` ámbar | `#E09A1F` | Fondo de CTA, estado activo, selección |
 | `--acento-hover` | `#C9861A` | `#F0AE3A` | Hover del CTA |
 | `--sobre-acento` | `#0F1D26` | `#0F1D26` | Texto sobre ámbar (siempre oscuro) |
 | `--error` | `#B42318` | `#F97066` | Errores de formulario |
-| `--cierre` | `#0B161D` | `#070F14` | Bloque final + footer |
+| `--cierre` | `#0B161D` | `#03070A` | Bloque final + footer |
 
 - Sin `#000` ni `#fff` puros.
 - Verde WhatsApp: **solo** dentro del ícono de WhatsApp, nunca como fondo de botón (el CTA es ámbar).
@@ -190,9 +202,9 @@ modo claro.
 | Par | Ratio aprox. | Resultado |
 |-----|--------------|-----------|
 | `--texto-2` sobre `--fondo` (claro) | ~6,0:1 | AA cuerpo |
-| `--texto-2` sobre `--fondo` (oscuro) | ~8,2:1 | AA cuerpo |
+| `--texto-2` sobre `--fondo` (oscuro) | 9,8:1 | AA cuerpo |
 | `--sobre-acento` sobre `--acento` | ~7,2:1 | AA cuerpo |
-| `--acento` como texto sobre `--fondo` oscuro | ~7,7:1 | AA cuerpo |
+| `--acento` como texto sobre `--fondo` oscuro | 8,2:1 | AA cuerpo |
 
 **Regla:** el ámbar **nunca** se usa como color de texto sobre fondo claro (no alcanza contraste).
 En claro, el ámbar es siempre relleno con texto oscuro encima.
