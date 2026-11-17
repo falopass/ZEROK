@@ -187,9 +187,10 @@ export class Admin {
     if (!antes || !despues) return { error: 'Sube hasta 3 fotos de antes y 3 de después.' };
     return { trabajo: { ...t, antes: JSON.stringify(antes), despues: JSON.stringify(despues) } };
   }
+  // «enviado» solo cuenta para el correo actual: si el técnico lo corrige, vuelve a «Sin enviar».
   async trabajos() {
     const general = await this.general();
-    const trabajos = this.sql('SELECT * FROM trabajos ORDER BY fecha DESC, creado DESC').map(fotosDe).map(t => ({ ...t, texto: resumenTrabajo(this.env, t, general).text }));
+    const trabajos = this.sql('SELECT * FROM trabajos ORDER BY fecha DESC, creado DESC').map(fotosDe).map(t => ({ ...t, enviado: t.enviadoA === t.correo ? t.enviado : '', texto: resumenTrabajo(this.env, t, general).text }));
     return { trabajos, hoy: hoy(), correo: correoClientes(this.env) };
   }
   async guardarTrabajo(method, input) {
