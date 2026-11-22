@@ -1,8 +1,6 @@
 # DISENO.md: Sistema visual del sitio ZÉROK
 
-Leer antes de tocar cualquier página pública. El panel `/admin/` es interfaz de producto: se dirige con
-`interface-design`, reutiliza solo los tokens de color y tipografía de este documento y no hereda
-composición, hero ni motion de la web pública.
+Leer antes de tocar cualquier página pública. La única entrada de frontend es `frontend-base`. El panel `/admin/` es interfaz de producto: usa sus criterios de producto, reutiliza solo los tokens de color y tipografía de este documento y no hereda composición, hero ni motion de la web pública.
 
 Piso comprobable antes de entregar: `C:/Users/lenov/.agents/studio/canonical/frontend-references/corpus/piso.md`; referencias por tema en `corpus/LEEME.md` (rutas de la máquina de Diego).
 
@@ -153,23 +151,14 @@ de pantallas armados con divs, fotos generadas presentadas como trabajos del cli
 
 ---
 
-## 2.1 Relación con la skill del proyecto
+## 2.1 Relación con frontend-base
 
-En `.claude/skills/design-taste-frontend` (tasteskill 2.5, instalada en esta carpeta el 05-11-2026)
-ZÉROK cae en el tipo **service** (`site-kind other`). Para ese tipo la skill restringe efectos,
-momentos y loops a sitios tech. **Decisión de Diego (05-11-2026): en este sitio las animaciones van y
-no se prohíben.** Esa restricción de la skill no aplica aquí; el resto de la skill se usa como guía:
+`frontend-base` es la única guía de frontend; este documento conserva las decisiones propias de ZÉROK. **Decisión de Diego (05-11-2026): en este sitio las animaciones van y no se prohíben.**
 
-- **Se adopta de la skill:** fotografía como protagonista, fotos de librería solo para detalles, sin
-  pies de foto (créditos en el footer), capa de hover (foto 1,03, tarjeta sube 2 px, botones que bajan
-  al presionar, subrayados que se dibujan), bordes izquierdo y derecho iguales, cada sección de una a dos
-  pantallas de alto, copy primero.
-- **Animaciones: mandan §7 de este documento**, no las restricciones por tipo de la skill. Los cinco
-  momentos de §7.2 y las animaciones de §7.3 y §7.4 son parte del encargo.
-- **No aplica a un cliente real:** la regla 9 de la skill (teléfonos falsos y contactos `.example`) es
-  para demos. Aquí van el teléfono, WhatsApp e Instagram reales.
-- El verificador de la skill (`consistency.mjs`) es una prueba en navegador: no se corre salvo que
-  Diego lo pida.
+- **Dirección local:** fotografía como protagonista, fotos de librería solo para detalles, sin pies de foto (créditos en el footer), capa de hover (foto 1,03, tarjeta sube 2 px, botones que bajan al presionar, subrayados que se dibujan), bordes izquierdo y derecho iguales, cada sección de una a dos pantallas de alto, copy primero.
+- **Animaciones: manda §7 de este documento.** Los cinco momentos de §7.2 y las animaciones de §7.3 y §7.4 son parte del encargo, siempre con los criterios de `frontend-base`.
+- **Datos reales:** aquí van el teléfono, WhatsApp e Instagram reales; nunca contactos de demostración.
+- La verificación visual sigue el procedimiento de `frontend-base` y solo se ejecuta cuando el encargo lo autoriza.
 
 ---
 
@@ -290,12 +279,7 @@ paso ni un beneficio. Se copian del paquete oficial; no se dibujan a mano.
 ### 6.2 Fuentes de imagen, en orden
 1. **Fotos y videos reales del cliente** (Instagram + lo que mande por WhatsApp). Son los únicos que
    pueden aparecer en «Trabajos recientes», en el hero definitivo y como prueba de trabajo.
-2. **Fotos reales de librería** (Unsplash y Wikimedia Commons) con `scripts/photos.mjs` de la skill del
-   proyecto (`.claude/skills/design-taste-frontend`, ver su `references/photos.md`): solo **planos de
-   detalle** (manos, herramientas, manómetros, cañerías, compresores, filtros), revisados uno por uno,
-   sin marcas legibles ni personas reconocibles, máximo 1 de cada 3 fotos de la página salvo que se use
-   su «draft path». Llevan `data-source="library-…"` y el crédito en **una sola línea del footer**.
-   Son la primera opción para cubrir lo que falte: es fotografía real, no generada.
+2. **Fotos reales de librería** (Unsplash y Wikimedia Commons), seleccionadas con los criterios de assets de `frontend-base`: solo **planos de detalle** (manos, herramientas, manómetros, cañerías, compresores, filtros), revisados uno por uno, sin marcas legibles ni personas reconocibles, máximo 1 de cada 3 fotos de la página. Llevan `data-source="library-…"` y el crédito en **una sola línea del footer**. Son la primera opción para cubrir lo que falte: es fotografía real, no generada.
 3. **Imágenes fotorrealistas generadas**, solo para lo que la librería no tenga (sobre todo la capa
    térmica del hero y las fotos de producto recortadas del selector), con reglas estrictas:
    - **Solo manos y detalles, sin rostros** (no se insinúa que es el equipo de ZÉROK).

@@ -22,10 +22,10 @@ Cloudflare, worker **`zerok`** (`wrangler.jsonc`). Comando: `wrangler deploy`. R
 - `src/` — worker, KV, R2, Durable Objects
 - `DISENO.md` — **leer antes de tocar cualquier página pública**: paleta, tipografía, motion, composición y copy
 - `PLAN.md` — plan contratado y §9 de material del cliente
-- `.agents/skills/design-taste-frontend` — biblioteca de criterio, no autoridad; la base es `frontend-base`
+- `frontend-base` — única guía de frontend; `DISENO.md` conserva la dirección visual del cliente
 
 ## Reglas que no se rompen
-- El panel `/admin/` se diseña con `interface-design` y solo comparte tokens con el sitio público.
+- El panel `/admin/` se diseña con `frontend-base` y solo comparte tokens con el sitio público.
 - **Las animaciones van y no se prohíben** (decisión de Diego, 05-11-2026). Manda `frontend-base`: la regla es variar entre clientes, no recortar.
 - Piso comprobable antes de entregar: `C:/Users/lenov/.agents/studio/canonical/frontend-references/corpus/piso.md` (16 reglas; vale con cualquier dirección). Referencias por tema en `corpus/LEEME.md`; aquí sirven `motion.md`, `assets.md`. Rutas de la máquina de Diego. El panel `/admin/`: `interfaz-producto.md`.
 - Trato de **tú** en todo el sitio. Sin rayas largas (— ni –) en texto visible.
