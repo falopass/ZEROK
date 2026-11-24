@@ -34,7 +34,7 @@
 .admin-field textarea{min-height:88px}
 .admin-field input[type=checkbox]{width:18px;height:18px;accent-color:var(--acento);margin:0;flex-shrink:0}
 .admin-field.check{display:flex;gap:12px;align-items:center;min-height:44px}
-.editor-group{border:1px solid var(--linea);border-radius:6px;background:var(--superficie);padding:24px;min-width:0}
+.editor-group{border:1px solid var(--linea);border-radius:6px;background:var(--superficie);color:var(--texto);padding:24px;min-width:0}
 .editor-group>summary{display:flex;justify-content:space-between;gap:16px;align-items:center;font-size:1.125rem;font-weight:600;min-height:44px;list-style:none}
 .editor-group>summary::-webkit-details-marker{display:none}
 .editor-group>summary::after{content:'+';font-size:1.5rem;font-weight:400;color:var(--texto-2);flex-shrink:0}
@@ -276,8 +276,8 @@ body:not([data-seccion=agenda]) #editor>:not(details){grid-column:1/-1}}
 .visita-detalle{padding:16px;border-top:1px solid var(--linea)}
 .visita-secundarias .editor-action.mini{min-height:44px}
 @media(prefers-color-scheme:dark){
-.visita,.agenda-nueva,.hecho,.hecho-form{color-scheme:light;--fondo:#eef3f5;--superficie:#f8fafb;--superficie-2:#dde8ef;--linea:#c6d4de;--texto:#0c2340;--texto-2:#4a5f75;--marca:#042c56;--acento-hover:#c9861a;--error:#b42318;border-color:transparent}
-.visita :focus-visible,.agenda-nueva :focus-visible{outline-color:var(--texto)}
+.visita,.agenda-nueva,.hecho,.hecho-form{color-scheme:light;--fondo:#eef3f5;--superficie:#f8fafb;--superficie-2:#dde8ef;--campo:#f1f5f7;--linea:#c6d4de;--texto:#0c2340;--texto-2:#4a5f75;--marca:#042c56;--acento-hover:#c9861a;--error:#b42318;background:var(--superficie);color:var(--texto);border-color:transparent}
+.visita :focus-visible,.agenda-nueva :focus-visible,.hecho :focus-visible,.hecho-form :focus-visible{outline-color:var(--texto)}
 }
 
 /* Agenda: calendario y disponibilidad en segundo plano */
